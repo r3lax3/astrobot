@@ -1,0 +1,207 @@
+import sqlite3
+
+from dataclasses import dataclass
+from typing import Optional, Any, List
+from datetime import datetime
+
+from src.database.models import User, Location, Interpretation
+
+
+class Database:
+    def __init__(self):
+        self.connection = sqlite3.connect("database.db")
+        self.cursor = self.connection.cursor()
+
+    def execute_query(
+        self,
+        query: str,
+        kwargs: dict = None,
+        params: Optional[tuple] = (),
+        fetchone: bool = False,
+        fetchall: bool = False,
+    ) -> Any:
+        if kwargs is not None:
+            keys = []
+            params = []
+
+            for k, v in kwargs.items():
+                keys.append(
+                    f'{k} = ?'
+                )
+                params.append(v)
+
+            query += ' WHERE ' + ' AND '.join(keys)
+            params = tuple(params)
+
+        # print(f'{query = }')
+        # print(f'{params = }')
+
+        self.cursor.execute(query, params)
+        if fetchone:
+            return self.cursor.fetchone()
+        elif fetchall:
+            return self.cursor.fetchall()
+        else:
+            self.connection.commit()
+
+    # Users table methods
+
+    def add_user(self, user_id, role, birth_datetime, birth_location: Location, current_location: Location):
+        # Add locations
+        birth_location_id = self.add_location(birth_location)  # add and return id of row
+        current_location_id = self.add_location(current_location)  # here too
+
+        self.execute_query(
+            query="""
+                INSERT INTO users (user_id, role, birth_datetime, birth_location_id, current_location_id)
+                VALUES (?, ?, ?, ?, ?)
+            """,
+            params=(user_id, role, birth_datetime, birth_location_id, current_location_id)
+        )
+
+    def get_user(self, user_id: int) -> Optional[User]:
+        query = """SELECT user_id, role, birth_datetime, birth_location_id, current_location_id FROM users"""
+        result = self.execute_query(query, kwargs={'user_id': user_id}, fetchone=True)
+        if result:
+            return User(*result)
+        return None
+
+    def add_or_update_user(self, user: User):
+        query = """
+            INSERT OR REPLACE INTO users (
+                user_id, 
+                role, 
+                birth_datetime, 
+                birth_location_id, 
+                current_location_id
+            )
+            VALUES (?, ?, ?, ?, ?)
+        """
+        self.execute_query(
+            query,
+            params=(
+                user.role,
+                user.birth_datetime,
+                user.birth_location_id,
+                user.current_location_id,
+                user.user_id
+            )
+        )
+
+    def update_user_current_location(self, user_id: int, new_location: Location):
+        # 1. Get the current location id of the user
+        user = self.get_user(user_id)
+        if user is not None:
+            old_location_id = user.current_location_id
+
+            # 2. Insert the new location
+            self.add_location(new_location)
+
+            # 3. Update the user's current location id
+            query = """
+                UPDATE users SET current_location_id=? WHERE user_id=?
+            """
+            self.execute_query(query, params=(new_location.id, user_id))
+
+            # 4. Delete the old location from the locations table
+            self.delete_location(old_location_id)
+        else:
+            print(f"User with ID {user_id} not found.")
+
+    def delete_user(self, user_id: int):
+        query = "DELETE FROM users"
+        self.execute_query(query, kwargs={'user_id': user_id})
+
+    # Location table methods
+
+    def add_location(self, location: Location) -> int:
+        """
+        Метод используется для добавления локации в список
+        тип может быть "birth" или "current"
+        """
+        self.execute_query(
+            query="""
+                INSERT INTO locations (type, longitude, latitude)
+                VALUES (?, ?, ?)
+            """,
+            params=(
+                location.type,
+                location.longitude,
+                location.latitude
+            )
+        )
+
+        return self.cursor.lastrowid
+
+    def get_location(self, location_id: int) -> Optional[Location]:
+        query = "SELECT id, type, longitude, latitude FROM locations"
+        result = self.execute_query(query, kwargs={'id': location_id}, fetchone=True)
+        if result:
+            return Location(*result)
+        return None
+
+    def update_location(self, location: Location):
+        query = """
+        UPDATE locations SET longitude=?, latitude=? WHERE id=?
+        """
+        self.execute_query(query, params=(location.longitude, location.latitude, location.id))
+
+    def delete_location(self, location_id: int):
+        query = "DELETE FROM locations"
+        self.execute_query(query, kwargs={'id': location_id})
+
+    # Interpretations table methods
+
+    def get_interpretation(self, natal_planet: str, transit_planet: str, aspect: str) -> Optional[str]:
+        query = """
+        SELECT interpretation
+        FROM interpretations
+        WHERE natal_planet = ? AND transit_planet = ? AND aspect = ?
+        """
+        result = self.execute_query(query, params=(natal_planet, transit_planet, aspect), fetchone=True)
+        if result:
+            return result[0]
+        return None
+
+    def add_or_update_interpretation(self, interpretation_obj: Interpretation):
+        query = """
+        INSERT OR REPLACE INTO interpretations (natal_planet, transit_planet, aspect, interpretation)
+        VALUES (?, ?, ?, ?)
+        """
+        self.execute_query(
+            query,
+            params=(
+                interpretation_obj.natal_planet,
+                interpretation_obj.transit_planet,
+                interpretation_obj.aspect,
+                interpretation_obj.interpretation
+            )
+        )
+
+    # MandatorySubChannel table methods
+
+    # def add_mandatory_channel(self, channel: MandatorySubChannel):
+    #     query = """
+    #     INSERT INTO mandatory_sub_channels (channel_id, title, invite_link)
+    #     VALUES (?, ?, ?)
+    #     """
+    #     self.execute_query(query, params=(channel.channel_id, channel.title, channel.invite_link))
+    #
+    # def get_mandatory_channel(self, channel_id: int) -> Optional[MandatorySubChannel]:
+    #     query = "SELECT * FROM mandatory_sub_channels WHERE channel_id = ?"
+    #     result = self.execute_query(query, params=(channel_id,), fetchone=True)
+    #     if result:
+    #         return MandatorySubChannel(*result)
+    #     return None
+    #
+    # def update_mandatory_channel(self, channel: MandatorySubChannel):
+    #     query = """
+    #     UPDATE mandatory_sub_channels
+    #     SET title = ?, invite_link = ?
+    #     WHERE channel_id = ?
+    #     """
+    #     self.execute_query(query, params=(channel.title, channel.invite_link, channel.channel_id))
+    #
+    # def delete_mandatory_channel(self, channel_id: int):
+    #     query = "DELETE FROM mandatory_sub_channels WHERE channel_id = ?"
+    #     self.execute_query(query, params=(channel_id,))

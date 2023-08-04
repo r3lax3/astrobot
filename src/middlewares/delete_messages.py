@@ -1,0 +1,30 @@
+import logging
+
+from typing import Any, Callable, Dict, Awaitable
+
+from aiogram import BaseMiddleware
+from aiogram.exceptions import TelegramBadRequest
+from aiogram.types import TelegramObject, User
+
+
+class DeleteMessagesMiddleware(BaseMiddleware):
+    async def __call__(
+        self,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
+        data: Dict[str, Any]
+    ) -> Any:
+
+        state_data = await data['state'].get_data()
+        messages_ids = state_data.get('del_messages', [])
+        user: User = data["event_from_user"]
+        bot = data['bot']
+
+        for message_id in messages_ids:
+            try:
+                await bot.delete_message(chat_id=user.id, message_id=message_id)
+            except TelegramBadRequest:
+                pass
+
+        result = await handler(event, data)
+        return result
