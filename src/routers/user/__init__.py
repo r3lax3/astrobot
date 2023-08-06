@@ -7,9 +7,9 @@ from aiogram.types import (
 from aiogram.filters import CommandStart, Text
 from aiogram.fsm.context import FSMContext
 
-from src.filters import F  # IsNotSub
+from src.filters import F
 from src.routers import messages
-from src.routers.states import GetCurrentLocationFirstTime, MainMenu, GetBirthData
+from src.routers.states import GetCurrentLocationFirstTime, MainMenu
 from src.database import Database
 from src.database.models import Location
 from src.keyboard_manager import KeyboardManager
@@ -42,7 +42,7 @@ r.include_routers(
 #     await user_command_start_handler_for_unsub(callback.message, state, keyboards, database, event_from_user)
 
 
-@r.callback_query(Text('Попробовать зайти ещё раз'))
+@r.callback_query(F.data == 'Попробовать зайти ещё раз')
 async def try_start_again_for_sub(
     callback: CallbackQuery,
     state: FSMContext,
@@ -84,7 +84,7 @@ async def user_command_start_handler(
 
 # confirm
 
-@r.callback_query(GetCurrentLocationFirstTime.confirm, Text('Подтверждаю'))
+@r.callback_query(GetCurrentLocationFirstTime.confirm, F.data == 'Подтверждаю')
 async def get_current_location_first__time_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
@@ -120,7 +120,7 @@ async def get_current_location_first_time_confirmed(
     )
     await main_menu(bot_message, state, keyboards, database)
 
-
+@r.message(F.text, F.text.in_(['В главное меню']))
 async def main_menu(
     message: Message,
     state: FSMContext,
@@ -136,8 +136,7 @@ async def main_menu(
 
 
 @r.callback_query(
-    MainMenu.end_action,
-    Text('В главное меню')
+    F.data == 'В главное меню'
 )
 async def to_main_menu_button_handler(
     callback: CallbackQuery,
@@ -149,7 +148,6 @@ async def to_main_menu_button_handler(
 
 
 # Всякая хуйня которую я ещё не написал
-@r.message(MainMenu.prediction_choose_action, Text("Ежедневный прогноз"))
 @r.message(F.text, F.text.in_(['Сонник', 'Карта Дня', 'Общий прогноз', 'Луна в знаке']))
 async def not_implemented_error(
     message: Message,
@@ -164,6 +162,6 @@ async def not_implemented_error(
 
 
 # Когда на кнопку которую не нужно жмякают
-@r.callback_query(Text('null'))
+@r.callback_query(F.data == 'null')
 async def prediction_on_date_back():
     pass

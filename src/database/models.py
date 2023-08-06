@@ -1,4 +1,3 @@
-from datetime import datetime
 from dataclasses import dataclass
 
 
@@ -9,6 +8,8 @@ class User:
     birth_datetime: str
     birth_location_id: int
     current_location_id: int
+    use_every_day_prediction: int
+    every_day_prediction_time: str
 
 
 @dataclass

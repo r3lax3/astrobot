@@ -1,24 +1,26 @@
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS users  (
 	user_id	BIGINT PRIMARY KEY,
 	role VARCHAR(10),
 	birth_datetime TEXT,
-	birth_location_id INT,
-	current_location_id INT
+	birth_location_id INTEGER,
+	current_location_id INTEGER,
+  use_every_day_prediction INTEGER,
+  every_day_prediction_time TEXT
 );
 
 CREATE TABLE IF NOT EXISTS locations (
-    id INT PRIMARY KEY,
-    type TEXT,
+  id INTEGER PRIMARY KEY AUTOINCREMENT, 
+  type TEXT,
 	longitude REAL,
 	latitude REAL
 );
 
 CREATE TABLE IF NOT EXISTS interpretations (
-    natal_planet TEXT,
-    transit_planet TEXT,
-    aspect TEXT,
-    interpretation TEXT,
-    PRIMARY KEY (natal_planet, transit_planet, aspect)
+  natal_planet TEXT,
+  transit_planet TEXT,
+  aspect TEXT,
+  interpretation TEXT,
+  PRIMARY KEY (natal_planet, transit_planet, aspect)
 );
 
 --CREATE TABLE IF NOT EXISTS mandatory_sub_channels (

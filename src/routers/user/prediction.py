@@ -1,6 +1,6 @@
 import asyncio
 import logging
-import time
+from sqlite3 import DateFromTicks
 
 import swisseph as swe
 import datetime as dt
@@ -9,7 +9,7 @@ import csv
 from datetime import datetime, timedelta
 from typing import List
 
-from aiogram import Router, F, Bot, exceptions
+from aiogram import Router, Bot, exceptions, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     Message,
@@ -32,10 +32,13 @@ from src.prediction_analys import (
 )
 
 
+regexp_time = r"(?:[01]?\d|2[0-3]):[0-5]\d"
 database_datetime_format = config.get('database.datetime_format')
-date_format = "%Y-%m-%d"
-days = config.get('constants.days')
-months = config.get('constants.months')
+date_format = config.get('database.date_format')
+
+days: dict = config.get('constants.days')
+months: dict = config.get('constants.months')
+
 wait_sticker = config.get('files.wait_sticker')
 
 
@@ -156,7 +159,7 @@ def filtered_and_formatted_prediction(
     first_half_moon_events = [
         event
         for event in astro_events
-        if event.transit_planet == swe.MOON
+        if event.peak_at
         and start_of_day < event.peak_at < middle_of_day
     ]
     first_half_moon_events_formatted = (
@@ -166,7 +169,7 @@ def filtered_and_formatted_prediction(
     second_half_moon_events = [
         event
         for event in astro_events
-        if event.transit_planet == swe.MOON
+        if event.peak_at
         and middle_of_day < event.peak_at < end_of_day
     ]
     second_half_moon_events_formatted = (
@@ -225,6 +228,7 @@ def filtered_and_formatted_prediction(
 
 
 @r.message(Text('Прогнозы'))
+@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == 'Назад')
 async def get_prediction(
     message: Message,
     state: FSMContext,
@@ -258,7 +262,6 @@ async def prediction_on_date(
     await update_prediction_date(message, state, keyboards)
 
 
-# OnDate.Back
 @r.callback_query(MainMenu.prediction_choose_date, Text('Назад в меню'))
 async def prediction_on_date_back(
     callback: CallbackQuery,
@@ -266,6 +269,31 @@ async def prediction_on_date_back(
     keyboards: KeyboardManager
 ):
     await get_prediction(callback.message, state, keyboards)
+
+
+async def get_prediction_text(
+    target_date: str,
+    database: Database,
+    user_id: int
+) -> str:
+    target_date = datetime.strptime(target_date, date_format)
+
+    user = database.get_user(user_id=user_id)
+    birth_location = database.get_location(user.birth_location_id)
+    current_location = database.get_location(user.current_location_id)
+
+    prediction_user = PredictionUser(
+        birth_datetime=datetime.strptime(user.birth_datetime, database_datetime_format),
+        birth_location=PredictionLocation(longitude=birth_location.longitude, latitude=birth_location.latitude),
+        current_location=PredictionLocation(longitude=current_location.longitude, latitude=current_location.latitude)
+    )
+
+    loop = asyncio.get_running_loop()
+    future = loop.run_in_executor(None, filtered_and_formatted_prediction, prediction_user, target_date)
+
+    text = await future
+    return text
+
 
 
 # Confirmed
@@ -283,26 +311,12 @@ async def prediction_on_date_get_prediction(
     data = await state.get_data()
 
     target_date = data['date']
-    target_date = datetime.strptime(target_date, date_format)
 
-    user = database.get_user(user_id=event_from_user.id)
-    birth_location = database.get_location(user.birth_location_id)
-    current_location = database.get_location(user.current_location_id)
-
-    prediction_user = PredictionUser(
-        birth_datetime=datetime.strptime(user.birth_datetime, database_datetime_format),
-        birth_location=PredictionLocation(longitude=birth_location.longitude, latitude=birth_location.latitude),
-        current_location=PredictionLocation(longitude=current_location.longitude, latitude=current_location.latitude)
+    text = await get_prediction_text(
+        target_date=target_date,
+        database=database,
+        user_id=event_from_user.id
     )
-
-    # start = time.time()
-
-    loop = asyncio.get_running_loop()
-    future = loop.run_in_executor(None, filtered_and_formatted_prediction, prediction_user, target_date)
-
-    text = await future
-    # p1 = time.time() - start
-    # print(f'Время получения отформатированного текста предсказаний = {p1}')
 
     for msg in [wait_message, sticker_message]:
         try:
@@ -353,7 +367,105 @@ async def update_prediction_date(
     await state.update_data(del_messages=[date_message.message_id])
     await state.set_state(MainMenu.prediction_choose_date)
 
-#
+
+@r.message(MainMenu.predictin_every_day_enter_time, Text('Назад'))
+@r.message(MainMenu.prediction_choose_action, Text("Ежедневный прогноз"))
+async def every_day_prediction(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User,
+):
+    user = database.get_user(event_from_user.id)
+
+    if user.use_every_day_prediction == 1:
+        bot_message = await message.answer(
+            messages.every_day_prediction_activated.format(send_time=user.every_day_prediction_time),
+            reply_markup=keyboards.every_day_prediction_activated
+        )
+    else:
+        bot_message = await message.answer(
+            messages.every_day_prediction_deactivated,
+            reply_markup=keyboards.every_day_prediction_deactivated
+        ) 
+
+    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    await state.set_state(MainMenu.predictin_every_day_choose_action)
+
+
+@r.message(MainMenu.predictin_every_day_choose_action, Text('Изменить время прогноза'))
+async def change_prediction_time(
+    message: Message,
+    keyboards: KeyboardManager,
+    state: FSMContext
+):
+    bot_message = await message.answer(
+        messages.enter_time,
+        reply_markup=keyboards.reply_back
+    )
+    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    await state.set_state(MainMenu.predictin_every_day_enter_time)
+
+
+@r.message(MainMenu.predictin_every_day_enter_time, F.text, F.text.regexp(regexp_time))
+async def enter_prediction_time(
+    message: Message,
+    database: Database,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    scheduler,
+    event_from_user: User,
+    bot: Bot
+):
+    hour, minute = map(int, message.text.split(':'))
+    database.update_user_every_day_prediction_time(event_from_user.id, hour=hour, minute=minute)
+    bot_message = await message.answer(
+        messages.prediction_time_changed_successful
+    )
+
+    if scheduler.get_job(str(event_from_user.id)):
+        scheduler.remove_job(str(event_from_user.id))
+        await scheduler.add_send_message_job(event_from_user.id, message.text, database, bot)
+
+    await every_day_prediction(bot_message, state, keyboards, database, event_from_user)
+
+
+@r.message(MainMenu.predictin_every_day_choose_action, Text('Выключить'))
+async def deactivate_every_day_prediction(
+    message: Message,
+    keyboards: KeyboardManager,
+    state: FSMContext,
+    database: Database,
+    event_from_user: User
+):
+    database.update_user_every_day_prediction_status(status=0, user_id=event_from_user.id)
+    bot_message = await message.answer(
+        messages.prediction_status_changed
+    )
+    await every_day_prediction(bot_message, state, keyboards, database, event_from_user)
+
+    await message.delete()
+
+
+
+@r.message(MainMenu.predictin_every_day_choose_action, Text('Включить'))
+async def activate_every_day_prediction(
+    message: Message,
+    keyboards: KeyboardManager,
+    state: FSMContext,
+    database: Database,
+    event_from_user: User
+):
+    database.update_user_every_day_prediction_status(status=1, user_id=event_from_user.id)
+    bot_message = await message.answer(
+        messages.prediction_status_changed
+    )
+    await every_day_prediction(bot_message, state, keyboards, database, event_from_user)
+
+    await message.delete()
+
+
 # @r.message(Text('тест'))
 # async def test_func(message):
 #     user_birth_datetime = datetime(2005, 10, 19, 9, 32)  # Дата и время рождения: 15 июня 1995 года в 12:00

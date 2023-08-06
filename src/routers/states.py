@@ -20,6 +20,11 @@ class MainMenu(StatesGroup):
 
     prediction_choose_action = State()
     prediction_choose_date = State()
+
+    predictin_every_day_choose_action = State()
+    predictin_every_day_enter_time = State()
+
     prediction_end = State()
 
     end_action = State()
+

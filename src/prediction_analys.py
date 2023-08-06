@@ -1,5 +1,4 @@
 import swisseph as swe
-import time
 import pytz
 
 from typing import List, Optional

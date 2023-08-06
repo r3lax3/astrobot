@@ -1,8 +1,6 @@
 import sqlite3
 
-from dataclasses import dataclass
-from typing import Optional, Any, List
-from datetime import datetime
+from typing import Optional, Any
 
 from src.database.models import User, Location, Interpretation
 
@@ -15,23 +13,23 @@ class Database:
     def execute_query(
         self,
         query: str,
-        kwargs: dict = None,
-        params: Optional[tuple] = (),
+        kwargs: dict = {},
+        params: tuple = (),
         fetchone: bool = False,
         fetchall: bool = False,
     ) -> Any:
-        if kwargs is not None:
+        if kwargs:
             keys = []
-            params = []
+            kwargs_params = []
 
             for k, v in kwargs.items():
                 keys.append(
                     f'{k} = ?'
                 )
-                params.append(v)
+                kwargs_params.append(v)
 
             query += ' WHERE ' + ' AND '.join(keys)
-            params = tuple(params)
+            params = tuple(kwargs_params)
 
         # print(f'{query = }')
         # print(f'{params = }')
@@ -53,18 +51,35 @@ class Database:
 
         self.execute_query(
             query="""
-                INSERT INTO users (user_id, role, birth_datetime, birth_location_id, current_location_id)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO users (
+                    user_id, 
+                    role, 
+                    birth_datetime, 
+                    birth_location_id, 
+                    current_location_id, 
+                    use_every_day_prediction, 
+                    every_day_prediction_time
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            params=(user_id, role, birth_datetime, birth_location_id, current_location_id)
+            params=(user_id, role, birth_datetime, birth_location_id, current_location_id, 1, "07:30")
         )
 
-    def get_user(self, user_id: int) -> Optional[User]:
-        query = """SELECT user_id, role, birth_datetime, birth_location_id, current_location_id FROM users"""
+    def get_user(self, user_id: int) -> User | None:
+        query = """
+        SELECT 
+            user_id, 
+            role, 
+            birth_datetime, 
+            birth_location_id, 
+            current_location_id, 
+            use_every_day_prediction, 
+            every_day_prediction_time 
+        FROM users
+        """
         result = self.execute_query(query, kwargs={'user_id': user_id}, fetchone=True)
         if result:
             return User(*result)
-        return None
 
     def add_or_update_user(self, user: User):
         query = """
@@ -74,8 +89,10 @@ class Database:
                 birth_datetime, 
                 birth_location_id, 
                 current_location_id
+                use_every_day_prediction, 
+                every_day_prediction_time
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """
         self.execute_query(
             query,
@@ -88,6 +105,24 @@ class Database:
             )
         )
 
+    def update_user_every_day_prediction_status(self, status: int, user_id: int):
+        query = '''
+            UPDATE users SET use_every_day_prediction=? WHERE user_id=?
+        '''
+        params = (status, user_id)
+
+        self.execute_query(query, params=params)
+
+    def update_user_every_day_prediction_time(self, user_id: int, hour: int, minute: int):
+        query = '''
+            UPDATE users SET every_day_prediction_time=? WHERE user_id=?
+        '''
+
+        time = "{:02d}:{:02d}".format(hour, minute)
+        params = (time, user_id)
+
+        self.execute_query(query, params=params)
+
     def update_user_current_location(self, user_id: int, new_location: Location):
         # 1. Get the current location id of the user
         user = self.get_user(user_id)
@@ -95,13 +130,13 @@ class Database:
             old_location_id = user.current_location_id
 
             # 2. Insert the new location
-            self.add_location(new_location)
+            new_location_id = self.add_location(new_location)
 
             # 3. Update the user's current location id
             query = """
                 UPDATE users SET current_location_id=? WHERE user_id=?
             """
-            self.execute_query(query, params=(new_location.id, user_id))
+            self.execute_query(query, params=(new_location_id, user_id))
 
             # 4. Delete the old location from the locations table
             self.delete_location(old_location_id)
@@ -130,15 +165,19 @@ class Database:
                 location.latitude
             )
         )
+        
+        location_id =  self.cursor.lastrowid
+        if location_id is None:
+            raise Exception('Айдишник не возвращается, хотя должен. Ошибка в add_location')
+        else:
+            return location_id
 
-        return self.cursor.lastrowid
-
-    def get_location(self, location_id: int) -> Optional[Location]:
+    def get_location(self, location_id: int) -> Location:
         query = "SELECT id, type, longitude, latitude FROM locations"
         result = self.execute_query(query, kwargs={'id': location_id}, fetchone=True)
         if result:
             return Location(*result)
-        return None
+        raise Exception(f'Чет локейшн в табличке с юзерами записан, а самой локации нет. Айди - {location_id}')
 
     def update_location(self, location: Location):
         query = """

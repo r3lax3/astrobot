@@ -22,7 +22,6 @@ from src.utils import is_int, get_location_by_coords
 
 r = Router()
 
-
 regexp_time = r"(?:[01]?\d|2[0-3]):[0-5]\d"
 database_datetime_format = config.get('database.datetime_format')
 guide_send_geopos_images_file_id = config.get('files.how_to_send_geopos_screenshots')

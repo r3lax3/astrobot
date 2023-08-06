@@ -76,7 +76,8 @@ class KeyboardManager:
         self.predict_choose_action = self.build_keyboard_from_structure(
             [
                 ['Прогноз на дату'],
-                ['Ежедневный прогноз']
+                ['Ежедневный прогноз'],
+                ['В главное меню']
             ],
             markup_type='reply'
         )
@@ -84,6 +85,21 @@ class KeyboardManager:
             [
                 ['Проверить другую дату'],
                 ['Луна в знаке', 'Общий прогноз'],
+                ['Назад']
+            ],
+            markup_type='reply'
+        )
+        self.every_day_prediction_activated = self.build_keyboard_from_structure(
+            [
+                ['Изменить время прогноза'],
+                ['Выключить'],
+                ['Назад']
+            ],
+            markup_type='reply'
+        )
+        self.every_day_prediction_deactivated = self.build_keyboard_from_structure(
+            [
+                ['Включить'],
                 ['Назад']
             ],
             markup_type='reply'
@@ -108,9 +124,16 @@ class KeyboardManager:
             ]
         )
 
+        self.reply_back = self.build_keyboard_from_structure(
+            [
+                ['Назад']
+            ],
+            markup_type='reply'
+        )
+
 
     def predict_choose_date(self, date: str) -> InlineKeyboardMarkup:
-        return self.build_keyboard_from_structure(
+        markup: InlineKeyboardMarkup = self.build_keyboard_from_structure(
             structure=[
                 [
                     (date, "null")
@@ -133,9 +156,9 @@ class KeyboardManager:
                 [
                     'Назад в меню'
                 ]
-            ],
-            markup_type='inline'
+            ]
         )
+        return markup
 
     @staticmethod
     def pack_button(item: str | tuple, markup_type: str = 'inline'):
@@ -148,9 +171,16 @@ class KeyboardManager:
                 elif isinstance(item[1], CallbackData):
                     return InlineKeyboardButton(text=item[0], callback_data=item[1].pack())
         elif markup_type == 'reply':
-            return KeyboardButton(text=item)
+            if isinstance(item, str):
+                return KeyboardButton(text=item)
+            else:
+                Exception(f'Чет несоответствие типов какое-то. Ты написал что тип реплай, а пихаешь туда не str, а {type(item)}')
 
-    def build_keyboard_from_structure(self, structure: List[List[str | tuple]], markup_type: str = 'inline'):
+    def build_keyboard_from_structure(
+            self, 
+            structure: List[List[str | tuple]], 
+            markup_type: str = 'inline'
+    ) -> InlineKeyboardMarkup | ReplyKeyboardMarkup:
         """
         [
             ['Button1'],
@@ -165,9 +195,14 @@ class KeyboardManager:
         for row in structure:
             keyboard_row = [self.pack_button(item, markup_type) for item in row]
             keyboard.append(keyboard_row)
+        
+        markup: InlineKeyboardMarkup | ReplyKeyboardMarkup
 
         if markup_type == 'inline':
-            return InlineKeyboardMarkup(inline_keyboard=keyboard)
-
+            markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
         elif markup_type == 'reply':
-            return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+            markup = ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+        else:
+            Exception('Ты хуйню какую-то передал в маркап_тайп. Посмотри ещё раз ')
+        
+        return markup
