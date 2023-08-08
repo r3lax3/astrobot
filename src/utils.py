@@ -1,6 +1,8 @@
 from geopy.geocoders import Nominatim
 
 
+geolocator = Nominatim(user_agent="AstroBot")
+
 
 def is_int(string: str) -> bool:
     try:
@@ -26,7 +28,6 @@ def split_list(input_list: list, sublist_len: int = 2):
 
 
 def get_location_by_coords(longitude: float, latitude: float) -> str:
-    geolocator = Nominatim(user_agent="AstroBot")
     location = geolocator.reverse((latitude, longitude), language='ru', exactly_one=True)
 
     if location and "address" in location.raw:
