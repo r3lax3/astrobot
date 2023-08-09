@@ -131,7 +131,6 @@ async def main_menu_command(
     event_from_user
 ):
     user = database.get_user(user_id=event_from_user.id)
-    await enter_birth_year(message, state)
 
     if user is None:
         bot_message = await message.answer('Вы ещё не ввели данные рождения')
