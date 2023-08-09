@@ -4,7 +4,7 @@ from aiogram.types import (
     CallbackQuery,
     User
 )
-from aiogram.filters import CommandStart, Text
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 
 from src.filters import F
@@ -69,17 +69,18 @@ async def try_start_again_for_sub(
 @r.message(CommandStart())
 async def user_command_start_handler(
     message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager,
-    database: Database,
-    event_from_user: User
+    state: FSMContext
+    # keyboards: KeyboardManager,
+    # database: Database,
+    # event_from_user: User
 ):
-    user = database.get_user(user_id=event_from_user.id)
+    # user = database.get_user(user_id=event_from_user.id)
+    await enter_birth_year(message, state)
 
-    if user is None:
-        await enter_birth_year(message, state)
-    else:
-        await main_menu(message, state, keyboards, database)
+    # if user is None:
+    #     await enter_birth_year(message, state)
+    # else:
+    #     await main_menu(message, state, keyboards, database)
 
 
 # confirm
@@ -120,6 +121,8 @@ async def get_current_location_first_time_confirmed(
     )
     await main_menu(bot_message, state, keyboards, database)
 
+
+@r.message(Command(commands=['menu']))
 @r.message(F.text, F.text.in_(['В главное меню']))
 async def main_menu(
     message: Message,
