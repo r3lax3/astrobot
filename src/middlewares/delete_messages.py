@@ -2,9 +2,9 @@ import logging
 
 from typing import Any, Callable, Dict, Awaitable
 
-from aiogram import BaseMiddleware
+from aiogram import BaseMiddleware, Bot
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import TelegramObject, User
+from aiogram.types import TelegramObject, User, Message
 
 
 class DeleteMessagesMiddleware(BaseMiddleware):
@@ -27,4 +27,11 @@ class DeleteMessagesMiddleware(BaseMiddleware):
                 pass
 
         result = await handler(event, data)
+        if isinstance(event, Message):
+            if not (event.text and event.text.startswith('/')):
+                try:
+                    await bot.delete_message(chat_id=user.id, message_id=event.message_id)
+                except TelegramBadRequest:
+                    pass
         return result
+

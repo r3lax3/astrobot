@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS users  (
 	birth_datetime TEXT,
 	birth_location_id INTEGER,
 	current_location_id INTEGER,
-  use_every_day_prediction INTEGER,
   every_day_prediction_time TEXT
 );
 

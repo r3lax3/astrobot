@@ -13,36 +13,18 @@ from src.models import DateModifier
 class KeyboardManager:
     def __init__(self, database: Database):
         self.database = database
+        
+        # Birth data
 
-        # Получения данных рождения
-
-        self.enter_birth_month = self.build_keyboard_from_structure(
-            split_list(  # returned List[List[Tuple]]
-                [
-                    (month, str(number + 1))  # [ ("Январь", 1), ... ]
-                    for number, month in enumerate(
-                        [
-                            'Январь',
-                            'Февраль',
-                            'Март',
-                            'Апрель',
-                            'Май',
-                            'Июнь',
-                            'Июль',
-                            'Август',
-                            'Сентябрь',
-                            'Октябрь',
-                            'Ноябрь',
-                            'Декабрь'
-                        ]
-                    )
-                ],
-                sublist_len=2
-            ) +
+        self.start = self.build_keyboard_from_structure(
             [
-                [ 'Назад' ]  # button Back under all
-            ]  # Кнопка назад внизу
+                [
+                    ('Ввести данные рождения', 'Ввести данные рождения')
+                ]
+            ],
+            markup_type='inline'
         )
+
         self.choose_time = self.build_keyboard_from_structure(
             [
                 [
@@ -56,17 +38,17 @@ class KeyboardManager:
                 [
                     'Назад'
                 ]
-            ]
+            ],
+            markup_type='inline'
         )
-
-        # Menu
 
         # Main Menu
         self.main_menu = self.build_keyboard_from_structure(
             [
-                ['Прогнозы'],
-                ['Сонник', 'Карта Дня'],
-                ['Общий прогноз', 'Луна в знаке'],
+                ['Прогноз'],
+                ['Сны', 'Карта Дня'],
+                ['Общие прогнозы', 'Луна в знаке'],
+                ['Изменить текущее местоположение'],
                 ['Техническая поддержка']
             ],
             markup_type='reply'
@@ -84,7 +66,7 @@ class KeyboardManager:
         self.predict_completed = self.build_keyboard_from_structure(
             [
                 ['Проверить другую дату'],
-                ['Луна в знаке', 'Общий прогноз'],
+                ['Луна в знаке', 'Общие прогнозы'],
                 ['Назад']
             ],
             markup_type='reply'
@@ -92,14 +74,6 @@ class KeyboardManager:
         self.every_day_prediction_activated = self.build_keyboard_from_structure(
             [
                 ['Изменить время прогноза'],
-                ['Выключить'],
-                ['Назад']
-            ],
-            markup_type='reply'
-        )
-        self.every_day_prediction_deactivated = self.build_keyboard_from_structure(
-            [
-                ['Включить'],
                 ['Назад']
             ],
             markup_type='reply'

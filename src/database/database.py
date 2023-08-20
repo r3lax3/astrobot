@@ -44,25 +44,26 @@ class Database:
 
     # Users table methods
 
-    def add_user(self, user_id, role, birth_datetime, birth_location: Location, current_location: Location):
+    def add_user(self, user_id, role, birth_datetime, birth_location: Location, current_location: Location | None):
         # Add locations
         birth_location_id = self.add_location(birth_location)  # add and return id of row
-        current_location_id = self.add_location(current_location)  # here too
-
+        if current_location is not None:
+            current_location_id = self.add_location(current_location)  # here too
+        else:
+            current_location_id = 0
         self.execute_query(
             query="""
-                INSERT INTO users (
+                INSERT OR REPLACE INTO users (
                     user_id, 
                     role, 
                     birth_datetime, 
                     birth_location_id, 
                     current_location_id, 
-                    use_every_day_prediction, 
                     every_day_prediction_time
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?)
             """,
-            params=(user_id, role, birth_datetime, birth_location_id, current_location_id, 1, "07:30")
+            params=(user_id, role, birth_datetime, birth_location_id, current_location_id, "07:30")
         )
 
     def get_user(self, user_id: int) -> User | None:
@@ -73,7 +74,6 @@ class Database:
             birth_datetime, 
             birth_location_id, 
             current_location_id, 
-            use_every_day_prediction, 
             every_day_prediction_time 
         FROM users
         """
@@ -89,14 +89,14 @@ class Database:
                 birth_datetime, 
                 birth_location_id, 
                 current_location_id
-                use_every_day_prediction, 
                 every_day_prediction_time
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
         """
         self.execute_query(
             query,
             params=(
+                user.user_id,
                 user.role,
                 user.birth_datetime,
                 user.birth_location_id,
@@ -104,14 +104,6 @@ class Database:
                 user.user_id
             )
         )
-
-    def update_user_every_day_prediction_status(self, status: int, user_id: int):
-        query = '''
-            UPDATE users SET use_every_day_prediction=? WHERE user_id=?
-        '''
-        params = (status, user_id)
-
-        self.execute_query(query, params=params)
 
     def update_user_every_day_prediction_time(self, user_id: int, hour: int, minute: int):
         query = '''

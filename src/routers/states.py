@@ -2,17 +2,19 @@ from aiogram.fsm.state import State, StatesGroup
 
 
 class GetBirthData(StatesGroup):
-    year = State()
-    month = State()
-    day = State()
+    date = State()
     time = State()
     location = State()
     confirm = State()
 
 
-class GetCurrentLocationFirstTime(StatesGroup):
+class GetCurrentLocation(StatesGroup):
     location = State()
     confirm = State()
+
+
+class GetCurrentLocationFirstTime(GetCurrentLocation):
+    pass
 
 
 class MainMenu(StatesGroup):

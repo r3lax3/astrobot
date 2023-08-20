@@ -1,20 +1,20 @@
-from aiogram import Router
+from aiogram import Router, F, Bot
 from aiogram.types import (
     Message,
     CallbackQuery,
-    User
+    User,
+    message_id
 )
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 
-from src.filters import F
 from src.routers import messages
-from src.routers.states import GetCurrentLocationFirstTime, MainMenu
+from src.routers.states import GetCurrentLocation, MainMenu
 from src.database import Database
 from src.database.models import Location
 from src.keyboard_manager import KeyboardManager
 
-from src.routers.user.birth import enter_birth_year, r as birth_router
+from src.routers.user.birth import r as birth_router
 from src.routers.user.current_location import r as current_location_router
 from src.routers.user.technical_support import r as technical_support_router
 from src.routers.user.prediction import r as prediction_router
@@ -46,11 +46,9 @@ r.include_routers(
 async def try_start_again_for_sub(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager,
-    database: Database,
-    event_from_user: User
+    keyboards: KeyboardManager
 ):
-    await user_command_start_handler(callback.message, state, keyboards, database, event_from_user)
+    await user_command_start_handler(callback.message, state, keyboards)
 
 
 # @r.message(CommandStart(), IsNotSub())
@@ -69,57 +67,66 @@ async def try_start_again_for_sub(
 @r.message(CommandStart())
 async def user_command_start_handler(
     message: Message,
-    state: FSMContext
-    # keyboards: KeyboardManager,
+    state: FSMContext,
+    keyboards: KeyboardManager,
     # database: Database,
     # event_from_user: User
 ):
     # user = database.get_user(user_id=event_from_user.id)
-    await enter_birth_year(message, state)
 
     # if user is None:
-    #     await enter_birth_year(message, state)
+        await start(message, state, keyboards)
     # else:
-    #     await main_menu(message, state, keyboards, database)
+    #     await main_menu(message, state, keyboards)
 
 
-# confirm
+async def start(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    start_message = await message.answer(
+        messages.start,
+        reply_markup=keyboards.start
+    )
+    await state.update_data(del_messages=[start_message.message_id])
 
-@r.callback_query(GetCurrentLocationFirstTime.confirm, F.data == 'Подтверждаю')
-async def get_current_location_first__time_confirmed(
+
+# Confirm
+@r.callback_query(GetCurrentLocation.confirm, F.data == 'Подтверждаю')
+async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
     database: Database,
-    event_from_user: User
-):
-    await get_current_location_first_time_confirmed(callback.message, state, keyboards, database, event_from_user)
-
-
-async def get_current_location_first_time_confirmed(
-    message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager,
-    database: Database,
-    event_from_user: User
+    event_from_user: User,
+    bot: Bot
 ):
     data = await state.get_data()
 
-    birth_datetime = data['birth_datetime']
-    birth_location = data['birth_location']
     current_location = data['current_location']
 
-    database.add_user(
-        user_id=event_from_user.id,
-        role='user',
-        birth_datetime=birth_datetime,
-        birth_location=Location(id=0, type='birth', **birth_location),
-        current_location=Location(id=0, type='current', **current_location)
-    )
-    bot_message = await message.answer(
-        messages.current_location_added
-    )
-    await main_menu(bot_message, state, keyboards, database)
+    if data['first_time']:
+        birth_datetime = data['birth_datetime']
+        birth_location = data['birth_location']
+
+        database.add_user(
+            user_id=event_from_user.id,
+            role='user',
+            birth_datetime=birth_datetime,
+            birth_location=Location(id=0, type='birth', **birth_location),
+            current_location=Location(id=0, type='current', **current_location)
+        )
+        bot_message = await callback.message.answer(
+            messages.current_location_added
+        )
+    else:
+        database.update_user_current_location(event_from_user.id, Location(id=0, type='current', **current_location))
+        bot_message = await callback.message.answer(
+            messages.current_location_updated
+        )       
+
+    await main_menu(bot_message, state, keyboards, bot)
 
 
 @r.message(Command(commands=['menu']))
@@ -128,7 +135,8 @@ async def main_menu_command(
     state,
     keyboards,
     database,
-    event_from_user
+    event_from_user,
+    bot: Bot
 ):
     user = database.get_user(user_id=event_from_user.id)
 
@@ -136,7 +144,7 @@ async def main_menu_command(
         bot_message = await message.answer('Вы ещё не ввели данные рождения')
         await user_command_start_handler(bot_message, state)
     else:
-        await main_menu(message, state, keyboards, database)
+        await main_menu(message, state, keyboards, bot)
 
 
 @r.message(F.text, F.text.in_(['В главное меню']))
@@ -144,13 +152,29 @@ async def main_menu(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    bot: Bot
 ):
-    await message.answer(
-        messages.main_menu,
-        reply_markup=keyboards.main_menu
-    )
-    await state.update_data(del_messages=[message.message_id])
+    data = await state.get_data()
+
+    main_menu_message_id = data.get('main_menu_message_id', None)
+    if main_menu_message_id is not None:
+        try:
+            await bot.delete_message(chat_id=message.chat.id, message_id=main_menu_message_id)
+        except:
+            pass
+
+    if data['first_time']:
+        main_menu_message = await message.answer(
+            messages.main_menu_first_time,
+            reply_markup=keyboards.main_menu
+        )
+        await state.update_data(first_time=False)
+    else:
+        main_menu_message = await message.answer(
+            messages.main_menu,
+            reply_markup=keyboards.main_menu
+        )
+    await state.update_data(del_messages=[message.message_id], main_menu_message_id=main_menu_message.message_id)
     await state.set_state(MainMenu.choose_action)
 
 
@@ -162,22 +186,25 @@ async def to_main_menu_button_handler(
     state: FSMContext,
     keyboards: KeyboardManager,
     database: Database,
+    bot: Bot,
 ):
-    await main_menu(callback.message, state, keyboards, database)
+    await main_menu(callback.message, state, keyboards, bot)
+
+
 
 
 # Всякая хуйня которую я ещё не написал
-@r.message(F.text, F.text.in_(['Сонник', 'Карта Дня', 'Общий прогноз', 'Луна в знаке']))
+@r.message(F.text, F.text.in_(['Сны', 'Карта Дня', 'Общие прогнозы', 'Луна в знаке']))
 async def not_implemented_error(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    bot: Bot
 ):
     bot_message = await message.answer(
         messages.not_implemented
     )
-    await main_menu(bot_message, state, keyboards, database)
+    await main_menu(bot_message, state, keyboards, bot)
 
 
 # Когда на кнопку которую не нужно жмякают

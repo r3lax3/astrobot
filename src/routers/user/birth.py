@@ -1,9 +1,11 @@
 import calendar
+from dataclasses import replace
 import logging
 
 from datetime import datetime
 
-from aiogram import Router
+from aiogram import Router, F
+from aiogram.client import bot
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
@@ -11,157 +13,90 @@ from aiogram.types import (
     CallbackQuery,
     InputMediaPhoto
 )
+from magic_filter.operations import call
 
 from src import config
-from src.filters import F  # IsNotSub
-from src.keyboard_manager import KeyboardManager
+from src.utils import is_int, get_location_by_coords
 from src.routers import messages
 from src.routers.states import GetBirthData
-from src.utils import is_int, get_location_by_coords
-
+from src.filters import IsDate
+from src.keyboard_manager import KeyboardManager
 
 r = Router()
 
 regexp_time = r"(?:[01]?\d|2[0-3]):[0-5]\d"
 database_datetime_format = config.get('database.datetime_format')
+date_format = config.get('database.date_format')
 guide_send_geopos_images_file_id = config.get('files.how_to_send_geopos_screenshots')
 
 
-# Год
-@r.message(GetBirthData.year, F.text)
-async def get_birth_year_message_handler(
-    message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager
-):
-    if not is_int(message.text) or not (  # Если он ввёл не число, а какую-то хуйню
-        1900 < int(message.text) < datetime.now().year  # Если человеку больше 150-ти или он путешественник из будущего
-    ):
-        await get_birth_year_error(message, state)
-    else:
-        await state.update_data(year=int(message.text))
-        await enter_birth_month(message, state, keyboards)
-
-
-@r.message(GetBirthData.year)
-async def get_birth_year_error(
-    message: Message,
+@r.callback_query(F.data == 'Ввести данные рождения')
+async def enter_birth_date_handler(
+    callback: CallbackQuery,
     state: FSMContext,
 ):
-    bot_message = await message.answer(messages.not_year)
-    await enter_birth_year(bot_message, state)
+    await enter_birth_date(callback.message, state)
 
-
-async def enter_birth_year(
+async def enter_birth_date(
     message: Message,
     state: FSMContext,
 ):
     bot_message = await message.answer(
-        messages.enter_birth_year
+        messages.enter_birth_date
     )
-    await state.update_data(
-        del_messages=[bot_message.message_id]
-    )
-    await state.set_state(GetBirthData.year)
+    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    await state.set_state(GetBirthData.date)
 
 
-# Месяц
-
-@r.callback_query(GetBirthData.month, F.data == 'Назад')
-async def get_birth_month_back(
-    callback: CallbackQuery,
-    state: FSMContext,
-):
-    await enter_birth_year(callback.message, state)
-
-
-@r.callback_query(GetBirthData.month)
-async def get_birth_month(
-    callback: CallbackQuery,
-    state: FSMContext,
-    keyboards: KeyboardManager
-):
-    await state.update_data(month=int(callback.data))
-    logging.info('введи день')
-    await enter_birth_day(callback.message, state, keyboards)
-
-
-async def enter_birth_month(
+@r.message(GetBirthData.date, IsDate())
+async def get_birth_date_handler(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    bot_message = await message.answer(
-        messages.enter_birth_month,
-        reply_markup=keyboards.enter_birth_month
-    )
-    await state.update_data(
-        del_messages=[bot_message.message_id, message.message_id]
-    )
-    await state.set_state(GetBirthData.month)
+    await state.update_data(date=message.text)
+    await get_birth_date(message, state, keyboards)
 
 
-# День
-
-@r.callback_query(GetBirthData.day, Text('Назад'))
-async def get_birth_day_back(
-    callback: CallbackQuery,
-    state: FSMContext,
-    keyboards: KeyboardManager
-):
-    await enter_birth_month(callback.message, state, keyboards)
-
-
-@r.message(GetBirthData.day, F.text)
-async def get_birth_day(
+async def get_birth_date(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    if not is_int(message.text):
-        bot_message = await message.answer(messages.not_day)
-        await state.update_data(del_messages=[bot_message.message_id, message.message_id])
-        return
-
     data = await state.get_data()
+    date_str = data['date']
 
-    year = data['year']
-    month = data['month']
+    birth_date = datetime.strptime(date_str, date_format)
+    now = datetime.now()
 
-    # От нуля до максимальной длины текущего месяца в днях.
-    # calendar.monthrange(year=year, month=month)[1] возвращает числом кол-во дней в месяце.
-    if 0 < int(message.text) <= calendar.monthrange(year=year, month=month)[1]:
-        await state.update_data(day=int(message.text))
+    delta = now - birth_date
+    delta_years = round(delta.days / 365)  # need in validation
+
+    if 0 < delta_years < 100:
         await enter_birth_time(message, state, keyboards)
     else:
-        bot_message = await message.answer(messages.not_day)
-        await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+        await get_birth_date_error(message, state)
 
 
-async def enter_birth_day(
+@r.message(GetBirthData.date)
+async def get_birth_date_error(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
     bot_message = await message.answer(
-        messages.enter_birth_day,
-        reply_markup=keyboards.back
+        '*Текст ошибки, которая возникает когда человек или "родился в будущем" или когда ему больше 100 лет*'
     )
-    await state.update_data(
-        del_messages=[bot_message.message_id, message.message_id]
-    )
-    await state.set_state(GetBirthData.day)
+    await enter_birth_date(bot_message, state)
 
 
 # Время
-
-@r.callback_query(GetBirthData.time, Text('Назад'))
+@r.callback_query(GetBirthData.time, F.data == 'Назад')
 async def get_birth_time_back(
     callback: CallbackQuery,
-    state: FSMContext,
-    keyboards: KeyboardManager
+    state: FSMContext
 ):
-    await enter_birth_day(callback.message, state, keyboards)
+    await enter_birth_date(callback.message, state)
 
 
 @r.message(GetBirthData.time, F.text, F.text.regexp(regexp_time))
@@ -170,21 +105,21 @@ async def get_birth_time(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    hour, minute = map(int, message.text.split(':'))  # из "09:23" в hour=9, minute=23
+    hour, minute = map(int, message.text.split(':'))  # из "09:23" в (9, 23), а дальше просто распаковка
 
-    await state.update_data(hour=hour, minute=minute)
+    await state.update_data(hour=hour, minute=minute, time=message.text)
     await enter_birth_geopos(message, state, keyboards)
 
 
-@r.callback_query(GetBirthData.time)
-async def get_birth_time(
+@r.callback_query(GetBirthData.time, F.data.regexp(regexp_time))
+async def get_birth_time_from_button(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    hour, minute = map(int, callback.data.split(':'))  # из "09:23" в hour=9, minute=23
+    hour, minute = map(int, callback.data.split(':')) 
 
-    await state.update_data(hour=hour, minute=minute)
+    await state.update_data(hour=hour, minute=minute, time=callback.data)
     await enter_birth_geopos(callback.message, state, keyboards)
 
 
@@ -205,11 +140,24 @@ async def enter_birth_time(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    bot_message = await message.answer(
+    data = await state.get_data()
+    date_str = data['date']
+
+    current_data_message = await message.answer(
+        messages.current_birth_data.format(
+            date=date_str,
+            time='___',
+            birth_location='___'
+        )
+    )
+    enter_time_message = await message.answer(
         messages.enter_birth_time,
         reply_markup=keyboards.choose_time
     )
-    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    
+    await state.update_data(
+        del_messages=[current_data_message.message_id, enter_time_message.message_id, message.message_id],
+    )
     await state.set_state(GetBirthData.time)
 
 
@@ -220,6 +168,17 @@ async def enter_birth_geopos(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
+    data = await state.get_data()
+    date_str = data['date']
+    time_str = data['time']
+
+    current_data_message = await message.answer(
+        messages.current_birth_data.format(
+            date=date_str,
+            time=time_str,
+            birth_location='___'
+        )
+    )
     images = await message.answer_media_group(
         [
             InputMediaPhoto(
@@ -241,14 +200,15 @@ async def enter_birth_geopos(
     await state.update_data(
         del_messages=[
             *[msg.message_id for msg in images],
-            message.message_id,
-            bot_message.message_id
+            bot_message.message_id,
+            current_data_message.message_id,
+            message.message_id
         ]
     )
     await state.set_state(GetBirthData.location)
 
 
-@r.callback_query(GetBirthData.location, Text('Назад'))
+@r.callback_query(GetBirthData.location, F.data == 'Назад')
 async def get_birth_geopos_back(
     callback: CallbackQuery,
     state: FSMContext,
@@ -288,7 +248,7 @@ async def get_birth_geopos_error(
 
 # Confirm
 
-@r.callback_query(GetBirthData.confirm, Text('Нет, вернуться назад'))
+@r.callback_query(GetBirthData.confirm, F.data == 'Нет, вернуться назад')
 async def birth_data_not_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
@@ -303,10 +263,11 @@ async def enter_birth_data_confirm(
     keyboards: KeyboardManager
 ):
     data = await state.get_data()
+    date_str = data['date']
+    time_str = data['time']
 
-    year = data['year']
-    month = data['month']
-    day = data['day']
+
+    year, month, day = map(int, date_str.split('-'))
 
     hour = data['hour']
     minute = data['minute']
@@ -322,15 +283,17 @@ async def enter_birth_data_confirm(
         minute=minute
     ).strftime(database_datetime_format)
 
-    bot_message = await message.answer(
+    birth_data_confirm_message = await message.answer(
         messages.birth_data_confirm.format(
-            birth_datetime=birth_datetime,
-            location=get_location_by_coords(longitude, latitude)
+            date=date_str,
+            time=time_str,
+            birth_location=get_location_by_coords(longitude, latitude)
         ),
         reply_markup=keyboards.confirm
     )
+
     await state.update_data(
-        del_messages=[bot_message.message_id, message.message_id],
+        del_messages=[birth_data_confirm_message.message_id, message.message_id],
         birth_datetime=birth_datetime,
         birth_location={
             'latitude': latitude,
