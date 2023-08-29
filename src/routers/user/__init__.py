@@ -2,33 +2,34 @@ from aiogram import Router, F, Bot
 from aiogram.types import (
     Message,
     CallbackQuery,
-    User,
-    message_id
+    User
 )
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 
+from src import config
+
 from src.routers import messages
 from src.routers.states import GetCurrentLocation, MainMenu
-from src.database import Database
-from src.database.models import Location
-from src.keyboard_manager import KeyboardManager
-
 from src.routers.user.birth import r as birth_router
 from src.routers.user.current_location import r as current_location_router
 from src.routers.user.technical_support import r as technical_support_router
 from src.routers.user.prediction import r as prediction_router
 
+from src.database import Database
+from src.database.models import Location
+
+from src.keyboard_manager import KeyboardManager
 
 r = Router()
-
-
 r.include_routers(
     birth_router,
     current_location_router,
     technical_support_router,
     prediction_router
 )
+
+start_video = config.get('files.start_video')
 
 
 # @r.callback_query(Text('Попробовать зайти ещё раз'), IsNotSub())
@@ -85,8 +86,9 @@ async def start(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    start_message = await message.answer(
-        messages.start,
+    start_message = await message.answer_video(
+        video=start_video,
+        caption=messages.start,
         reply_markup=keyboards.start
     )
     await state.update_data(del_messages=[start_message.message_id])
