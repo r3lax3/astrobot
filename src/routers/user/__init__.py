@@ -95,7 +95,7 @@ async def start(
 
 
 # Confirm
-@r.callback_query(GetCurrentLocation.confirm, F.data == 'Подтверждаю')
+@r.callback_query(GetCurrentLocation.confirm, F.data == 'Подтверждаю ☑')
 async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
@@ -196,7 +196,7 @@ async def to_main_menu_button_handler(
 
 
 # Всякая хуйня которую я ещё не написал
-@r.message(F.text, F.text.in_(['Сны', 'Карта Дня', 'Общие прогнозы', 'Луна в знаке']))
+@r.message(F.text, F.text.in_(['💫 Сны', 'Карта Дня', '🌒 Общие прогнозы', '🌗 Луна в знаке']))
 async def not_implemented_error(
     message: Message,
     state: FSMContext,

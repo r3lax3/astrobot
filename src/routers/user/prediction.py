@@ -219,8 +219,8 @@ def filtered_and_formatted_prediction(
     return formatted_text
 
 
-@r.message(F.text, F.text == 'Прогноз')
-@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == 'Назад')
+@r.message(F.text, F.text == '🔮Прогноз')
+@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == '🔙 Назад')
 async def get_prediction(
     message: Message,
     state: FSMContext,
@@ -243,7 +243,7 @@ async def get_prediction(
     await state.set_state(MainMenu.prediction_choose_action)
 
 
-@r.message(MainMenu.prediction_end, F.text, F.text == 'Назад')
+@r.message(MainMenu.prediction_end, F.text, F.text == '🔙 Назад')
 @r.message(MainMenu.prediction_end, F.text, F.text == 'Проверить другую дату')
 async def prediction_on_date_get_prediction_on_another_date(
     message: Message,
@@ -253,7 +253,7 @@ async def prediction_on_date_get_prediction_on_another_date(
     await prediction_on_date(message, state, keyboards)
 
 
-@r.message(MainMenu.prediction_choose_action, F.text, F.text == 'Прогноз на дату')
+@r.message(MainMenu.prediction_choose_action, F.text, F.text == '🕓 Прогноз на дату')
 async def prediction_on_date(
     message: Message,
     state: FSMContext,
@@ -370,8 +370,8 @@ async def update_prediction_date(
     await state.set_state(MainMenu.prediction_choose_date)
 
 
-@r.message(MainMenu.predictin_every_day_enter_time, F.text, F.text == 'Назад')
-@r.message(MainMenu.prediction_choose_action, F.text, F.text == 'Ежедневный прогноз')
+@r.message(MainMenu.predictin_every_day_enter_time, F.text, F.text == '🔙 Назад')
+@r.message(MainMenu.prediction_choose_action, F.text, F.text == '⌚️ Ежедневный прогноз')
 async def every_day_prediction(
     message: Message,
     state: FSMContext,
@@ -390,7 +390,7 @@ async def every_day_prediction(
     await state.set_state(MainMenu.predictin_every_day_choose_action)
 
 
-@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == 'Изменить время прогноза')
+@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == '⌛Изменить время прогноза')
 async def change_prediction_time(
     message: Message,
     keyboards: KeyboardManager,

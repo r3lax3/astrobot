@@ -14,7 +14,7 @@ from src.routers.states import MainMenu
 r = Router()
 
 
-@r.message(Text('Техническая поддержка'))
+@r.message(Text('🔧 Техническая поддержка'))
 async def technical_support_menu(
     message: Message,
     state: FSMContext,

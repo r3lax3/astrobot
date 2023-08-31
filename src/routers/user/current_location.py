@@ -16,7 +16,7 @@ from src.utils import get_location_by_coords
 r = Router()
 
 
-@r.callback_query(GetBirthData.confirm, Text('Подтверждаю'))
+@r.callback_query(GetBirthData.confirm, Text('Подтверждаю ☑'))
 async def get_birth_data_confirm(
     callback: CallbackQuery,
     state: FSMContext,
@@ -30,7 +30,7 @@ async def get_birth_data_confirm(
 
 # location
 
-@r.message(F.text, F.text == 'Изменить текущее местоположение')
+@r.message(F.text, F.text == '✈️Смена часового пояса')
 async def enter_current_location(
     message: Message,
     state: FSMContext,
@@ -92,7 +92,7 @@ async def get_current_location_error(
     await enter_current_location(bot_message, state, keyboards)
 
 
-@r.callback_query(GetCurrentLocation.confirm, Text('Нет, вернуться назад'))
+@r.callback_query(GetCurrentLocation.confirm, Text('Нет, вернуться назад ❎'))
 async def get_current_location_not_confirmed(
     callback: CallbackQuery,
     state: FSMContext,

@@ -91,7 +91,7 @@ async def get_birth_date_error(
 
 
 # Время
-@r.callback_query(GetBirthData.time, F.data == 'Назад')
+@r.callback_query(GetBirthData.time, F.data == '🔙 Назад')
 async def get_birth_time_back(
     callback: CallbackQuery,
     state: FSMContext
@@ -208,7 +208,7 @@ async def enter_birth_geopos(
     await state.set_state(GetBirthData.location)
 
 
-@r.callback_query(GetBirthData.location, F.data == 'Назад')
+@r.callback_query(GetBirthData.location, F.data == '🔙 Назад')
 async def get_birth_geopos_back(
     callback: CallbackQuery,
     state: FSMContext,
@@ -248,7 +248,7 @@ async def get_birth_geopos_error(
 
 # Confirm
 
-@r.callback_query(GetBirthData.confirm, F.data == 'Нет, вернуться назад')
+@r.callback_query(GetBirthData.confirm, F.data == 'Нет, вернуться назад ❎')
 async def birth_data_not_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
