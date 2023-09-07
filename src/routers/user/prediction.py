@@ -259,7 +259,8 @@ async def prediction_on_date(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    await state.update_data(date=dt.date.today().strftime(date_format))
+    today = dt.date.today().strftime(date_format)
+    await state.update_data(date=today, today=today)
     await update_prediction_date(message, state, keyboards)
 
 
@@ -360,9 +361,10 @@ async def update_prediction_date(
     data = await state.get_data()
 
     date = data['date']
+    today = data['today']
     date_message = await message.answer(
         messages.prediction_at_date.format(
-            date=date
+           today=today 
         ),
         reply_markup=keyboards.predict_choose_date(date)
     )
