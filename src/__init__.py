@@ -82,7 +82,7 @@ async def schedule_backup(db, bot, interval_seconds):
 
 async def check_users_and_schedule(scheduler: MyScheduler, database: Database, bot: Bot):
     rows = database.execute_query(
-        query="SELECT user_id, every_day_prediction_time FROM users WHERE use_every_day_prediction = 1",
+        query="SELECT user_id, every_day_prediction_time FROM users",
         fetchall=True
     )
 
