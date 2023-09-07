@@ -266,22 +266,10 @@ async def enter_birth_data_confirm(
     date_str = data['date']
     time_str = data['time']
 
-
-    year, month, day = map(int, date_str.split('-'))
-
-    hour = data['hour']
-    minute = data['minute']
+    datetime_str = f"{date_str} {time_str}"
 
     longitude = data['longitude']
     latitude = data['latitude']
-
-    birth_datetime = datetime(
-        year=year,
-        month=month,
-        day=day,
-        hour=hour,
-        minute=minute
-    ).strftime(database_datetime_format)
 
     birth_data_confirm_message = await message.answer(
         messages.birth_data_confirm.format(
@@ -294,7 +282,7 @@ async def enter_birth_data_confirm(
 
     await state.update_data(
         del_messages=[birth_data_confirm_message.message_id, message.message_id],
-        birth_datetime=birth_datetime,
+        birth_datetime=datetime_str,
         birth_location={
             'latitude': latitude,
             'longitude': longitude
@@ -302,3 +290,4 @@ async def enter_birth_data_confirm(
     )
     await state.set_state(GetBirthData.confirm)
     # Подтверждение перекидывает в логику, которая прописана в src/routers/now_location. Смотри начало файла
+
