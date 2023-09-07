@@ -85,7 +85,7 @@ async def get_birth_date_error(
     keyboards: KeyboardManager
 ):
     bot_message = await message.answer(
-        '*Текст ошибки, которая возникает когда человек или "родился в будущем" или когда ему больше 100 лет*'
+        '*Текст ошибки, которая возникает когда человек или "родился в будущем" или когда ему больше 100 лет. Или когда он ввёл не дату, а что-то другое.*'
     )
     await enter_birth_date(bot_message, state)
 

@@ -1,28 +1,19 @@
-import logging
 import datetime as dt
 import asyncio
-import pytz
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from timezonefinder import TimezoneFinder
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import BufferedInputFile, user 
+from aiogram.types import BufferedInputFile
 from aiogram.fsm.storage.redis import RedisStorage
 
 from src import config
 from src.routers import user_router
-from src.routers.user import current_location
 from src.routers.user.prediction import get_prediction_text
 from src.database import Database
 from src.keyboard_manager import KeyboardManager
 from src.middlewares import DeleteMessagesMiddleware, MediaGroupMiddleware, SkipAdminchatUpdates
-
-
-admin_chat_id: int = config.get('admin_chat.id')
-backup_thread_id: int = config.get('admin_chat.threads.backup')
-database_datetime_format: str = config.get('database.datetime_format')
-date_format: str = config.get('database.date_format')
 
 
 class MyScheduler(AsyncIOScheduler):
@@ -52,8 +43,6 @@ class MyScheduler(AsyncIOScheduler):
         user = database.get_user(user_id=user_id)
         current_location = database.get_location(location_id=user.current_location_id)
         timezone_str = self._get_timezone(longitude=current_location.longitude, latitude=current_location.latitude)
-
-        
         return self.add_job(
             self._send_message, 
             'cron', 
@@ -63,6 +52,12 @@ class MyScheduler(AsyncIOScheduler):
             id=str(user_id),
             timezone=timezone_str
         )
+
+
+admin_chat_id: int = config.get('admin_chat.id')
+backup_thread_id: int = config.get('admin_chat.threads.backup')
+database_datetime_format: str = config.get('database.datetime_format')
+date_format: str = config.get('database.date_format')
 
 
 # Database backup
@@ -87,7 +82,7 @@ async def schedule_backup(db, bot, interval_seconds):
 
 async def check_users_and_schedule(scheduler: MyScheduler, database: Database, bot: Bot):
     rows = database.execute_query(
-        query="SELECT user_id, every_day_prediction_time FROM users",
+        query="SELECT user_id, every_day_prediction_time FROM users WHERE use_every_day_prediction = 1",
         fetchall=True
     )
 

@@ -29,7 +29,7 @@ r.include_routers(
     prediction_router
 )
 
-start_video = config.get('files.start_video')
+start_video: str = config.get('files.start_video')
 
 
 # @r.callback_query(Text('Попробовать зайти ещё раз'), IsNotSub())
