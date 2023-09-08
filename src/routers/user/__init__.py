@@ -76,22 +76,20 @@ async def user_command_start_handler(
     # user = database.get_user(user_id=event_from_user.id)
 
     # if user is None:
-        await start(message, state, keyboards)
+        await start(message, keyboards)
     # else:
     #     await main_menu(message, state, keyboards)
 
 
 async def start(
     message: Message,
-    state: FSMContext,
     keyboards: KeyboardManager
 ):
-    start_message = await message.answer_video(
+    await message.answer_video(
         video=start_video,
         caption=messages.start,
         reply_markup=keyboards.start
     )
-    await state.update_data(del_messages=[start_message.message_id])
 
 
 # Confirm
