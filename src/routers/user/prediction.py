@@ -327,12 +327,10 @@ async def prediction_on_date_get_prediction(
         except exceptions.TelegramBadRequest:
             continue
 
-    bot_message = await callback.message.answer(
+    await callback.message.answer(
         text=text,
         reply_markup=keyboards.predict_completed
     )
-
-    await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(MainMenu.prediction_end)
 
 
