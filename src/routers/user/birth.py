@@ -124,7 +124,7 @@ async def get_birth_time_error(
     keyboards: KeyboardManager,
 ):
     bot_message = await message.answer(
-        messages.not_time
+        messages.not_birth_time
     )
     await enter_birth_time(bot_message, state, keyboards)
 
