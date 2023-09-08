@@ -22,7 +22,8 @@ class KeyboardManager:
                     ('Ввести данные рождения', 'Ввести данные рождения')
                 ]
             ],
-            markup_type='inline'
+            is_inline=True
+
         )
 
         self.choose_time = self.build_keyboard_from_structure(
@@ -39,7 +40,7 @@ class KeyboardManager:
                     '🔙 Назад'
                 ]
             ],
-            markup_type='inline'
+            is_inline=True
         )
 
         # Main Menu
@@ -50,8 +51,7 @@ class KeyboardManager:
                 ['🌒 Общие прогнозы', '🌗 Луна в знаке'],
                 ['✈️Смена часового пояса'],
                 ['🔧 Техническая поддержка']
-            ],
-            markup_type='reply'
+            ]
         )
 
         # Predict
@@ -60,23 +60,20 @@ class KeyboardManager:
                 ['🕓 Прогноз на дату'],
                 ['⌚️ Ежедневный прогноз'],
                 ['В главное меню']
-            ],
-            markup_type='reply'
+            ]
         )
         self.predict_completed = self.build_keyboard_from_structure(
             [
                 ['Проверить другую дату'],
                 ['🌗 Луна в знаке', '🌒 Общие прогнозы'],
                 ['🔙 Назад']
-            ],
-            markup_type='reply'
+            ]
         )
         self.every_day_prediction_activated = self.build_keyboard_from_structure(
             [
                 ['⌛Изменить время прогноза'],
                 ['🔙 Назад']
-            ],
-            markup_type='reply'
+            ]
         )
 
         # No category
@@ -84,24 +81,26 @@ class KeyboardManager:
             [
                 ['Подтверждаю ☑'],
                 ['Нет, вернуться назад ❎']
-            ]
+            ],
+            is_inline=True
         )
         self.back = self.build_keyboard_from_structure(
             [
                 ['🔙 Назад']
-            ]
+            ],
+            is_inline=True
         )
         self.to_main_menu = self.build_keyboard_from_structure(
             [
                 ['В главное меню']
-            ]
+            ],
+            is_inline=True
         )
 
         self.reply_back = self.build_keyboard_from_structure(
             [
                 ['🔙 Назад']
-            ],
-            markup_type='reply'
+            ]
         )
 
 
@@ -129,13 +128,14 @@ class KeyboardManager:
                 [
                     'Назад в меню'
                 ]
-            ]
+            ],
+            is_inline=True
         )
         return markup
 
     @staticmethod
-    def pack_button(item: str | tuple, markup_type: str = 'inline'):
-        if markup_type == 'inline':
+    def pack_button(item: str | tuple, is_inline: bool):
+        if is_inline:
             if isinstance(item, str):
                 return InlineKeyboardButton(text=item, callback_data=item)
             elif isinstance(item, tuple):
@@ -143,7 +143,7 @@ class KeyboardManager:
                     return InlineKeyboardButton(text=item[0], callback_data=item[1])
                 elif isinstance(item[1], CallbackData):
                     return InlineKeyboardButton(text=item[0], callback_data=item[1].pack())
-        elif markup_type == 'reply':
+        else:
             if isinstance(item, str):
                 return KeyboardButton(text=item)
             else:
@@ -152,7 +152,7 @@ class KeyboardManager:
     def build_keyboard_from_structure(
             self, 
             structure: List[List[str | tuple]], 
-            markup_type: str = 'inline'
+            is_inline=False
     ) -> InlineKeyboardMarkup | ReplyKeyboardMarkup:
         """
         Help to construct keyboards in easy-way 
@@ -160,16 +160,14 @@ class KeyboardManager:
 
         keyboard = []
         for row in structure:
-            keyboard_row = [self.pack_button(item, markup_type) for item in row]
+            keyboard_row = [self.pack_button(item, is_inline) for item in row]
             keyboard.append(keyboard_row)
         
         markup: InlineKeyboardMarkup | ReplyKeyboardMarkup
 
-        if markup_type == 'inline':
+        if is_inline:
             markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
-        elif markup_type == 'reply':
-            markup = ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
         else:
-            Exception('Ты хуйню какую-то передал в маркап_тайп. Посмотри ещё раз ')
+            markup = ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
         
         return markup
