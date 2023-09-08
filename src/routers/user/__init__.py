@@ -193,8 +193,6 @@ async def to_main_menu_button_handler(
     await main_menu(callback.message, state, keyboards, bot)
 
 
-
-
 # Всякая хуйня которую я ещё не написал
 @r.message(F.text, F.text.in_(['💫 Сны', 'Карта Дня', '🌒 Общие прогнозы', '🌗 Луна в знаке']))
 async def not_implemented_error(
