@@ -384,7 +384,9 @@ async def every_day_prediction(
     user = database.get_user(event_from_user.id)
 
     bot_message = await message.answer(
-        messages.every_day_prediction_activated.format(send_time=user.every_day_prediction_time),
+        messages.every_day_prediction_activated.format(
+            send_time=user.every_day_prediction_time
+        ),
         reply_markup=keyboards.every_day_prediction_activated
     )
 
@@ -399,7 +401,7 @@ async def change_prediction_time(
     state: FSMContext
 ):
     bot_message = await message.answer(
-        messages.enter_time,
+        messages.enter_every_day_prediction_time,
         reply_markup=keyboards.reply_back
     )
     await state.update_data(del_messages=[bot_message.message_id, message.message_id])
@@ -417,17 +419,29 @@ async def enter_prediction_time(
     bot: Bot
 ):
     hour, minute = map(int, message.text.split(':'))
-    database.update_user_every_day_prediction_time(event_from_user.id, hour=hour, minute=minute)
-    bot_message = await message.answer(
-        messages.prediction_time_changed_successful
+    database.update_user_every_day_prediction_time(
+        event_from_user.id,
+        hour=hour, 
+        minute=minute
     )
+    bot_message = await message.answer(
+        messages.prediction_time_changed_successful.format(
+            time=f'{hour}:{minute}'
+        ),
+        reply_markup=keyboards.every_day_prediction_activated
+    )
+
+    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    await state.set_state(MainMenu.predictin_every_day_choose_action)
 
     if scheduler.get_job(str(event_from_user.id)):
         scheduler.remove_job(str(event_from_user.id))
-        await scheduler.add_send_message_job(event_from_user.id, message.text, database, bot)
-
-    await every_day_prediction(bot_message, state, keyboards, database, event_from_user)
-
+        await scheduler.add_send_message_job(
+            event_from_user.id, 
+            message.text, 
+            database, 
+            bot
+        )
 
 
 # @r.message(F.text, F.text == 'тест')
