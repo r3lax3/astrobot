@@ -211,3 +211,4 @@ async def not_implemented_error(
 @r.callback_query(F.data == 'null')
 async def prediction_on_date_back():
     pass
+

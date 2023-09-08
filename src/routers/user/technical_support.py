@@ -25,3 +25,4 @@ async def technical_support_menu(
     )
     await state.update_data(del_messages=[bot_message.message_id, message.message_id])
     await state.set_state(MainMenu.end_action)
+

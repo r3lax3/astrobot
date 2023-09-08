@@ -171,3 +171,4 @@ class KeyboardManager:
             markup = ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
         
         return markup
+    
