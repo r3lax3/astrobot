@@ -117,16 +117,14 @@ async def get_current_location_confirmed(
             birth_location=Location(id=0, type='birth', **birth_location),
             current_location=Location(id=0, type='current', **current_location)
         )
-        bot_message = await callback.message.answer(
-            messages.current_location_added
-        )
+        await main_menu(callback.message, state, keyboards, bot)
+
     else:
         database.update_user_current_location(event_from_user.id, Location(id=0, type='current', **current_location))
         bot_message = await callback.message.answer(
             messages.current_location_updated
         )       
-
-    await main_menu(bot_message, state, keyboards, bot)
+        await main_menu(bot_message, state, keyboards, bot)
 
 
 @r.message(Command(commands=['menu']))
