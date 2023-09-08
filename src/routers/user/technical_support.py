@@ -5,7 +5,6 @@ from aiogram.types import (
 )
 from aiogram.filters import Text
 
-from src.filters import F  # IsNotSub
 from src.keyboard_manager import KeyboardManager
 from src.routers import messages
 from src.routers.states import MainMenu

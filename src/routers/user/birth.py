@@ -1,22 +1,15 @@
-import calendar
-from dataclasses import replace
-import logging
-
 from datetime import datetime
 
 from aiogram import Router, F
-from aiogram.client import bot
-from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     Message,
     CallbackQuery,
     InputMediaPhoto
 )
-from magic_filter.operations import call
 
 from src import config
-from src.utils import is_int, get_location_by_coords
+from src.utils import get_location_by_coords
 from src.routers import messages
 from src.routers.states import GetBirthData
 from src.filters import IsDate
@@ -36,6 +29,7 @@ async def enter_birth_date_handler(
     state: FSMContext,
 ):
     await enter_birth_date(callback.message, state)
+
 
 async def enter_birth_date(
     message: Message,
