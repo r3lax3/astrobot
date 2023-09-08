@@ -190,7 +190,7 @@ async def to_main_menu_button_handler(
 
 
 # Всякая хуйня которую я ещё не написал
-@r.message(F.text, F.text.in_(['💫 Сны', 'Карта Дня', '🌒 Общие прогнозы', '🌗 Луна в знаке']))
+@r.message(F.text, F.text.in_(['💫 Сны', '🃏 Карта дня', '🌒 Общие прогнозы', '🌗 Луна в знаке']))
 async def not_implemented_error(
     message: Message,
     state: FSMContext,
