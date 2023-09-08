@@ -155,13 +155,7 @@ class KeyboardManager:
             markup_type: str = 'inline'
     ) -> InlineKeyboardMarkup | ReplyKeyboardMarkup:
         """
-        [
-            ['Button1'],
-            [('Button2', 'button2_callback_data'), 'Button3'],
-            ['Button4', 'Button5', 'Button6']
-        ]
-
-        И вот эту всю хуйню оно превращает в кнопки.
+        Help to construct keyboards in easy-way 
         """
 
         keyboard = []
