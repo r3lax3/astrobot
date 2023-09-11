@@ -1,13 +1,38 @@
-import datetime
+from typing import List
 
-from typing import List, Union
+from types import SimpleNamespace
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, message
 from aiogram.filters.callback_data import CallbackData
 
-from src.utils import split_list
 from src.database import Database
 from src.models import DateModifier
+
+
+buttons_text = {
+    'enter_birth_data': "Ввести данные рождения",
+    'night': 'Ночь',
+    'morning': 'Утро',
+    'day': 'День',
+    'evening': 'Вечер',
+    'back': '🔙 Назад',
+    'subscription': '🌟Подписка',
+    'forecast': '🔮Прогноз',
+    'dreams': '💫 Сны',
+    'card_of_the_day': '🃏Карта Дня',
+    'general_forecasts': '🌒 Общие прогнозы',
+    'moon_in_sign': '🌗 Луна в знаке',
+    'change_timezone': '✈️Смена часового пояса',
+    'tech_support': '🔧 Техническая поддержка',
+    'forecast_for_date': '🕓 Прогноз на дату',
+    'daily_forecast': '⌚️ Ежедневный прогноз',
+    'main_menu': 'В главное меню',
+    'check_another_date': 'Проверить другую дату',
+    'change_forecast_time': '⌛Изменить время прогноза',
+    'confirm': 'Подтверждаю ☑',
+    'decline': 'Нет, вернуться назад ❎'
+}
+bt = SimpleNamespace(**buttons_text)
 
 
 class KeyboardManager:
@@ -15,30 +40,20 @@ class KeyboardManager:
         self.database = database
         
         # Birth data
-
         self.start = self.build_keyboard_from_structure(
             [
-                [
-                    ('Ввести данные рождения', 'Ввести данные рождения')
-                ]
+                [bt.enter_birth_data, bt.enter_birth_data]
             ],
             is_inline=True
-
         )
 
         self.choose_time = self.build_keyboard_from_structure(
             [
-                [
-                    ('Ночь', '1:00'),
-                    ('Утро', '7:00')
-                ],
-                [
-                    ('День', '13:00'),
-                    ('Вечер', '19:00')
-                ],
-                [
-                    '🔙 Назад'
-                ]
+                [bt.night, '1:00'],
+                [bt.morning, '7:00'],
+                [bt.day, '13:00'],
+                [bt.evening, '19:00'],
+                [bt.back]
             ],
             is_inline=True
         )
@@ -46,60 +61,60 @@ class KeyboardManager:
         # Main Menu
         self.main_menu = self.build_keyboard_from_structure(
             [
-                ['🌟Подписка', '🔮Прогноз'],
-                ['💫 Сны', '🃏Карта Дня'],
-                ['🌒 Общие прогнозы', '🌗 Луна в знаке'],
-                ['✈️Смена часового пояса'],
-                ['🔧 Техническая поддержка']
+                [bt.subscription, bt.forecast],
+                [bt.dreams, bt.card_of_the_day],
+                [bt.general_forecasts, bt.moon_in_sign],
+                [bt.change_timezone],
+                [bt.tech_support]
             ]
         )
 
         # Predict
         self.predict_choose_action = self.build_keyboard_from_structure(
             [
-                ['🕓 Прогноз на дату'],
-                ['⌚️ Ежедневный прогноз'],
-                ['В главное меню']
+                [bt.forecast_for_date],
+                [bt.daily_forecast],
+                [bt.main_menu]
             ]
         )
         self.predict_completed = self.build_keyboard_from_structure(
             [
-                ['Проверить другую дату'],
-                ['🌗 Луна в знаке', '🌒 Общие прогнозы'],
-                ['🔙 Назад']
+                [bt.check_another_date],
+                [bt.moon_in_sign, bt.general_forecasts],
+                [bt.back]
             ]
         )
         self.every_day_prediction_activated = self.build_keyboard_from_structure(
             [
-                ['⌛Изменить время прогноза'],
-                ['🔙 Назад']
+                [bt.change_forecast_time],
+                [bt.back]
             ]
         )
 
         # No category
         self.confirm = self.build_keyboard_from_structure(
             [
-                ['Подтверждаю ☑'],
-                ['Нет, вернуться назад ❎']
+                [bt.confirm],
+                [bt.decline]
             ],
             is_inline=True
         )
         self.back = self.build_keyboard_from_structure(
             [
-                ['🔙 Назад']
+                [bt.back]
             ],
             is_inline=True
         )
         self.to_main_menu = self.build_keyboard_from_structure(
             [
-                ['В главное меню']
+                [bt.main_menu]
             ],
             is_inline=True
         )
 
         self.reply_back = self.build_keyboard_from_structure(
             [
-                ['🔙 Назад']
+                [bt.back]
             ]
         )
 
