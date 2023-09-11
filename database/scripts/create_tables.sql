@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS users  (
 	birth_datetime TEXT,
 	birth_location_id INTEGER,
 	current_location_id INTEGER,
-  every_day_prediction_time TEXT
+  every_day_prediction_time TEXT,
+  subsription_end_date TEXT
 );
 
 CREATE TABLE IF NOT EXISTS locations (
