@@ -10,27 +10,32 @@ from src.models import DateModifier
 
 
 buttons_text = {
-    'enter_birth_data': "Ввести данные рождения",
-    'night': 'Ночь',
-    'morning': 'Утро',
-    'day': 'День',
-    'evening': 'Вечер',
-    'back': '🔙 Назад',
-    'subscription': '🌟Подписка',
-    'forecast': '🔮Прогноз',
-    'dreams': '💫 Сны',
-    'card_of_the_day': '🃏Карта Дня',
-    'general_forecasts': '🌒 Общие прогнозы',
-    'moon_in_sign': '🌗 Луна в знаке',
-    'change_timezone': '✈️Смена часового пояса',
-    'tech_support': '🔧 Техническая поддержка',
-    'forecast_for_date': '🕓 Прогноз на дату',
-    'daily_forecast': '⌚️ Ежедневный прогноз',
-    'main_menu': 'В главное меню',
-    'check_another_date': 'Проверить другую дату',
+    'enter_birth_data':     'Ввести данные рождения',
+    'night':                'Ночь',
+    'morning':              'Утро',
+    'day':                  'День',
+    'evening':              'Вечер',
+    'back':                 '🔙 Назад',
+    'subscription':         '🌟Подписка',
+    'forecast':             '🔮Прогноз',
+    'dreams':               '💫 Сны',
+    'card_of_the_day':      '🃏Карта Дня',
+    'general_forecasts':    '🌒 Общие прогнозы',
+    'moon_in_sign':         '🌗 Луна в знаке',
+    'change_timezone':      '✈️Смена часового пояса',
+    'tech_support':         '🔧 Техническая поддержка',
+    'forecast_for_date':    '🕓 Прогноз на дату',
+    'daily_forecast':       '⌚️ Ежедневный прогноз',
+    'main_menu':            'В главное меню',
+    'check_another_date':   'Проверить другую дату',
     'change_forecast_time': '⌛Изменить время прогноза',
-    'confirm': 'Подтверждаю ☑',
-    'decline': 'Нет, вернуться назад ❎'
+    'confirm':              'Подтверждаю ☑',
+    'decline':              'Нет, вернуться назад ❎',
+    'one_month':            '1 месяц | 400 рублей',
+    'two_month':            '2 месяца | 750 рублей',
+    'three_month':          '3 месяца | 1050 рублей',
+    'six_month':            '6 месяцев | 2000 рублей',
+    'twelve_month':         '12 месяцев | 3800 рублей'
 }
 bt = SimpleNamespace(**buttons_text) 
 
@@ -88,6 +93,26 @@ class KeyboardManager:
             [
                 [bt.change_forecast_time],
                 [bt.back]
+            ]
+        )
+
+        # Subscription
+        self.subscription = self.build_keyboard_from_structure(
+            [
+                [
+                    (bt.one_month, 'one_month'),
+                    (bt.two_month, 'two_month')
+                ],
+                [
+                    (bt.three_month, 'three_month'),
+                    (bt.six_month, 'six_month')
+                ],
+                [
+                    (bt.twelve_month, 'twelve_month')
+                ],
+                [
+                    (bt.back, bt.back)
+                ]
             ]
         )
 
