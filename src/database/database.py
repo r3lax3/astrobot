@@ -44,7 +44,15 @@ class Database:
 
     # Users table methods
 
-    def add_user(self, user_id, role, birth_datetime, birth_location: Location, current_location: Location | None):
+    def add_user(
+        self, 
+        user_id, 
+        role, 
+        birth_datetime, 
+        birth_location: Location, 
+        current_location: Location | None,
+        subsription_end_date: str
+    ):
         # Add locations
         birth_location_id = self.add_location(birth_location)  # add and return id of row
         if current_location is not None:
@@ -59,11 +67,20 @@ class Database:
                     birth_datetime, 
                     birth_location_id, 
                     current_location_id, 
-                    every_day_prediction_time
+                    every_day_prediction_time,
+                    subsription_end_date
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            params=(user_id, role, birth_datetime, birth_location_id, current_location_id, "07:30")
+            params=(
+                user_id, 
+                role, 
+                birth_datetime, 
+                birth_location_id, 
+                current_location_id, 
+                "07:30", 
+                subsription_end_date
+            )
         )
 
     def get_user(self, user_id: int) -> User | None:
