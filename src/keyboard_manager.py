@@ -121,7 +121,7 @@ class KeyboardManager:
 
     def predict_choose_date(self, date: str) -> InlineKeyboardMarkup:
         markup: InlineKeyboardMarkup = self.build_keyboard_from_structure(
-            structure=[
+            [
                 [
                     (date, "null")
                 ],
