@@ -91,36 +91,13 @@ class Database:
             birth_datetime, 
             birth_location_id, 
             current_location_id, 
-            every_day_prediction_time 
+            every_day_prediction_time,
+            subsription_end_date
         FROM users
         """
         result = self.execute_query(query, kwargs={'user_id': user_id}, fetchone=True)
         if result:
             return User(*result)
-
-    def add_or_update_user(self, user: User):
-        query = """
-            INSERT OR REPLACE INTO users (
-                user_id, 
-                role, 
-                birth_datetime, 
-                birth_location_id, 
-                current_location_id
-                every_day_prediction_time
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-        """
-        self.execute_query(
-            query,
-            params=(
-                user.user_id,
-                user.role,
-                user.birth_datetime,
-                user.birth_location_id,
-                user.current_location_id,
-                user.user_id
-            )
-        )
 
     def update_user_every_day_prediction_time(self, user_id: int, hour: int, minute: int):
         query = '''
