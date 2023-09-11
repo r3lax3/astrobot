@@ -32,7 +32,7 @@ buttons_text = {
     'confirm': 'Подтверждаю ☑',
     'decline': 'Нет, вернуться назад ❎'
 }
-bt = SimpleNamespace(**buttons_text)
+bt = SimpleNamespace(**buttons_text) 
 
 
 class KeyboardManager:
