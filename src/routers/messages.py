@@ -207,3 +207,7 @@ choose_payment_method = '''
 #choose_payment_method
 '''
 
+payment_redirect = '''
+#payment_redirect
+'''
+
