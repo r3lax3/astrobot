@@ -6,7 +6,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 from aiogram.filters.callback_data import CallbackData
 
 from src.database import Database
-from src.models import DateModifier
+from src.models import DateModifier, SubscriptionPeriod
 
 
 buttons_text = {
@@ -35,7 +35,8 @@ buttons_text = {
     'two_month':            '2 месяца | 750 рублей',
     'three_month':          '3 месяца | 1050 рублей',
     'six_month':            '6 месяцев | 2000 рублей',
-    'twelve_month':         '12 месяцев | 3800 рублей'
+    'twelve_month':         '12 месяцев | 3800 рублей',
+    'yookassa':             'YooKassa'
 }
 bt = SimpleNamespace(**buttons_text) 
 
@@ -100,20 +101,32 @@ class KeyboardManager:
         self.subscription = self.build_keyboard_from_structure(
             [
                 [
-                    (bt.one_month, 'one_month'),
-                    (bt.two_month, 'two_month')
+                    (bt.one_month, SubscriptionPeriod(months=1)),
+                    (bt.two_month, SubscriptionPeriod(months=2))
                 ],
                 [
-                    (bt.three_month, 'three_month'),
-                    (bt.six_month, 'six_month')
+                    (bt.three_month, SubscriptionPeriod(months=3)),
+                    (bt.six_month, SubscriptionPeriod(months=6))
                 ],
                 [
-                    (bt.twelve_month, 'twelve_month')
+                    (bt.twelve_month, SubscriptionPeriod(months=12))
                 ],
                 [
                     (bt.back, bt.back)
                 ]
-            ]
+            ],
+            is_inline=True
+        )
+        self.payment_methods = self.build_keyboard_from_structure(
+            [
+                [
+                    bt.yookassa
+                ],
+                [
+                    bt.back
+                ]
+            ],
+            is_inline=True
         )
 
         # No category
@@ -187,7 +200,10 @@ class KeyboardManager:
             if isinstance(item, str):
                 return KeyboardButton(text=item)
             else:
-                Exception(f'Чет несоответствие типов какое-то. Ты написал что тип реплай, а пихаешь туда не str, а {type(item)}')
+                Exception(
+                    'Чет несоответствие типов какое-то. Ты написал что тип реплай,'
+                    f'а пихаешь туда не str, а {type(item)}'
+                )
 
     def build_keyboard_from_structure(
             self, 
@@ -196,7 +212,7 @@ class KeyboardManager:
     ) -> InlineKeyboardMarkup | ReplyKeyboardMarkup:
         """
         Help to construct keyboards in easy-way 
-        """
+        """ 
 
         keyboard = []
         for row in structure:
