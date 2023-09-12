@@ -93,6 +93,9 @@ async def check_users_and_schedule(scheduler: MyScheduler, database: Database, b
 
 async def main():
     bot = Bot(config.get('bot.token'), parse_mode='html')
+    bot_instance = await bot.me()
+    config.set('bot.username', bot_instance.username)
+
     database = Database()
 
     scheduler = MyScheduler()
