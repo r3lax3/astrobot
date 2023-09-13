@@ -156,7 +156,6 @@ class KeyboardManager:
             ]
         )
 
-
     def predict_choose_date(self, date: str) -> InlineKeyboardMarkup:
         markup: InlineKeyboardMarkup = self.build_keyboard_from_structure(
             [
@@ -185,6 +184,18 @@ class KeyboardManager:
             is_inline=True
         )
         return markup
+
+    def payment_redirect(self, redirect_url: str, offer_url: str) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='Оплатить подписку', url=redirect_url)
+                ],
+                [
+                    InlineKeyboardButton(text='Оффер', url=offer_url)
+                ]
+            ]
+        )
 
     @staticmethod
     def pack_button(item: str | tuple, is_inline: bool):
