@@ -1,15 +1,9 @@
-<mxfile host="app.diagrams.net" modified="2023-09-09T18:25:19.638Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36" etag="nwQ_Cwse_pG6QZrctJBb" version="21.7.4" type="github">
+<mxfile host="app.diagrams.net" modified="2023-09-13T13:39:47.253Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36" etag="viTp61Xx9-LcSARdnPcU" version="21.7.4" type="github">
   <diagram name="Страница — 1" id="_6Zt3eJy4w_jYMIKWq48">
-    <mxGraphModel dx="3143" dy="2496" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="759" dy="1230" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="S5M2cROnDglwbuzhFPpm-1" value="" style="points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];shape=mxgraph.bpmn.task;whiteSpace=wrap;rectStyle=rounded;size=10;html=1;container=1;expand=0;collapsible=0;taskMarker=abstract;" vertex="1" parent="1">
-          <mxGeometry x="520" y="-290" width="3760" height="890" as="geometry" />
-        </mxCell>
-        <mxCell id="S5M2cROnDglwbuzhFPpm-2" value="Меню &quot;Подписка&quot;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=120;" vertex="1" parent="S5M2cROnDglwbuzhFPpm-1">
-          <mxGeometry x="1380" width="1000" height="160" as="geometry" />
-        </mxCell>
         <mxCell id="g65OB6galmypLRfpedKR-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="g65OB6galmypLRfpedKR-1" target="g65OB6galmypLRfpedKR-4" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -252,6 +246,44 @@
         </mxCell>
         <mxCell id="g65OB6galmypLRfpedKR-113" value="Повторить платёж" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="3905" y="220" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=1 4;endArrow=none;endFill=0;" edge="1" parent="1" source="OVOjqrZOAJo-4PfDmddq-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2460" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-4" value="" style="html=1;shape=mxgraph.flowchart.annotation_2;align=left;labelPosition=right;" vertex="1" parent="1">
+          <mxGeometry x="2480" y="560" width="20" height="370" as="geometry" />
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-6" value="" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="2500" y="570" width="250" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-7" value="*текст сообщения*" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="2565" y="570" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-8" value="*Красивая картинка*" style="points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];shape=mxgraph.bpmn.task;whiteSpace=wrap;rectStyle=rounded;size=10;html=1;container=1;expand=0;collapsible=0;taskMarker=abstract;" vertex="1" parent="1">
+          <mxGeometry x="2510" y="610" width="230" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-9" value="Заплатить" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="2500" y="827" width="250" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-10" value="Оферта" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="2500" y="860" width="250" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-13" value="Проверить статус платежа" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="2500" y="893" width="250" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-16" value="" style="fontSize=12;html=1;endArrow=block;endFill=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2740" y="871.36" as="sourcePoint" />
+            <mxPoint x="2750" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OVOjqrZOAJo-4PfDmddq-17" value="" style="fontSize=12;html=1;endArrow=block;endFill=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="2740" y="838.36" as="sourcePoint" />
+            <mxPoint x="2750" y="827" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
