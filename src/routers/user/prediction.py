@@ -267,7 +267,7 @@ async def get_prediction(
     )
     now = datetime.utcnow() + timedelta(hours=time_offset)
     current_user_subscription_end_date = datetime.strptime(
-        user.subsription_end_date, 
+        user.subscription_end_date, 
         database_datetime_format
     )
 

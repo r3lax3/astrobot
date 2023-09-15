@@ -115,7 +115,7 @@ async def get_current_location_confirmed(
             birth_datetime=birth_datetime,
             birth_location=Location(id=0, type='birth', **birth_location),
             current_location=Location(id=0, type='current', **current_location),
-            subsription_end_date=test_period_end.strftime(database_datetime_format)
+            subscription_end_date=test_period_end.strftime(database_datetime_format)
         )
         await main_menu(callback.message, state, keyboards, bot)
 

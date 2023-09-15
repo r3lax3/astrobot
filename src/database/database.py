@@ -59,7 +59,7 @@ class Database:
         birth_datetime, 
         birth_location: Location, 
         current_location: Location | None,
-        subsription_end_date: str
+        subscription_end_date: str
     ):
         # Add locations
         birth_location_id = self.add_location(birth_location)  # add and return id of row
@@ -76,7 +76,7 @@ class Database:
                     birth_location_id, 
                     current_location_id, 
                     every_day_prediction_time,
-                    subsription_end_date
+                    subscription_end_date
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
@@ -87,7 +87,7 @@ class Database:
                 birth_location_id, 
                 current_location_id, 
                 "07:30", 
-                subsription_end_date
+                subscription_end_date
             )
         )
 
@@ -100,7 +100,7 @@ class Database:
             birth_location_id, 
             current_location_id, 
             every_day_prediction_time,
-            subsription_end_date
+            subscription_end_date
         FROM users
         """
         result = self.execute_query(query, kwargs={'user_id': user_id}, fetchone=True)
@@ -141,17 +141,17 @@ class Database:
         query = "DELETE FROM users"
         self.execute_query(query, kwargs={'user_id': user_id})
 
-    def update_subsription_end_date(self, user_id: int, period: timedelta) -> None:
+    def update_subscription_end_date(self, user_id: int, period: timedelta) -> None:
         user: User = self.get_user(user_id)
         current_location = self.get_location(user.current_location_id)
 
         time_offset: int = get_timezone_offset(current_location.latitude, current_location.longitude)
 
         now = datetime.utcnow() + timedelta(hours=time_offset)
-        current_user_subscription_end_date = datetime.strptime(user.subsription_end_date, database_datetime_format)
+        current_user_subscription_end_date = datetime.strptime(user.subscription_end_date, database_datetime_format)
         start = max([current_user_subscription_end_date, now])
         
-        query = "UPDATE users SET subsription_end_date = ?"
+        query = "UPDATE users SET subscription_end_date = ?"
         self.execute_query(
             query=query,
             params=(

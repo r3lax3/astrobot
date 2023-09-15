@@ -68,14 +68,14 @@ async def subscription_menu(
     user = database.get_user(user_id=message.from_user.id)
 
     now = datetime.utcnow()
-    user_subsription_end_datetime = datetime.strptime(
-        user.subsription_end_date, database_datetime_format
+    user_subscription_end_datetime = datetime.strptime(
+        user.subscription_end_date, database_datetime_format
     )
     
-    if now > user_subsription_end_datetime:
+    if now > user_subscription_end_datetime:
         bot_message = await message.answer(
             messages.subscription_buy.format(
-                subscription_end_datetime=user_subsription_end_datetime
+                subscription_end_datetime=user_subscription_end_datetime
                 ),
             reply_markup=keyboards.subscription
         )
@@ -188,7 +188,7 @@ async def check_payment_status(
             )
             await get_payment_menu(bot_message, state, keyboards)
         case 'waiting_for_capture':
-            database.update_subsription_end_date(
+            database.update_subscription_end_date(
                 user_id=event_from_user.id, 
                 period=timedelta(
                     days=data['months'] * 30
