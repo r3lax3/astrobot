@@ -20,7 +20,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     _timezone_finder = TimezoneFinder()
 
     def _get_timezone(self, latitude, longitude) -> str:
-        return MyScheduler._timezone_finder.timezone_at(
+        return EveryDayPredictionScheduler._timezone_finder.timezone_at(
             lat=latitude, 
             lng=longitude
         )  # Получаем имя временной зоны
@@ -80,7 +80,7 @@ async def schedule_backup(db, bot, interval_seconds):
         await asyncio.sleep(interval_seconds)
 
 
-async def check_users_and_schedule(scheduler: MyScheduler, database: Database, bot: Bot):
+async def check_users_and_schedule(scheduler: EveryDayPredictionScheduler, database: Database, bot: Bot):
     rows = database.execute_query(
         query="SELECT user_id, every_day_prediction_time FROM users",
         fetchall=True
@@ -98,7 +98,7 @@ async def main():
 
     database = Database()
 
-    scheduler = MyScheduler()
+    scheduler = EveryDayPredictionScheduler()
 
     await check_users_and_schedule(scheduler, database, bot)
 
