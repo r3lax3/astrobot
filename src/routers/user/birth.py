@@ -13,7 +13,7 @@ from src.utils import get_location_by_coords
 from src.routers import messages
 from src.routers.states import GetBirthData
 from src.filters import IsDate
-from src.keyboard_manager import KeyboardManager
+from src.keyboard_manager import KeyboardManager, bt
 
 r = Router()
 
@@ -23,13 +23,17 @@ date_format = config.get('database.date_format')
 guide_send_geopos_images_file_id = config.get('files.how_to_send_geopos_screenshots')
 
 
-@r.callback_query(F.data == 'Ввести данные рождения')
+@r.callback_query(F.data == bt.enter_birth_data)
 async def enter_birth_date_handler(
     callback: CallbackQuery,
     state: FSMContext,
 ):
     await callback.answer()
-    await enter_birth_date(callback.message, state)
+    bot_message = await callback.message.answer(
+        messages.enter_birth_date
+    )
+    await state.update_data(del_messages=[bot_message.message_id])
+    await state.set_state(GetBirthData.date)
 
 
 async def enter_birth_date(
@@ -76,17 +80,16 @@ async def get_birth_date(
 @r.message(GetBirthData.date)
 async def get_birth_date_error(
     message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager
+    state: FSMContext
 ):
     bot_message = await message.answer(
-        '*Текст ошибки, которая возникает когда человек или "родился в будущем" или когда ему больше 100 лет. Или когда он ввёл не дату, а что-то другое.*'
+        messages.not_birth_date
     )
     await enter_birth_date(bot_message, state)
 
 
 # Время
-@r.callback_query(GetBirthData.time, F.data == '🔙 Назад')
+@r.callback_query(GetBirthData.time, F.data == bt.back)
 async def get_birth_time_back(
     callback: CallbackQuery,
     state: FSMContext
