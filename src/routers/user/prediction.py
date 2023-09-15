@@ -301,7 +301,7 @@ async def prediction_on_date_get_prediction_on_another_date(
     await prediction_on_date(message, state, keyboards)
 
 
-@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.forecast_for_date)
+@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.prediction_for_date)
 async def prediction_on_date(
     message: Message,
     state: FSMContext,
@@ -435,7 +435,7 @@ async def update_prediction_date(
 
 
 @r.message(MainMenu.predictin_every_day_enter_time, F.text, F.text == bt.back)
-@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.daily_forecast)
+@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.daily_prediction)
 async def every_day_prediction(
     message: Message,
     state: FSMContext,
@@ -458,7 +458,7 @@ async def every_day_prediction(
     await state.set_state(MainMenu.predictin_every_day_choose_action)
 
 
-@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == bt.change_forecast_time)
+@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == bt.change_prediction_time)
 async def change_prediction_time(
     message: Message,
     keyboards: KeyboardManager,
