@@ -28,6 +28,7 @@ async def enter_birth_date_handler(
     callback: CallbackQuery,
     state: FSMContext,
 ):
+    await callback.answer()
     await enter_birth_date(callback.message, state)
 
 

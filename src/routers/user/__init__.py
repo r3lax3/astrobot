@@ -163,7 +163,7 @@ async def to_main_menu_button_handler(
     state: FSMContext,
     keyboards: KeyboardManager,
     database: Database,
-    bot: Bot,
+    bot: Bot,, bt.enter_birth_data
 ):
     await main_menu(callback.message, state, keyboards, bot)
 
