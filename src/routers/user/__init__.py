@@ -162,8 +162,8 @@ async def to_main_menu_button_handler(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
-    bot: Bot,, bt.enter_birth_data
+    # database: Database,
+    bot: Bot
 ):
     await main_menu(callback.message, state, keyboards, bot)
 
