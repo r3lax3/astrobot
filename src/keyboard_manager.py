@@ -92,7 +92,7 @@ class KeyboardManager:
 
         self.prediction_access_denied = self.build_keyboard_from_structure(
             [
-                [bt.subsription],
+                [bt.subscription],
                 [bt.main_menu]
             ],
             is_inline=True
