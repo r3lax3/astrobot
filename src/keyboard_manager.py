@@ -2,7 +2,7 @@ from typing import List
 
 from types import SimpleNamespace
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, message
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters.callback_data import CallbackData
 
 from src.database import Database
@@ -36,7 +36,13 @@ buttons_text = {
     'three_month':          '3 месяца | 1050 рублей',
     'six_month':            '6 месяцев | 2000 рублей',
     'twelve_month':         '12 месяцев | 3800 рублей',
-    'yookassa':             'YooKassa'
+    'yookassa':             'YooKassa',
+    'offer':                'Оффер',
+    'redirect_button_text': 'Оплатить подписку',
+    'check_payment_status': 'Проверить статус платежа',
+    'try_again':            'Попробовать ещё раз',
+    'back_to_menu':         'Вернуться в меню',
+    'try_in_deal':          'Испытать в деле'
 }
 bt = SimpleNamespace(**buttons_text) 
 
@@ -45,14 +51,16 @@ class KeyboardManager:
     def __init__(self, database: Database):
         self.database = database
         
+
         # Birth data
+        
+
         self.start = self.build_keyboard_from_structure(
             [
                 [bt.enter_birth_data, bt.enter_birth_data]
             ],
             is_inline=True
         )
-
         self.choose_time = self.build_keyboard_from_structure(
             [
                 [bt.night, '1:00'],
@@ -64,7 +72,10 @@ class KeyboardManager:
             is_inline=True
         )
 
+
         # Main Menu
+
+
         self.main_menu = self.build_keyboard_from_structure(
             [
                 [bt.subscription, bt.forecast],
@@ -75,7 +86,17 @@ class KeyboardManager:
             ]
         )
 
-        # Predict
+
+        # Prediction
+        
+
+        self.prediction_access_denied = self.build_keyboard_from_structure(
+            [
+                [bt.subsription],
+                [bt.main_menu]
+            ],
+            is_inline=True
+        )
         self.predict_choose_action = self.build_keyboard_from_structure(
             [
                 [bt.forecast_for_date],
@@ -88,7 +109,8 @@ class KeyboardManager:
                 [bt.check_another_date],
                 [bt.moon_in_sign, bt.general_forecasts],
                 [bt.back]
-            ]
+            ],
+            is_inline=True
         )
         self.every_day_prediction_activated = self.build_keyboard_from_structure(
             [
@@ -97,7 +119,10 @@ class KeyboardManager:
             ]
         )
 
+
         # Subscription
+
+
         self.subscription = self.build_keyboard_from_structure(
             [
                 [
@@ -111,25 +136,36 @@ class KeyboardManager:
                 [
                     (bt.twelve_month, SubscriptionPeriod(months=12))
                 ],
-                [
-                    (bt.back, bt.back)
-                ]
+                [bt.main_menu]
             ],
             is_inline=True
         )
         self.payment_methods = self.build_keyboard_from_structure(
             [
-                [
-                    bt.yookassa
-                ],
-                [
-                    bt.back
-                ]
+                [bt.yookassa],
+                [bt.back]
+            ],
+            is_inline=True
+        )
+        self.payment_succeess = self.build_keyboard_from_structure(
+            [
+                [bt.try_in_deal],
+                [bt.back_to_menu]
+            ],
+            is_inline=True
+        )
+        self.payment_canceled = self.build_keyboard_from_structure(
+            [
+                [bt.try_again],
+                [bt.back_to_menu]
             ],
             is_inline=True
         )
 
+
         # No category
+
+
         self.confirm = self.build_keyboard_from_structure(
             [
                 [bt.confirm],
@@ -157,7 +193,7 @@ class KeyboardManager:
         )
 
     def predict_choose_date(self, date: str) -> InlineKeyboardMarkup:
-        markup: InlineKeyboardMarkup = self.build_keyboard_from_structure(
+        markup = self.build_keyboard_from_structure(
             [
                 [
                     (date, "null")
@@ -174,12 +210,8 @@ class KeyboardManager:
                     ('-10', DateModifier(modifier=-10)),
                     ('-30', DateModifier(modifier=-30)),
                 ],
-                [
-                    'Подтвердить'
-                ],
-                [
-                    'Назад в меню'
-                ]
+                [bt.confirm],
+                [bt.decline]
             ],
             is_inline=True
         )
@@ -189,10 +221,14 @@ class KeyboardManager:
         return InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text='Оплатить подписку', url=redirect_url)
+                    InlineKeyboardButton(text=bt.redirect_button_text, url=redirect_url),
+                    InlineKeyboardButton(text=bt.offer, url=offer_url)
                 ],
                 [
-                    InlineKeyboardButton(text='Оффер', url=offer_url)
+                    InlineKeyboardButton(text=bt.check_payment_status, callback_data=bt.check_payment_status)
+                ],
+                [
+                    InlineKeyboardButton(text=bt.back, callback_data=bt.back)
                 ]
             ]
         )

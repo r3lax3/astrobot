@@ -20,6 +20,8 @@ class GetCurrentLocationFirstTime(GetCurrentLocation):
 class MainMenu(StatesGroup):
     choose_action = State()
 
+    prediction_access_denied = State()
+
     prediction_choose_action = State()
     prediction_choose_date = State()
 
@@ -29,4 +31,11 @@ class MainMenu(StatesGroup):
     prediction_end = State()
 
     end_action = State()
+
+
+class Subscription(StatesGroup):
+    period = State()
+    payment_method = State()
+    check_payment_status = State()
+    payment_ended = State()
 

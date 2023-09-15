@@ -17,11 +17,12 @@ from aiogram.types import (
 )
 
 from src import config
+from src.utils import get_timezone_offset
 from src.models import DateModifier
 from src.routers import messages
-from src.routers.states import MainMenu
+from src.routers.states import MainMenu, Subscription
 from src.database import Database
-from src.keyboard_manager import KeyboardManager
+from src.keyboard_manager import KeyboardManager, bt
 from src.prediction_analys import (
     get_astro_events_from_period,
     User as PredictionUser,
@@ -45,7 +46,8 @@ with open('interpretations.csv', 'r', newline="", encoding="utf-8") as file:
 
 interpretations_dict = {}
 for intrpr in interpretations:
-    interpretations_dict[( intrpr[0], intrpr[1], int(intrpr[2]) )] = intrpr  # key is tuple(transit_planet, natal_planet, event_aspect)
+    # key is tuple(transit_planet, natal_planet, event_aspect)
+    interpretations_dict[( intrpr[0], intrpr[1], int(intrpr[2]) )] = intrpr  
 
 PLANET_ID_TO_NAME_RU = {
     0: "Солнце",
@@ -73,7 +75,9 @@ def formatted_day_events(events: List[AstroEvent]) -> str:
         interpretation = interpretations_dict.get(key)
 
         if not interpretation:
-            logging.info(f'Не обнаружено интерпретации для Т. {transit_planet} - Н. {natal_planet}, {event.aspect}')
+            logging.info(
+                f'Не обнаружено интерпретации для Т. {transit_planet} - Н. {natal_planet}, {event.aspect}'
+            )
             continue
         intrprs.append(f'{interpretation[3]}')
     return '\n'.join(intrprs)
@@ -91,7 +95,9 @@ def formatted_moon_events(events: List[AstroEvent]):
         interpretation = interpretations_dict.get(key)
 
         if not interpretation:
-            logging.info(f'Не обнаружено интерпретации для Т. {transit_planet} - Н. {natal_planet}, {event.aspect}')
+            logging.info(
+                f'Не обнаружено интерпретации для Т. {transit_planet} - Н. {natal_planet}, {event.aspect}'
+            )
             continue
 
         favourably.append(interpretation[4])
@@ -218,33 +224,75 @@ def filtered_and_formatted_prediction(
     # print(f"Время форматирования текста = {p2}")
     return formatted_text
 
+@r.callback_query(Subscription.payment_ended, F.data == bt.try_in_deal)
+async def redirect_from_sub_menu(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    bot: Bot,
+    database: Database
 
-@r.message(F.text, F.text == '🔮Прогноз')
-@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == '🔙 Назад')
+):
+    await get_prediction(callback.message, state, keyboards, bot, database)
+
+
+@r.message(F.text, F.text == bt.prediction)
+@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == bt.back)
 async def get_prediction(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    bot: Bot
+    bot: Bot,
+    database: Database
 ):
     data = await state.get_data()
     main_menu_message_id = data.get('main_menu_message_id', None)
     if main_menu_message_id is not None:
         try:
-            await bot.delete_message(chat_id=message.chat.id, message_id=main_menu_message_id)
+            await bot.delete_message(
+                chat_id=message.chat.id, 
+                message_id=main_menu_message_id
+            )
         except:
             pass
-
-    bot_message = await message.answer(
-        messages.prediction_descr,
-        reply_markup=keyboards.predict_choose_action
+    
+    user = database.get_user(user_id = message.from_user.id)
+    user_current_location = database.get_location(
+        user.current_location_id
     )
-    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
-    await state.set_state(MainMenu.prediction_choose_action)
+
+    time_offset: int = get_timezone_offset(
+        user_current_location.latitude, 
+        user_current_location.longitude
+    )
+    now = datetime.utcnow() + timedelta(hours=time_offset)
+    current_user_subscription_end_date = datetime.strptime(
+        user.subsription_end_date, 
+        database_datetime_format
+    )
+
+    if now < current_user_subscription_end_date: 
+        bot_message = await message.answer(
+            messages.prediction_descr,
+            reply_markup=keyboards.predict_choose_action
+        )
+        await state.update_data(
+            del_messages=[bot_message.message_id, message.message_id]
+        )
+        await state.set_state(MainMenu.prediction_choose_action)
+    else:
+        bot_message = await message.answer(
+            messages.predictin_access_denied,
+            reply_markup=keyboards.prediction_access_denied
+        )
+        await state.update_data(
+            del_messages=[bot_message.message_id, message.message_id]
+        )
+        await state.set_state(MainMenu.prediction_access_denied)
 
 
-@r.message(MainMenu.prediction_end, F.text, F.text == '🔙 Назад')
-@r.message(MainMenu.prediction_end, F.text, F.text == 'Проверить другую дату')
+@r.message(MainMenu.prediction_end, F.text, F.text == bt.back)
+@r.message(MainMenu.prediction_end, F.text, F.text == bt.check_another_date)
 async def prediction_on_date_get_prediction_on_another_date(
     message: Message,
     state: FSMContext,
@@ -253,7 +301,7 @@ async def prediction_on_date_get_prediction_on_another_date(
     await prediction_on_date(message, state, keyboards)
 
 
-@r.message(MainMenu.prediction_choose_action, F.text, F.text == '🕓 Прогноз на дату')
+@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.forecast_for_date)
 async def prediction_on_date(
     message: Message,
     state: FSMContext,
@@ -264,7 +312,7 @@ async def prediction_on_date(
     await update_prediction_date(message, state, keyboards)
 
 
-@r.callback_query(MainMenu.prediction_choose_date, F.data == 'Назад в меню')
+@r.callback_query(MainMenu.prediction_choose_date, F.data == bt.back_to_menu)
 async def prediction_on_date_back(
     callback: CallbackQuery,
     state: FSMContext,
@@ -286,13 +334,27 @@ async def get_prediction_text(
     current_location = database.get_location(user.current_location_id)
 
     prediction_user = PredictionUser(
-        birth_datetime=datetime.strptime(user.birth_datetime, database_datetime_format),
-        birth_location=PredictionLocation(longitude=birth_location.longitude, latitude=birth_location.latitude),
-        current_location=PredictionLocation(longitude=current_location.longitude, latitude=current_location.latitude)
+        birth_datetime=datetime.strptime(
+            user.birth_datetime,
+            database_datetime_format
+        ),
+        birth_location=PredictionLocation(
+            longitude=birth_location.longitude,
+            latitude=birth_location.latitude
+        ),
+        current_location=PredictionLocation(
+            longitude=current_location.longitude,
+            latitude=current_location.latitude
+        )
     )
 
     loop = asyncio.get_running_loop()
-    future = loop.run_in_executor(None, filtered_and_formatted_prediction, prediction_user, target_date)
+    future = loop.run_in_executor(
+        None, 
+        filtered_and_formatted_prediction, 
+        prediction_user, 
+        target_date
+    )
 
     text = await future
     return text
@@ -300,7 +362,7 @@ async def get_prediction_text(
 
 
 # Confirmed
-@r.callback_query(MainMenu.prediction_choose_date, F.data == 'Подтвердить')
+@r.callback_query(MainMenu.prediction_choose_date, F.data == bt.confirm)
 async def prediction_on_date_get_prediction(
     callback: CallbackQuery,
     state: FSMContext,
@@ -345,7 +407,9 @@ async def prediction_update_date_callback_handler(
 
     date = data['date']
     date = datetime.strptime(date, date_format)
-    modified_date = date + timedelta(days=DateModifier.unpack(callback.data).modifier)
+    modified_date = date + timedelta(
+        days=DateModifier.unpack(callback.data).modifier
+    )
 
     await state.update_data(date=modified_date.strftime(date_format))
     await update_prediction_date(callback.message, state, keyboards)
@@ -370,8 +434,8 @@ async def update_prediction_date(
     await state.set_state(MainMenu.prediction_choose_date)
 
 
-@r.message(MainMenu.predictin_every_day_enter_time, F.text, F.text == '🔙 Назад')
-@r.message(MainMenu.prediction_choose_action, F.text, F.text == '⌚️ Ежедневный прогноз')
+@r.message(MainMenu.predictin_every_day_enter_time, F.text, F.text == bt.back)
+@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.daily_forecast)
 async def every_day_prediction(
     message: Message,
     state: FSMContext,
@@ -388,11 +452,13 @@ async def every_day_prediction(
         reply_markup=keyboards.every_day_prediction_activated
     )
 
-    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    await state.update_data(
+        del_messages=[bot_message.message_id, message.message_id]
+    )
     await state.set_state(MainMenu.predictin_every_day_choose_action)
 
 
-@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == '⌛Изменить время прогноза')
+@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == bt.change_forecast_time)
 async def change_prediction_time(
     message: Message,
     keyboards: KeyboardManager,
@@ -402,7 +468,9 @@ async def change_prediction_time(
         messages.enter_every_day_prediction_time,
         reply_markup=keyboards.reply_back
     )
-    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    await state.update_data(
+        del_messages=[bot_message.message_id, message.message_id]
+    )
     await state.set_state(MainMenu.predictin_every_day_enter_time)
 
 
@@ -429,7 +497,9 @@ async def enter_prediction_time(
         reply_markup=keyboards.every_day_prediction_activated
     )
 
-    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    await state.update_data(
+        del_messages=[bot_message.message_id, message.message_id]
+    )
     await state.set_state(MainMenu.predictin_every_day_choose_action)
 
     if scheduler.get_job(str(event_from_user.id)):

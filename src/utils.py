@@ -1,7 +1,32 @@
+from threading import ExceptHookArgs
+import pytz
+
+from datetime import datetime, timedelta
+
+from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
 
 
 geolocator = Nominatim(user_agent="AstroBot")
+
+
+def get_timezone_offset(latitude, longitude) -> int:
+    obj = TimezoneFinder()
+    tz_name = obj.timezone_at(lat=latitude, lng=longitude)  # Получаем имя временной зоны
+    if tz_name:
+        timezone = pytz.timezone(tz_name)
+        offset = timezone.utcoffset(datetime.utcnow())
+        return int(offset.total_seconds() / 3600)  # Преобразуем в часы
+    else:
+        raise Exception(f"Can't get timezone name. {latitude = }, {longitude = }")
+
+
+def convert_to_utc(dt: datetime, offset: int) -> datetime:
+    return dt - timedelta(hours=offset)
+
+
+def convert_from_utc(dt: datetime, offset: int) -> datetime:
+    return dt + timedelta(hours=offset)
 
 
 def is_int(string: str) -> bool:

@@ -1,31 +1,11 @@
 import swisseph as swe
-import pytz
 
 from typing import List, Optional
 from dataclasses import dataclass
 
-from timezonefinder import TimezoneFinder
 from datetime import datetime, timedelta
 
-
-# Мутки с таймзоной
-
-def get_timezone_offset(latitude, longitude):
-    obj = TimezoneFinder()
-    tz_name = obj.timezone_at(lat=latitude, lng=longitude)  # Получаем имя временной зоны
-    if tz_name:
-        timezone = pytz.timezone(tz_name)
-        offset = timezone.utcoffset(datetime.utcnow())
-        return offset.total_seconds() / 3600  # Преобразуем в часы
-    return None
-
-
-def convert_to_utc(dt: datetime, offset: int) -> datetime:
-    return dt - timedelta(hours=offset)
-
-
-def convert_from_utc(dt: datetime, offset: int) -> datetime:
-    return dt + timedelta(hours=offset)
+from src.utils import get_timezone_offset, convert_to_utc, convert_from_utc
 
 
 @dataclass

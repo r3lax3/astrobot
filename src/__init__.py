@@ -16,7 +16,7 @@ from src.keyboard_manager import KeyboardManager
 from src.middlewares import DeleteMessagesMiddleware, MediaGroupMiddleware, SkipAdminchatUpdates
 
 
-class MyScheduler(AsyncIOScheduler):
+class EveryDayPredictionScheduler(AsyncIOScheduler):
     _timezone_finder = TimezoneFinder()
 
     def _get_timezone(self, latitude, longitude) -> str:

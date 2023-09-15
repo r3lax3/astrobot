@@ -1,3 +1,5 @@
+from datetime import date, datetime, timedelta
+
 from aiogram import Router, F, Bot
 from aiogram.types import (
     Message,
@@ -10,7 +12,7 @@ from aiogram.fsm.context import FSMContext
 from src import config
 
 from src.routers import messages
-from src.routers.states import GetCurrentLocation, MainMenu
+from src.routers.states import GetCurrentLocation, MainMenu, Subscription
 from src.routers.user.birth import r as birth_router
 from src.routers.user.current_location import r as current_location_router
 from src.routers.user.technical_support import r as technical_support_router
@@ -19,7 +21,7 @@ from src.routers.user.prediction import r as prediction_router
 from src.database import Database
 from src.database.models import Location
 
-from src.keyboard_manager import KeyboardManager
+from src.keyboard_manager import KeyboardManager, bt
 
 r = Router()
 r.include_routers(
@@ -30,17 +32,7 @@ r.include_routers(
 )
 
 start_video: str = config.get('files.start_video')
-
-
-# @r.callback_query(Text('Попробовать зайти ещё раз'), IsNotSub())
-# async def try_start_again_for_unsub(
-#     callback: CallbackQuery,
-#     state: FSMContext,
-#     keyboards: KeyboardManager,
-#     database: Database,
-#     event_from_user: User
-# ):
-#     await user_command_start_handler_for_unsub(callback.message, state, keyboards, database, event_from_user)
+database_datetime_format: str = config.get('database.datetime_format')
 
 
 @r.callback_query(F.data == 'Попробовать зайти ещё раз')
@@ -52,23 +44,10 @@ async def try_start_again_for_sub(
     await user_command_start_handler(callback.message, state, keyboards)
 
 
-# @r.message(CommandStart(), IsNotSub())
-# async def user_command_start_handler_for_unsub(
-#     message: Message,
-#     state: FSMContext,
-#     keyboards: KeyboardManager,
-#     database: Database,
-#     event_from_user: User
-# ):
-#     ...
-#
-#     check_user_in_database(event_from_user, database)
-
-
 @r.message(CommandStart())
 async def user_command_start_handler(
     message: Message,
-    state: FSMContext,
+    # state: FSMContext,
     keyboards: KeyboardManager,
     # database: Database,
     # event_from_user: User
@@ -109,22 +88,23 @@ async def get_current_location_confirmed(
     if data['first_time']:
         birth_datetime = data['birth_datetime']
         birth_location = data['birth_location']
+        
+        now = datetime.utcnow()
+        test_period_end = now + timedelta(days=3)
 
         database.add_user(
             user_id=event_from_user.id,
             role='user',
             birth_datetime=birth_datetime,
             birth_location=Location(id=0, type='birth', **birth_location),
-            current_location=Location(id=0, type='current', **current_location)
+            current_location=Location(id=0, type='current', **current_location),
+            subsription_end_date=test_period_end.strftime(database_datetime_format)
         )
         await main_menu(callback.message, state, keyboards, bot)
 
     else:
         database.update_user_current_location(event_from_user.id, Location(id=0, type='current', **current_location))
-        bot_message = await callback.message.answer(
-            messages.current_location_updated
-        )       
-        await main_menu(bot_message, state, keyboards, bot)
+        await main_menu(callback.message, state, keyboards, bot)
 
 
 @r.message(Command(commands=['menu']))
@@ -145,7 +125,7 @@ async def main_menu_command(
         await main_menu(message, state, keyboards, bot)
 
 
-@r.message(F.text, F.text.in_(['В главное меню']))
+@r.message(F.text, F.text == bt.main_menu)
 async def main_menu(
     message: Message,
     state: FSMContext,
@@ -176,9 +156,8 @@ async def main_menu(
     await state.set_state(MainMenu.choose_action)
 
 
-@r.callback_query(
-    F.data == 'В главное меню'
-)
+@r.callback_query(F.data == bt.main_menu)
+@r.callback_query(Subscription.period, F.data == bt.back)
 async def to_main_menu_button_handler(
     callback: CallbackQuery,
     state: FSMContext,

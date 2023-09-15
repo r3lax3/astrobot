@@ -1,8 +1,16 @@
+from datetime import timedelta, datetime
 import sqlite3
 
 from typing import Optional, Any
 
+from apscheduler.schedulers.base import timedelta_seconds
+
+from src import config
+from src.utils import get_timezone_offset
 from src.database.models import User, Location, Interpretation
+
+
+database_datetime_format: str = config.get('database.datetime_format')
 
 
 class Database:
@@ -132,6 +140,25 @@ class Database:
     def delete_user(self, user_id: int):
         query = "DELETE FROM users"
         self.execute_query(query, kwargs={'user_id': user_id})
+
+    def update_subsription_end_date(self, user_id: int, period: timedelta) -> None:
+        user: User = self.get_user(user_id)
+        current_location = self.get_location(user.current_location_id)
+
+        time_offset: int = get_timezone_offset(current_location.latitude, current_location.longitude)
+
+        now = datetime.utcnow() + timedelta(hours=time_offset)
+        current_user_subscription_end_date = datetime.strptime(user.subsription_end_date, database_datetime_format)
+        start = max([current_user_subscription_end_date, now])
+        
+        query = "UPDATE users SET subsription_end_date = ?"
+        self.execute_query(
+            query=query,
+            params=(
+                (start + period).strftime(database_datetime_format),
+            )
+        )
+
 
     # Location table methods
 

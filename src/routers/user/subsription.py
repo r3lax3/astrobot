@@ -1,0 +1,179 @@
+from datetime import datetime, timedelta
+import uuid
+
+from yookassa import Configuration, Payment
+
+from aiogram import F, Router
+from aiogram.types import Message, CallbackQuery, User
+from aiogram.fsm.context import FSMContext
+
+from src import config
+from src.models import SubscriptionPeriod
+from src.routers import messages
+from src.routers.states import Subscription, MainMenu
+from src.database import Database
+from src.keyboard_manager import KeyboardManager, bt
+
+
+yookassa_token: str = config.get('payments.yookassa_token')
+yookassa_shop_id: int = config.get('payments.yookassa_shop_id')
+
+database_datetime_format: str = config.get('database.datetime_format')
+
+bot_username: str = config.get('bot.username')
+return_url = f'https://t.me/{bot_username}'
+
+offer_url: str = config.get('payments.offer_url')
+
+Configuration.account_id = yookassa_shop_id
+Configuration.secret_key = yookassa_token
+
+
+r = Router()
+
+
+months_to_rub_price = {
+    1: 400.00,
+    2: 750.00,
+    3: 1050.00,
+    6: 2000.00,
+    12: 3800.00
+}
+months_to_str_months = {
+    1: '1 месяц',
+    2: '2 месяца',
+    3: '3 месяца',
+    6: '6 месяцев',
+    12: '12 месяцев'
+}
+
+@r.callback_query(MainMenu.prediction_access_denied, F.data == bt.subscription)
+@r.callback_query(Subscription.payment_ended, F.data == bt.back_to_menu)
+async def back_to_sub_menu(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database
+):
+    await subscription_menu(callback.message, state, keyboards, database)
+
+
+@r.message(F.text == bt.subscription)
+async def subscription_menu(
+    message: Message, 
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database
+):
+    user = database.get_user(user_id=message.from_user.id)
+    now = datetime.utcnow()
+    user_subsription_end_datetime = datetime.strptime(user.subsription_end_date, database_datetime_format)
+    if now > user_subsription_end_datetime:
+        bot_message = await message.answer(
+            messages.subscription_check_and_buy,
+            reply_markup=keyboards.subscription
+        )
+    else:
+        bot_message = await message.answer(
+            messages.subscription_buy.format(subscription_end_datetime=user_subsription_end_datetime),
+            reply_markup=keyboards.subscription
+        )
+    await state.update_data(del_messages=[bot_message])
+    await state.set_state(Subscription.period)
+
+
+@r.callback_query(Subscription.period)
+async def get_choosed_period(
+    callback: CallbackQuery,
+    state: FSMContext,
+):
+    months = SubscriptionPeriod.unpack(callback.data).months
+    await state.update_data(months=months)
+
+
+@r.callback_query(Subscription.check_payment_status, F.data == bt.back)
+async def choose_payment_method(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    bot_message = await callback.message.answer(
+        messages.choose_payment_method,
+        reply_markup=keyboards.payment_methods
+    )
+    await state.update_data(del_messages=[bot_message])
+    await state.set_state(Subscription.payment_method)
+
+
+@r.callback_query(Subscription.payment_ended, F.data == bt.try_again)
+@r.callback_query(Subscription.payment_method, bt.yookassa)
+async def yookassa_payment(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    data = await state.get_data()
+    price = months_to_rub_price[data['months']]
+    months_str = months_to_str_months[data['months']]
+    payment_id = str(uuid.uuid4())
+    
+    # Ниже я получаю дату автоматической отмены платежа, которая должна быть спустя 6 часов после создания платежа
+    now = datetime.utcnow()
+    payment_auto_cancel_datetime = (now + timedelta(hours=6)).replace(microsecond=0).isoformat() + 'Z' 
+    
+    payment = Payment.create({
+        "amount": {
+            "value": f"{price}",
+            "currency": "RUB"
+        },
+        "confirmation": {
+            "type": "redirect",
+            "return_url": return_url 
+        },
+        "capture": False,
+        "expires_at": payment_auto_cancel_datetime,
+        "description": f"Покупка/Продление подписки на АстроНавигатор, {months_str}"
+    }, payment_id)
+    
+    redirect_url=payment.confirmation.confirmation_url,
+    payment_id=payment_id
+
+    bot_message = await callback.message.answer(
+        messages.payment_redirect,
+        reply_markup=keyboards.payment_redirect(
+            redirect_url=redirect_url,
+            offer_url=offer_url
+        )
+    )
+    await state.update_data(
+        del_messages=[bot_message]
+    )
+    await state.set_state(Subscription.check_payment_status)
+
+
+@r.callback_query(Subscription.check_payment_status, F.data==bt.check_payment_status)
+async def check_payment_status(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User
+):
+    data = await state.get_data()
+    payment_id = data['payment_id']
+
+    payment = Payment.find_one(payment_id)
+    match payment.status:
+        case 'waiting_for_capture':
+            database.update_subsription_end_date(user_id=event_from_user.id, period=timedelta(days=data['months'] * 30))
+            Payment.capture(payment_id)
+            await callback.message.answer(
+                messages.payment_succeess,
+                reply_markup=keyboards.payment_succeess
+            )
+        case 'canceled':
+            await callback.message.answer(
+                messages.payment_canceled,
+                reply_markup=keyboards.payment_canceled
+            )
+
