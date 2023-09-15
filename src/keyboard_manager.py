@@ -57,7 +57,7 @@ class KeyboardManager:
 
         self.start = self.build_keyboard_from_structure(
             [
-                [bt.enter_birth_data, bt.enter_birth_data]
+                [bt.enter_birth_data]
             ],
             is_inline=True
         )
