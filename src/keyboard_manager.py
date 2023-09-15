@@ -10,39 +10,39 @@ from src.models import DateModifier, SubscriptionPeriod
 
 
 buttons_text = {
-    'enter_birth_data':     'Ввести данные рождения',
-    'night':                'Ночь',
-    'morning':              'Утро',
-    'day':                  'День',
-    'evening':              'Вечер',
-    'back':                 '🔙 Назад',
-    'subscription':         '🌟Подписка',
-    'prediction':           '🔮Прогноз',
-    'dreams':               '💫 Сны',
-    'card_of_the_day':      '🃏Карта Дня',
-    'general_forecasts':    '🌒 Общие прогнозы',
-    'moon_in_sign':         '🌗 Луна в знаке',
-    'change_timezone':      '✈️Смена часового пояса',
-    'tech_support':         '🔧 Техническая поддержка',
-    'forecast_for_date':    '🕓 Прогноз на дату',
-    'daily_forecast':       '⌚️ Ежедневный прогноз',
-    'main_menu':            'В главное меню',
-    'check_another_date':   'Проверить другую дату',
-    'change_forecast_time': '⌛Изменить время прогноза',
-    'confirm':              'Подтверждаю ☑',
-    'decline':              'Нет, вернуться назад ❎',
-    'one_month':            '1 месяц | 400 рублей',
-    'two_month':            '2 месяца | 750 рублей',
-    'three_month':          '3 месяца | 1050 рублей',
-    'six_month':            '6 месяцев | 2000 рублей',
-    'twelve_month':         '12 месяцев | 3800 рублей',
-    'yookassa':             'YooKassa',
-    'offer':                'Оффер',
-    'redirect_button_text': 'Оплатить подписку',
-    'check_payment_status': 'Проверить статус платежа',
-    'try_again':            'Попробовать ещё раз',
-    'back_to_menu':         'Вернуться в меню',
-    'try_in_deal':          'Испытать в деле'
+    'enter_birth_data':       'Ввести данные рождения',
+    'night':                  'Ночь',
+    'morning':                'Утро',
+    'day':                    'День',
+    'evening':                'Вечер',
+    'back':                   '🔙 Назад',
+    'subscription':           '🌟Подписка',
+    'prediction':             '🔮Прогноз',
+    'dreams':                 '💫 Сны',
+    'card_of_the_day':        '🃏Карта Дня',
+    'general_predictions':    '🌒 Общие прогнозы',
+    'moon_in_sign':           '🌗 Луна в знаке',
+    'change_timezone':        '✈️Смена часового пояса',
+    'tech_support':           '🔧 Техническая поддержка',
+    'prediction_for_date':    '🕓 Прогноз на дату',
+    'daily_prediction':       '⌚️ Ежедневный прогноз',
+    'main_menu':              'В главное меню',
+    'check_another_date':     'Проверить другую дату',
+    'change_prediction_time': '⌛Изменить время прогноза',
+    'confirm':                'Подтверждаю ☑',
+    'decline':                'Нет, вернуться назад ❎',
+    'one_month':              '1 месяц | 400 рублей',
+    'two_month':              '2 месяца | 750 рублей',
+    'three_month':            '3 месяца | 1050 рублей',
+    'six_month':              '6 месяцев | 2000 рублей',
+    'twelve_month':           '12 месяцев | 3800 рублей',
+    'yookassa':               'YooKassa',
+    'offer':                  'Оффер',
+    'redirect_button_text':   'Оплатить подписку',
+    'check_payment_status':   'Проверить статус платежа',
+    'try_again':              'Попробовать ещё раз',
+    'back_to_menu':           'Вернуться в меню',
+    'try_in_deal':            'Испытать в деле'
 }
 bt = SimpleNamespace(**buttons_text) 
 
@@ -78,9 +78,9 @@ class KeyboardManager:
 
         self.main_menu = self.build_keyboard_from_structure(
             [
-                [bt.subscription, bt.forecast],
+                [bt.subscription, bt.prediction],
                 [bt.dreams, bt.card_of_the_day],
-                [bt.general_forecasts, bt.moon_in_sign],
+                [bt.general_predictions, bt.moon_in_sign],
                 [bt.change_timezone],
                 [bt.tech_support]
             ]
@@ -99,22 +99,22 @@ class KeyboardManager:
         )
         self.predict_choose_action = self.build_keyboard_from_structure(
             [
-                [bt.forecast_for_date],
-                [bt.daily_forecast],
+                [bt.prediction_for_date],
+                [bt.daily_prediction],
                 [bt.main_menu]
             ]
         )
         self.predict_completed = self.build_keyboard_from_structure(
             [
                 [bt.check_another_date],
-                [bt.moon_in_sign, bt.general_forecasts],
+                [bt.moon_in_sign, bt.general_predictions],
                 [bt.back]
             ],
             is_inline=True
         )
         self.every_day_prediction_activated = self.build_keyboard_from_structure(
             [
-                [bt.change_forecast_time],
+                [bt.change_prediction_time],
                 [bt.back]
             ]
         )
