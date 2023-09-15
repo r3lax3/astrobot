@@ -63,10 +63,10 @@ class KeyboardManager:
         )
         self.choose_time = self.build_keyboard_from_structure(
             [
-                [bt.night, '1:00'],
-                [bt.morning, '7:00'],
-                [bt.day, '13:00'],
-                [bt.evening, '19:00'],
+                [(bt.night, '1:00')],
+                [(bt.morning, '7:00')],
+                [(bt.day, '13:00')],
+                [(bt.evening, '19:00')],
                 [bt.back]
             ],
             is_inline=True
