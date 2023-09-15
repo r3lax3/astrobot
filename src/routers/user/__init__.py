@@ -8,6 +8,7 @@ from aiogram.types import (
 )
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
+from aiogram.exceptions import TelegramBadRequest
 
 from src import config
 
@@ -17,6 +18,7 @@ from src.routers.user.birth import r as birth_router
 from src.routers.user.current_location import r as current_location_router
 from src.routers.user.technical_support import r as technical_support_router
 from src.routers.user.prediction import r as prediction_router
+from src.routers.user.subsription import r as subsription_router
 
 from src.database import Database
 from src.database.models import Location
@@ -28,7 +30,8 @@ r.include_routers(
     birth_router,
     current_location_router,
     technical_support_router,
-    prediction_router
+    prediction_router,
+    subsription_router
 )
 
 start_video: str = config.get('files.start_video')
@@ -47,32 +50,46 @@ async def try_start_again_for_sub(
 @r.message(CommandStart())
 async def user_command_start_handler(
     message: Message,
-    # state: FSMContext,
+    state: FSMContext,
     keyboards: KeyboardManager,
+    bot: Bot
     # database: Database,
     # event_from_user: User
 ):
     # user = database.get_user(user_id=event_from_user.id)
 
     # if user is None:
-        await start(message, keyboards)
+        await start(message, keyboards, state, bot)
     # else:
     #     await main_menu(message, state, keyboards)
 
 
 async def start(
     message: Message,
-    keyboards: KeyboardManager
+    keyboards: KeyboardManager,
+    state: FSMContext,
+    bot: Bot
 ):
-    await message.answer_video(
+    data = await state.get_data()
+    
+    start_message_id = data.get('start_message_id', None)
+
+    if start_message_id is not None:  # If it isn't first try to send "/start" to bot
+        try:
+            await bot.delete_message(chat_id=message.from_user.id, message_id=start_message_id)
+        except TelegramBadRequest:
+            pass
+
+    start_message = await message.answer_video(
         video=start_video,
         caption=messages.start,
         reply_markup=keyboards.start
     )
+    await state.update_data(start_message_id=start_message.message_id)
 
 
 # Confirm
-@r.callback_query(GetCurrentLocation.confirm, F.data == 'Подтверждаю ☑')
+@r.callback_query(GetCurrentLocation.confirm, F.data == bt.confirm)
 async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,

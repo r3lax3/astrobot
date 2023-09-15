@@ -58,7 +58,7 @@ async def back_to_sub_menu(
     await subscription_menu(callback.message, state, keyboards, database)
 
 
-@r.message(F.text == bt.subscription)
+@r.message(F.text, F.text == bt.subscription)
 async def subscription_menu(
     message: Message, 
     state: FSMContext,
@@ -66,19 +66,26 @@ async def subscription_menu(
     database: Database
 ):
     user = database.get_user(user_id=message.from_user.id)
+
     now = datetime.utcnow()
-    user_subsription_end_datetime = datetime.strptime(user.subsription_end_date, database_datetime_format)
+    user_subsription_end_datetime = datetime.strptime(
+        user.subsription_end_date, database_datetime_format
+    )
+    
     if now > user_subsription_end_datetime:
         bot_message = await message.answer(
-            messages.subscription_check_and_buy,
+            messages.subscription_buy.format(
+                subscription_end_datetime=user_subsription_end_datetime
+                ),
             reply_markup=keyboards.subscription
         )
     else:
         bot_message = await message.answer(
-            messages.subscription_buy.format(subscription_end_datetime=user_subsription_end_datetime),
+            messages.subscription_check_and_buy,
             reply_markup=keyboards.subscription
         )
-    await state.update_data(del_messages=[bot_message])
+    
+    await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(Subscription.period)
 
 
@@ -101,12 +108,12 @@ async def choose_payment_method(
         messages.choose_payment_method,
         reply_markup=keyboards.payment_methods
     )
-    await state.update_data(del_messages=[bot_message])
+    await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(Subscription.payment_method)
 
 
 @r.callback_query(Subscription.payment_ended, F.data == bt.try_again)
-@r.callback_query(Subscription.payment_method, bt.yookassa)
+@r.callback_query(Subscription.payment_method, F.data == bt.yookassa)
 async def yookassa_payment(
     callback: CallbackQuery,
     state: FSMContext,
@@ -134,10 +141,21 @@ async def yookassa_payment(
         "expires_at": payment_auto_cancel_datetime,
         "description": f"Покупка/Продление подписки на АстроНавигатор, {months_str}"
     }, payment_id)
-    
-    redirect_url=payment.confirmation.confirmation_url,
-    payment_id=payment_id
 
+    await state.update_data(redirect_url=payment.confirmation.confirmation_url, payment_id=payment_id)
+    
+    await get_payment_menu(callback.message, state, keyboards)
+
+
+async def get_payment_menu(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    data = await state.get_data()
+
+    redirect_url=data['redirect_url']
+    
     bot_message = await callback.message.answer(
         messages.payment_redirect,
         reply_markup=keyboards.payment_redirect(
@@ -146,12 +164,12 @@ async def yookassa_payment(
         )
     )
     await state.update_data(
-        del_messages=[bot_message]
+        del_messages=[bot_message.message_id, message.message_id]
     )
     await state.set_state(Subscription.check_payment_status)
 
 
-@r.callback_query(Subscription.check_payment_status, F.data==bt.check_payment_status)
+@r.callback_query(Subscription.check_payment_status, F.data == bt.check_payment_status)
 async def check_payment_status(
     callback: CallbackQuery,
     state: FSMContext,
@@ -164,16 +182,27 @@ async def check_payment_status(
 
     payment = Payment.find_one(payment_id)
     match payment.status:
+        case 'pending':
+            bot_message = await callback.message.answer(
+                messages.payment_is_waiting
+            )
+            await get_payment_menu(bot_message, state, keyboards)
         case 'waiting_for_capture':
-            database.update_subsription_end_date(user_id=event_from_user.id, period=timedelta(days=data['months'] * 30))
+            database.update_subsription_end_date(
+                user_id=event_from_user.id, 
+                period=timedelta(
+                    days=data['months'] * 30
+                )
+            )
             Payment.capture(payment_id)
-            await callback.message.answer(
+            payment_end_message = await callback.message.answer(
                 messages.payment_succeess,
                 reply_markup=keyboards.payment_succeess
             )
         case 'canceled':
-            await callback.message.answer(
+            payment_end_message = await callback.message.answer(
                 messages.payment_canceled,
                 reply_markup=keyboards.payment_canceled
             )
+    await state.update_data(del_messages=[payment_end_message.message_id])
 

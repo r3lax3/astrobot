@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     Message,
@@ -17,7 +17,7 @@ from src.keyboard_manager import KeyboardManager, bt
 
 r = Router()
 
-regexp_time = r"(?:[01]?\d|2[0-3]):[0-5]\d"
+regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"
 database_datetime_format = config.get('database.datetime_format')
 date_format = config.get('database.date_format')
 guide_send_geopos_images_file_id = config.get('files.how_to_send_geopos_screenshots')
@@ -27,8 +27,16 @@ guide_send_geopos_images_file_id = config.get('files.how_to_send_geopos_screensh
 async def enter_birth_date_handler(
     callback: CallbackQuery,
     state: FSMContext,
+    bot: Bot
 ):
-    await callback.answer()
+    data = await state.get_data()
+
+    await bot.edit_message_reply_markup(
+        chat_id=callback.from_user.id, 
+        message_id=data['start_message_id'],
+        reply_markup=None
+    )
+
     bot_message = await callback.message.answer(
         messages.enter_birth_date
     )

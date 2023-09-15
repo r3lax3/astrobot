@@ -207,6 +207,9 @@ choose_payment_method = '''
 payment_redirect = '''
 #payment_redirect
 '''
+payment_is_waiting = '''
+#payment_is_waiting
+'''
 payment_succeess = '''
 #payment_succeess
 '''
