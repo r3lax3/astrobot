@@ -207,13 +207,16 @@ choose_payment_method = '''
 payment_redirect = '''
 #payment_redirect
 '''
-payment_is_waiting = '''
-#payment_is_waiting
+payment_pending = '''
+#payment_pending
 '''
 payment_succeess = '''
 #payment_succeess
 '''
 payment_canceled = '''
 #payment_canceled
+'''
+payment_check_error = '''
+#payment_check_error
 '''
 

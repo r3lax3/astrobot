@@ -33,7 +33,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=0)
 
     if args.create_tables:
         logging.info("Обнаружен параметр create_tables. Начинаю процесс создания таблиц в базе данных")

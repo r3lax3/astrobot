@@ -52,14 +52,13 @@ async def user_command_start_handler(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    bot: Bot
     # database: Database,
     # event_from_user: User
 ):
     # user = database.get_user(user_id=event_from_user.id)
 
     # if user is None:
-        await start(message, keyboards, state, bot)
+        await start(message, keyboards, state)
     # else:
     #     await main_menu(message, state, keyboards)
 
@@ -68,24 +67,13 @@ async def start(
     message: Message,
     keyboards: KeyboardManager,
     state: FSMContext,
-    bot: Bot
 ):
-    data = await state.get_data()
-    
-    start_message_id = data.get('start_message_id', None)
-
-    if start_message_id is not None:  # If it isn't first try to send "/start" to bot
-        try:
-            await bot.delete_message(chat_id=message.from_user.id, message_id=start_message_id)
-        except TelegramBadRequest:
-            pass
-
-    start_message = await message.answer_video(
+    menu_message_id = await message.answer_video(
         video=start_video,
         caption=messages.start,
         reply_markup=keyboards.start
     )
-    await state.update_data(start_message_id=start_message.message_id)
+    await state.update_data(main_menu_message_id=menu_message_id.message_id)
 
 
 # Confirm
@@ -150,12 +138,12 @@ async def main_menu(
     bot: Bot
 ):
     data = await state.get_data()
-
     main_menu_message_id = data.get('main_menu_message_id', None)
+
     if main_menu_message_id is not None:
         try:
             await bot.delete_message(chat_id=message.chat.id, message_id=main_menu_message_id)
-        except:
+        except TelegramBadRequest:
             pass
 
     if data['first_time']:
@@ -164,11 +152,13 @@ async def main_menu(
             reply_markup=keyboards.main_menu
         )
         await state.update_data(first_time=False)
+
     else:
         main_menu_message = await message.answer(
             messages.main_menu,
             reply_markup=keyboards.main_menu
         )
+
     await state.update_data(del_messages=[message.message_id], main_menu_message_id=main_menu_message.message_id)
     await state.set_state(MainMenu.choose_action)
 
@@ -197,10 +187,4 @@ async def not_implemented_error(
         messages.not_implemented
     )
     await main_menu(bot_message, state, keyboards, bot)
-
-
-# Когда на кнопку которую не нужно жмякают
-@r.callback_query(F.data == 'null')
-async def prediction_on_date_back():
-    pass
 

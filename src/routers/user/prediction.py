@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from aiogram.dispatcher.event.handler import CallbackType
 
 import swisseph as swe
 import datetime as dt
@@ -31,9 +32,10 @@ from src.prediction_analys import (
 )
 
 
-regexp_time: str = r"(?:[01]?\d|2[0-3]):[0-5]\d"
+regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"
 database_datetime_format: str = config.get('database.datetime_format')
 date_format: str = config.get('database.date_format')
+time_format = "%H:%M"
 
 days: dict = config.get('constants.days')
 months: dict = config.get('constants.months')
@@ -230,10 +232,10 @@ async def redirect_from_sub_menu(
     state: FSMContext,
     keyboards: KeyboardManager,
     bot: Bot,
-    database: Database
-
+    database: Database,
+    event_from_user: User
 ):
-    await get_prediction(callback.message, state, keyboards, bot, database)
+    await get_prediction(callback.message, state, keyboards, bot, database, event_from_user)
 
 
 @r.message(F.text, F.text == bt.prediction)
@@ -243,20 +245,10 @@ async def get_prediction(
     state: FSMContext,
     keyboards: KeyboardManager,
     bot: Bot,
-    database: Database
+    database: Database,
+    event_from_user: User
 ):
-    data = await state.get_data()
-    main_menu_message_id = data.get('main_menu_message_id', None)
-    if main_menu_message_id is not None:
-        try:
-            await bot.delete_message(
-                chat_id=message.chat.id, 
-                message_id=main_menu_message_id
-            )
-        except:
-            pass
-    
-    user = database.get_user(user_id = message.from_user.id)
+    user = database.get_user(user_id = event_from_user.id)
     user_current_location = database.get_location(
         user.current_location_id
     )
@@ -276,29 +268,28 @@ async def get_prediction(
             messages.prediction_descr,
             reply_markup=keyboards.predict_choose_action
         )
-        await state.update_data(
-            del_messages=[bot_message.message_id, message.message_id]
-        )
         await state.set_state(MainMenu.prediction_choose_action)
     else:
         bot_message = await message.answer(
             messages.predictin_access_denied,
             reply_markup=keyboards.prediction_access_denied
         )
-        await state.update_data(
-            del_messages=[bot_message.message_id, message.message_id]
-        )
         await state.set_state(MainMenu.prediction_access_denied)
 
+    await state.update_data(
+        del_messages=[bot_message.message_id, message.message_id]
+    )
 
-@r.message(MainMenu.prediction_end, F.text, F.text == bt.back)
-@r.message(MainMenu.prediction_end, F.text, F.text == bt.check_another_date)
-async def prediction_on_date_get_prediction_on_another_date(
-    message: Message,
+
+
+@r.callback_query(MainMenu.prediction_end, F.data == bt.check_another_date)
+@r.callback_query(MainMenu.prediction_end, F.data == bt.back)
+async def prediction_ended_back(
+    callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    await prediction_on_date(message, state, keyboards)
+    await prediction_on_date(callback.message, state, keyboards)
 
 
 @r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.prediction_for_date)
@@ -312,14 +303,16 @@ async def prediction_on_date(
     await update_prediction_date(message, state, keyboards)
 
 
-@r.callback_query(MainMenu.prediction_choose_date, F.data == bt.back_to_menu)
+@r.callback_query(MainMenu.prediction_choose_date, F.data == bt.decline)
 async def prediction_on_date_back(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    bot: Bot
+    database: Database,
+    bot: Bot,
+    event_from_user: User
 ):
-    await get_prediction(callback.message, state, keyboards, bot)
+    await get_prediction(callback.message, state, keyboards, bot, database, event_from_user)
 
 
 async def get_prediction_text(
@@ -430,7 +423,7 @@ async def update_prediction_date(
         ),
         reply_markup=keyboards.predict_choose_date(date)
     )
-    await state.update_data(del_messages=[date_message.message_id])
+    await state.update_data(del_messages=[date_message.message_id, message.message_id])
     await state.set_state(MainMenu.prediction_choose_date)
 
 
@@ -492,7 +485,7 @@ async def enter_prediction_time(
     )
     bot_message = await message.answer(
         messages.prediction_time_changed_successful.format(
-            time=f'{hour}:{minute}'
+            time=f"{hour:02}:{minute:02}"
         ),
         reply_markup=keyboards.every_day_prediction_activated
     )

@@ -13,7 +13,12 @@ from src.routers import user_router
 from src.routers.user.prediction import get_prediction_text
 from src.database import Database
 from src.keyboard_manager import KeyboardManager
-from src.middlewares import DeleteMessagesMiddleware, MediaGroupMiddleware, SkipAdminchatUpdates
+from src.middlewares import (
+    DeleteMessagesMiddleware, 
+    MediaGroupMiddleware, 
+    SkipAdminchatUpdates,
+    NullMiddleware
+)
 
 
 class EveryDayPredictionScheduler(AsyncIOScheduler):
@@ -120,12 +125,16 @@ async def main():
     # Album handler
     dp.message.middleware(MediaGroupMiddleware())
 
+    # If null in callback - pass event
+    dp.callback_query.middleware(NullMiddleware())
+
     # One-screen logic
     dp.message.middleware(DeleteMessagesMiddleware())
     dp.callback_query.middleware(DeleteMessagesMiddleware())
 
     # Admin chat updates skip
     dp.message.middleware(SkipAdminchatUpdates())
+
 
     dp.include_router(user_router)
 
