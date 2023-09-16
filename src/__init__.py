@@ -17,7 +17,8 @@ from src.middlewares import (
     DeleteMessagesMiddleware, 
     MediaGroupMiddleware, 
     SkipAdminchatUpdates,
-    NullMiddleware
+    NullMiddleware,
+    PredictionMessageDeleteKeyboardMiddleware
 )
 
 
@@ -134,7 +135,8 @@ async def main():
 
     # Admin chat updates skip
     dp.message.middleware(SkipAdminchatUpdates())
-
+    
+    dp.callback_query.middleware(PredictionMessageDeleteKeyboardMiddleware())
 
     dp.include_router(user_router)
 

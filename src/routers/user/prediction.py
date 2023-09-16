@@ -277,9 +277,9 @@ async def get_prediction(
         await state.set_state(MainMenu.prediction_access_denied)
 
     await state.update_data(
-        del_messages=[bot_message.message_id, message.message_id]
+        del_messages=[bot_message.message_id, message.message_id],
+        time_offset=time_offset
     )
-
 
 
 @r.callback_query(MainMenu.prediction_end, F.data == bt.check_another_date)
@@ -316,11 +316,10 @@ async def prediction_on_date_back(
 
 
 async def get_prediction_text(
-    target_date: str,
+    target_date: datetime,
     database: Database,
     user_id: int
 ) -> str:
-    target_date = datetime.strptime(target_date, date_format)
 
     user = database.get_user(user_id=user_id)
     birth_location = database.get_location(user.birth_location_id)
@@ -364,29 +363,40 @@ async def prediction_on_date_get_prediction(
     event_from_user: User,
     bot: Bot
 ):
-    wait_message = await callback.message.answer(messages.wait)
-    sticker_message = await callback.message.answer_sticker(wait_sticker)
     data = await state.get_data()
 
-    target_date = data['date']
+    user = database.get_user(event_from_user.id)
+    
+    subscription_end_date = datetime.strptime(user.subscription_end_date, database_datetime_format)
+    target_date = datetime.strptime(data['date'], date_format)
 
-    text = await get_prediction_text(
-        target_date=target_date,
-        database=database,
-        user_id=event_from_user.id
-    )
+    if subscription_end_date + timedelta(hours=data['time_offset']) > target_date:
+        wait_message = await callback.message.answer(messages.wait)
+        sticker_message = await callback.message.answer_sticker(wait_sticker)
 
-    for msg in [wait_message, sticker_message]:
-        try:
-            await bot.delete_message(event_from_user.id, msg.message_id)
-        except exceptions.TelegramBadRequest:
-            continue
+        text = await get_prediction_text(
+            target_date=target_date,
+            database=database,
+            user_id=event_from_user.id
+        )
 
-    await callback.message.answer(
-        text=text,
-        reply_markup=keyboards.predict_completed
-    )
-    await state.set_state(MainMenu.prediction_end)
+        for msg in [wait_message, sticker_message]:
+            try:
+                await bot.delete_message(event_from_user.id, msg.message_id)
+            except exceptions.TelegramBadRequest:
+                continue
+
+        prediction_message = await callback.message.answer(
+            text=text,
+            reply_markup=keyboards.predict_completed
+        )
+        await state.update_data(prediction_message_id=prediction_message.message_id)
+        await state.set_state(MainMenu.prediction_end)
+    else:
+        bot_message = await callback.message.answer(
+            messages.not_enough_subscription
+        )
+        await update_prediction_date(bot_message, state, keyboards)
 
 
 # Updating date
@@ -423,8 +433,16 @@ async def update_prediction_date(
         ),
         reply_markup=keyboards.predict_choose_date(date)
     )
-    await state.update_data(del_messages=[date_message.message_id, message.message_id])
+
+    prediction_message_id = data.get('prediction_message_id', None)
+
+    if message.message_id != prediction_message_id:
+        await state.update_data(del_messages=[date_message.message_id, message.message_id])
+    else:
+        await state.update_data(del_messages=[date_message.message_id])
+
     await state.set_state(MainMenu.prediction_choose_date)
+
 
 
 @r.message(MainMenu.predictin_every_day_enter_time, F.text, F.text == bt.back)

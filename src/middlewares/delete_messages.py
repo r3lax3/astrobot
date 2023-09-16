@@ -34,11 +34,7 @@ class DeleteMessagesMiddleware(BaseMiddleware):
 
         result = await handler(event, data)
         if isinstance(event, Message):
-            if not (
-                (event.text and event.text.startswith('/'))
-                or
-                event.message_id == main_menu_message_id
-            ):
+            if not event.text and event.text.startswith('/'):
                 try:
                     await bot.delete_message(chat_id=user.id, message_id=event.message_id)
                 except TelegramBadRequest:
