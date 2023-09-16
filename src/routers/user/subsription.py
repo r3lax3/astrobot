@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
 import uuid
-from netaddr.core import Subscriber
 
 from yookassa import Configuration, Payment
 
 from aiogram import F, Router
-from aiogram.types import KeyboardButtonPollType, Message, CallbackQuery, User
+from aiogram.types import Message, CallbackQuery, User
 from aiogram.fsm.context import FSMContext
 
 from src import config
