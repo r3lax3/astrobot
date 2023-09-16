@@ -6,3 +6,4 @@ pytz
 pyswisseph
 apscheduler
 tomli_w
+yookassa
