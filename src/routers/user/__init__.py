@@ -52,13 +52,14 @@ async def user_command_start_handler(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
+    bot: Bot
     # database: Database,
     # event_from_user: User
 ):
     # user = database.get_user(user_id=event_from_user.id)
 
     # if user is None:
-        await start(message, keyboards, state)
+        await start(message, keyboards, state, bot)
     # else:
     #     await main_menu(message, state, keyboards)
 
@@ -67,7 +68,20 @@ async def start(
     message: Message,
     keyboards: KeyboardManager,
     state: FSMContext,
+    bot: Bot
 ):
+    data = await state.get_data()
+
+    start_message_id = data.get('start_message_id', None)
+    if start_message_id is not None:
+        try:
+            await bot.delete_message(
+                chat_id=message.chat.id,
+                message_id=start_message_id
+            )
+        except TelegramBadRequest:
+            pass
+    
     start_message = await message.answer_video(
         video=start_video,
         caption=messages.start,
