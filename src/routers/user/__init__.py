@@ -68,12 +68,15 @@ async def start(
     keyboards: KeyboardManager,
     state: FSMContext,
 ):
-    menu_message_id = await message.answer_video(
+    start_message = await message.answer_video(
         video=start_video,
         caption=messages.start,
         reply_markup=keyboards.start
     )
-    await state.update_data(main_menu_message_id=menu_message_id.message_id)
+    await state.update_data(
+        main_menu_message_id=start_message.message_id, 
+        start_message_id=start_message.message_id
+    )
 
 
 # Confirm
