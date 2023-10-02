@@ -40,7 +40,11 @@ async def enter_birth_date_handler(
     bot_message = await callback.message.answer(
         messages.enter_birth_date
     )
-    await state.update_data(del_messages=[bot_message.message_id])
+    await state.update_data(
+        del_messages=[
+            bot_message.message_id
+        ]
+    )
     await state.set_state(GetBirthData.date)
 
 
@@ -51,7 +55,12 @@ async def enter_birth_date(
     bot_message = await message.answer(
         messages.enter_birth_date
     )
-    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+    await state.update_data(
+        del_messages=[
+            bot_message.message_id, 
+            message.message_id
+        ]
+    )
     await state.set_state(GetBirthData.date)
 
 
@@ -111,9 +120,13 @@ async def get_birth_time(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    hour, minute = map(int, message.text.split(':'))  # из "09:23" в (9, 23), а дальше просто распаковка
-
-    await state.update_data(hour=hour, minute=minute, time=message.text)
+    # из "09:23" в (9, 23), а дальше просто распаковка
+    hour, minute = map(int, message.text.split(':'))  
+    await state.update_data(
+        hour=hour, 
+        minute=minute, 
+        time=message.text
+    )
     await enter_birth_geopos(message, state, keyboards)
 
 
@@ -125,7 +138,11 @@ async def get_birth_time_from_button(
 ):
     hour, minute = map(int, callback.data.split(':')) 
 
-    await state.update_data(hour=hour, minute=minute, time=callback.data)
+    await state.update_data(
+        hour=hour, 
+        minute=minute, 
+        time=callback.data
+    )
     await enter_birth_geopos(callback.message, state, keyboards)
 
 
@@ -162,7 +179,11 @@ async def enter_birth_time(
     )
     
     await state.update_data(
-        del_messages=[current_data_message.message_id, enter_time_message.message_id, message.message_id],
+        del_messages=[
+            current_data_message.message_id, 
+            enter_time_message.message_id, 
+            message.message_id
+        ],
     )
     await state.set_state(GetBirthData.time)
 
@@ -287,7 +308,10 @@ async def enter_birth_data_confirm(
     )
 
     await state.update_data(
-        del_messages=[birth_data_confirm_message.message_id, message.message_id],
+        del_messages=[
+            birth_data_confirm_message.message_id, 
+            message.message_id
+        ],
         birth_datetime=datetime_str,
         birth_location={
             'latitude': latitude,
@@ -295,5 +319,6 @@ async def enter_birth_data_confirm(
         }
     )
     await state.set_state(GetBirthData.confirm)
-    # Подтверждение перекидывает в логику, которая прописана в src/routers/now_location. Смотри начало файла
+    # Подтверждение перекидывает в логику, 
+    # которая прописана в src/routers/now_location. Смотри начало файла
 
