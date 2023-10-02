@@ -1,11 +1,12 @@
-CREATE TABLE IF NOT EXISTS users  (
+CREATE TABLE IF NOT EXISTS users (
 	user_id	BIGINT PRIMARY KEY,
 	role VARCHAR(10),
 	birth_datetime TEXT,
 	birth_location_id INTEGER,
 	current_location_id INTEGER,
   every_day_prediction_time TEXT,
-  subscription_end_date TEXT
+  subscription_end_date TEXT,
+  gender TEXT
 );
 
 CREATE TABLE IF NOT EXISTS locations (
