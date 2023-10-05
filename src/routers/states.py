@@ -1,4 +1,4 @@
-from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.state import State, StatesGroup, StatesGroupMeta
 
 
 class GetBirthData(StatesGroup):
@@ -8,13 +8,14 @@ class GetBirthData(StatesGroup):
     confirm = State()
 
 
-class GetCurrentLocation(StatesGroup):
-    location = State()
-    confirm = State()
+class ProfileSettings(StatesGroup):
+    choose_option = State()
 
+    get_current_location = State()
+    location_confirm = State()
 
-class GetCurrentLocationFirstTime(GetCurrentLocation):
-    pass
+    choose_gender = State()
+    
 
 
 class MainMenu(StatesGroup):

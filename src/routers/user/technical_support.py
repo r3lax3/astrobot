@@ -1,19 +1,15 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    Message
-)
-from aiogram.filters import Text
+from aiogram.types import Message
 
-from src.keyboard_manager import KeyboardManager
 from src.routers import messages
 from src.routers.states import MainMenu
-
+from src.keyboard_manager import KeyboardManager, bt
 
 r = Router()
 
 
-@r.message(Text('🔧 Техническая поддержка'))
+@r.message(F.text == bt.tech_support)
 async def technical_support_menu(
     message: Message,
     state: FSMContext,
@@ -23,6 +19,7 @@ async def technical_support_menu(
         messages.technical_support,
         reply_markup=keyboards.to_main_menu
     )
-    await state.update_data(del_messages=[bot_message.message_id, message.message_id])
+
+    await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(MainMenu.end_action)
 

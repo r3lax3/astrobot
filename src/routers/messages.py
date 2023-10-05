@@ -39,6 +39,24 @@ current_birth_data ='''
 '''
 
 
+# Profile settings
+
+
+gender_not_choosen='''
+#gender_not_choosen
+
+"сообщение, которое показывается когда пользователь запускает меню Совместимость, но пол ещё не указал, и снизу идёт переход в настройки профиля"
+'''
+choose_gender = '''
+#choose_gender
+
+Ваш пол: {gender}
+'''
+profile_settings = '''
+#profile_settings
+'''
+
+
 # Not ...
 
 

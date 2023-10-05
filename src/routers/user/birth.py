@@ -15,6 +15,7 @@ from src.routers.states import GetBirthData
 from src.filters import IsDate
 from src.keyboard_manager import KeyboardManager, bt
 
+
 r = Router()
 
 regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"

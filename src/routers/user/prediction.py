@@ -320,7 +320,6 @@ async def get_prediction_text(
     database: Database,
     user_id: int
 ) -> str:
-
     user = database.get_user(user_id=user_id)
     birth_location = database.get_location(user.birth_location_id)
     current_location = database.get_location(user.current_location_id)

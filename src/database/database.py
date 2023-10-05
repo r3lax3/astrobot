@@ -59,7 +59,8 @@ class Database:
         birth_datetime, 
         birth_location: Location, 
         current_location: Location | None,
-        subscription_end_date: str
+        subscription_end_date: str,
+        gender: str
     ):
         # Add locations
         birth_location_id = self.add_location(birth_location)  # add and return id of row
@@ -76,9 +77,10 @@ class Database:
                     birth_location_id, 
                     current_location_id, 
                     every_day_prediction_time,
-                    subscription_end_date
+                    subscription_end_date,
+                    gender
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             params=(
                 user_id, 
@@ -87,7 +89,8 @@ class Database:
                 birth_location_id, 
                 current_location_id, 
                 "07:30", 
-                subscription_end_date
+                subscription_end_date,
+                gender
             )
         )
 
@@ -100,7 +103,8 @@ class Database:
             birth_location_id, 
             current_location_id, 
             every_day_prediction_time,
-            subscription_end_date
+            subscription_end_date,
+            gender
         FROM users
         """
         result = self.execute_query(query, kwargs={'user_id': user_id}, fetchone=True)
@@ -108,9 +112,7 @@ class Database:
             return User(*result)
 
     def update_user_every_day_prediction_time(self, user_id: int, hour: int, minute: int):
-        query = '''
-            UPDATE users SET every_day_prediction_time=? WHERE user_id=?
-        '''
+        query = 'UPDATE users SET every_day_prediction_time=? WHERE user_id=?'
 
         time = "{:02d}:{:02d}".format(hour, minute)
         params = (time, user_id)
@@ -156,7 +158,18 @@ class Database:
             query=query,
             params=(
                 (start + period).strftime(database_datetime_format),
-            )
+            ),
+            kwargs={'user_id': user_id}
+        )
+    
+    def change_user_gender(self, gender: str | None, user_id: int):
+        query = 'UPDATE users SET gender = ?'
+        self.execute_query(
+            query=query,
+            params=(
+                (gender,)
+            ),
+            kwargs={'user_id': user_id}
         )
 
 

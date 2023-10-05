@@ -7,6 +7,7 @@ from aiogram.filters.callback_data import CallbackData
 
 from src.database import Database
 from src.models import DateModifier, SubscriptionPeriod
+from src.utils import is_int
 
 
 buttons_text = {
@@ -42,8 +43,14 @@ buttons_text = {
     'check_payment_status':   'Проверить статус платежа',
     'try_again':              'Попробовать ещё раз',
     'back_to_menu':           'Вернуться в меню',
-    'try_in_deal':            'Испытать в деле'
+    'try_in_deal':            'Испытать в деле',
+    'compatibility':          'Совместимость',
+    'male':                   'Мужчина',
+    'female':                 'Женщина',
+    'profile_settings':       'Настройки Профиля',
+    'gender':                 'Пол'
 }
+
 bt = SimpleNamespace(**buttons_text) 
 
 
@@ -73,6 +80,18 @@ class KeyboardManager:
         )
 
 
+        # User info
+
+
+        self.get_gender = self.build_keyboard_from_structure(
+            [
+                [bt.male, bt.female],
+                [bt.back]
+            ],
+            is_inline=True
+        )
+
+
         # Main Menu
 
 
@@ -81,8 +100,8 @@ class KeyboardManager:
                 [bt.subscription, bt.prediction],
                 [bt.dreams, bt.card_of_the_day],
                 [bt.general_predictions, bt.moon_in_sign],
-                [bt.change_timezone],
-                [bt.tech_support]
+                [bt.compatibility],
+                [bt.profile_settings, bt.tech_support]
             ]
         )
 
@@ -158,6 +177,38 @@ class KeyboardManager:
             [
                 [bt.try_again],
                 [bt.back_to_menu]
+            ],
+            is_inline=True
+        )
+
+
+        # Compatibility
+
+
+        self.gender_not_choosen = self.build_keyboard_from_structure(
+            [
+                [bt.profile_settings],
+                [bt.main_menu]
+            ],
+            is_inline=True
+        )
+
+
+        # Profile Settings
+
+
+        self.profile_settings = self.build_keyboard_from_structure(
+            [
+                [bt.],
+                [bt.change_timezone],
+                [bt.main_menu]
+            ],
+            is_inline=True
+        )
+        self.choose_gender = self.build_keyboard_from_structure(
+            [
+                [bt.male, bt.female],
+                [bt.back]
             ],
             is_inline=True
         )

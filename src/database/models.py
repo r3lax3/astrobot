@@ -10,6 +10,7 @@ class User:
     current_location_id: int
     every_day_prediction_time: str
     subscription_end_date: str
+    gender: str | None
 
 
 @dataclass

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from aiogram import Router, F, Bot
 from aiogram.types import (
@@ -11,27 +11,30 @@ from aiogram.fsm.context import FSMContext
 from aiogram.exceptions import TelegramBadRequest
 
 from src import config
-
+from src.scheduler import EveryDayPredictionScheduler
 from src.routers import messages
-from src.routers.states import GetCurrentLocation, MainMenu, Subscription
+from src.routers.states import ProfileSettings, MainMenu, Subscription
 from src.routers.user.birth import r as birth_router
-from src.routers.user.current_location import r as current_location_router
 from src.routers.user.technical_support import r as technical_support_router
 from src.routers.user.prediction import r as prediction_router
 from src.routers.user.subsription import r as subsription_router
+from src.routers.user.compatibility import r as compatibility_router
+from src.routers.user.profile_settings import r as profile_settings_router
 
 from src.database import Database
 from src.database.models import Location
 
 from src.keyboard_manager import KeyboardManager, bt
 
+
 r = Router()
 r.include_routers(
     birth_router,
-    current_location_router,
+    profile_settings_router,
     technical_support_router,
     prediction_router,
-    subsription_router
+    subsription_router,
+    compatibility_router
 )
 
 start_video: str = config.get('files.start_video')
@@ -94,17 +97,17 @@ async def start(
 
 
 # Confirm
-@r.callback_query(GetCurrentLocation.confirm, F.data == bt.confirm)
+@r.callback_query(ProfileSettings.location_confirm, F.data == bt.confirm)
 async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
     database: Database,
     event_from_user: User,
-    bot: Bot
+    bot: Bot,
+    scheduler: EveryDayPredictionScheduler
 ):
     data = await state.get_data()
-
     current_location = data['current_location']
 
     if data['first_time']:
@@ -120,28 +123,42 @@ async def get_current_location_confirmed(
             birth_datetime=birth_datetime,
             birth_location=Location(id=0, type='birth', **birth_location),
             current_location=Location(id=0, type='current', **current_location),
-            subscription_end_date=test_period_end.strftime(database_datetime_format)
+            subscription_end_date=test_period_end.strftime(database_datetime_format),
+            gender=None
+        )
+        await scheduler.add_send_message_job(
+            user_id=event_from_user.id, 
+            database=database,
+            bot=bot
         )
         await main_menu(callback.message, state, keyboards, bot)
 
     else:
-        database.update_user_current_location(event_from_user.id, Location(id=0, type='current', **current_location))
+        database.update_user_current_location(
+            event_from_user.id, 
+            Location(id=0, type='current', **current_location)
+        )
+        await scheduler.edit_send_message_job(
+            user_id=event_from_user.id, 
+            database=database,
+            bot=bot
+        )
         await main_menu(callback.message, state, keyboards, bot)
 
 
 @r.message(Command(commands=['menu']))
 async def main_menu_command(
-    message,
-    state,
-    keyboards,
-    database,
-    event_from_user,
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User,
     bot: Bot
 ):
     user = database.get_user(user_id=event_from_user.id)
 
     if user is None:
-        bot_message = await message.answer('Вы ещё не ввели данные рождения')
+        bot_message = await message.answer('Вы ещё не ввели данные рождения.')
         await user_command_start_handler(bot_message, state)
     else:
         await main_menu(message, state, keyboards, bot)
