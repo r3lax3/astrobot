@@ -4,6 +4,7 @@ from aiogram.types import (
     Message,
     CallbackQuery
 )
+from magic_filter.operations import call
 
 from src.utils import get_location_by_coords
 from src.routers import messages
@@ -11,6 +12,11 @@ from src.routers.states import ProfileSettings, GetBirthData, GetCurrentLocation
 from src.database import Database
 from src.keyboard_manager import KeyboardManager, bt
 
+
+from_gender_to_text = {
+    'male': 'Мужчина',
+    'female': 'Женщина'
+}
 
 r = Router()
 
@@ -35,12 +41,20 @@ async def profile_settings_menu(
 async def choose_gender(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager
+    keyboards: KeyboardManager,
+    database: Database
 ):
-    bot_message = await callback.message.answer(
-        messages.choose_gender,
-        reply_markup=keyboards.choose_gender
-    )
+    user = database.get_user(user_id=callback.from_user.id)
+    if user.gender is not None: # Если пол не указан
+        bot_message = await callback.message.answer(
+            messages.choose_gender.format(gender=from_gender_to_text[user.gender]),
+            reply_markup=keyboards.choose_gender
+        )
+    else:
+        bot_message = await callback.message.answer(
+            messages.gender_not_choosen,
+            reply_markup=keyboards.choose_gender
+        )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(ProfileSettings.choose_gender)
 

@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from aiogram.dispatcher.event.handler import CallbackType
 
 import swisseph as swe
 import datetime as dt
@@ -44,7 +43,6 @@ wait_sticker = config.get('files.wait_sticker')
 
 with open('interpretations.csv', 'r', newline="", encoding="utf-8") as file:
     interpretations = [row for row in csv.reader(file)]
-
 
 interpretations_dict = {}
 for intrpr in interpretations:
@@ -188,14 +186,14 @@ def filtered_and_formatted_prediction(
         ):
             formatted_text = (
                 f'<strong>{formatted_date}</strong>\n\n'
-                'Сегодня у Вас действует общий фон. \n'
+                'Сегодня у Вас действует общий фон. \n\n'
                 'Чтобы правильно распланировать дела, воспользуйтесь кнопкой '
                 '«Луна в знаке» или «Общий прогноз на день»'
             )
         else:
             formatted_text = (
                 f'<strong>{formatted_date}</strong>\n\n'
-                '<strong>*В первой половине дня*</strong>\n'
+                '<strong>*В первой половине дня*</strong>\n\n'
                 f'{first_half_moon_events_formatted or messages.neutral_background_go_to_other_menus}\n'
                 '<strong>*Во второй половине дня*</strong>\n\n'
                 f'{second_half_moon_events_formatted or messages.neutral_background_go_to_other_menus}'
@@ -216,9 +214,9 @@ def filtered_and_formatted_prediction(
             formatted_text = (
                 f'<strong>{formatted_date}</strong>\n\n'
                 f'{day_events_formatted}\n\n'
-                '<strong>*В первой половине дня*</strong>\n'
+                '<strong>*В первой половине дня*</strong>\n\n'
                 f'{first_half_moon_events_formatted or messages.neutral_background}\n'
-                '<strong>*Во второй половине дня*</strong>\n'
+                '<strong>*Во второй половине дня*</strong>\n\n'
                 f'{second_half_moon_events_formatted or messages.neutral_background}'
             )
 
@@ -226,8 +224,10 @@ def filtered_and_formatted_prediction(
     # print(f"Время форматирования текста = {p2}")
     return formatted_text
 
+
+@r.callback_query(MainMenu.prediction_end, F.data == bt.back)
 @r.callback_query(Subscription.payment_ended, F.data == bt.try_in_deal)
-async def redirect_from_sub_menu(
+async def get_prediction_callback_redirect(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
@@ -277,13 +277,12 @@ async def get_prediction(
         await state.set_state(MainMenu.prediction_access_denied)
 
     await state.update_data(
-        del_messages=[bot_message.message_id, message.message_id],
+        del_messages=[bot_message.message_id],
         time_offset=time_offset
     )
 
 
 @r.callback_query(MainMenu.prediction_end, F.data == bt.check_another_date)
-@r.callback_query(MainMenu.prediction_end, F.data == bt.back)
 async def prediction_ended_back(
     callback: CallbackQuery,
     state: FSMContext,
@@ -301,6 +300,37 @@ async def prediction_on_date(
     today = dt.date.today().strftime(date_format)
     await state.update_data(date=today, today=today)
     await update_prediction_date(message, state, keyboards)
+
+
+@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.prediction_for_today)
+async def prediction_for_today(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User,
+    bot: Bot
+):
+    user = database.get_user(event_from_user.id)
+    current_location = database.get_location(
+        user.current_location_id
+    )
+
+    timezone_offset: int = get_timezone_offset(
+        latitude=current_location.latitude,
+        longitude=current_location.longitude
+    )
+    today_date = datetime.today() + datetime.timedelta(hours=timezone_offset)
+    await state.update_data(date=today_date.strptime(today_date, date_format))
+    
+    await prediction_on_date_get_prediction(
+        message,
+        state,
+        keyboards,
+        database,
+        event_from_user,
+        bot
+    )
 
 
 @r.callback_query(MainMenu.prediction_choose_date, F.data == bt.decline)
@@ -351,11 +381,28 @@ async def get_prediction_text(
     return text
 
 
-
 # Confirmed
 @r.callback_query(MainMenu.prediction_choose_date, F.data == bt.confirm)
-async def prediction_on_date_get_prediction(
+async def prediction_on_date_get_prediction_callback_redirect(
     callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User,
+    bot: Bot
+):
+    await prediction_on_date_get_prediction(
+        callback.message,
+        state,
+        keyboards,
+        database,
+        event_from_user,
+        bot
+    )
+
+
+async def prediction_on_date_get_prediction(
+    message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
     database: Database,
@@ -370,8 +417,8 @@ async def prediction_on_date_get_prediction(
     target_date = datetime.strptime(data['date'], date_format)
 
     if subscription_end_date + timedelta(hours=data['time_offset']) > target_date:
-        wait_message = await callback.message.answer(messages.wait)
-        sticker_message = await callback.message.answer_sticker(wait_sticker)
+        wait_message = await message.answer(messages.wait)
+        sticker_message = await message.answer_sticker(wait_sticker)
 
         text = await get_prediction_text(
             target_date=target_date,
@@ -385,14 +432,14 @@ async def prediction_on_date_get_prediction(
             except exceptions.TelegramBadRequest:
                 continue
 
-        prediction_message = await callback.message.answer(
+        prediction_message = await message.answer(
             text=text,
             reply_markup=keyboards.predict_completed
         )
         await state.update_data(prediction_message_id=prediction_message.message_id)
         await state.set_state(MainMenu.prediction_end)
     else:
-        bot_message = await callback.message.answer(
+        bot_message = await message.answer(
             messages.not_enough_subscription
         )
         await update_prediction_date(bot_message, state, keyboards)
@@ -441,7 +488,6 @@ async def update_prediction_date(
         await state.update_data(del_messages=[date_message.message_id])
 
     await state.set_state(MainMenu.prediction_choose_date)
-
 
 
 @r.message(MainMenu.predictin_every_day_enter_time, F.text, F.text == bt.back)
