@@ -2,23 +2,24 @@ import tomllib
 
 import tomli_w
 
-from typing import Any
+from typing import Any, Dict, List
 
 
-def get(key: str) -> int | str | dict[str, Any]:
+def get(key: str) -> int | str | Dict[str, Any] | List[int | str | float]:
     """
-    Retrieve a value from the TOML configuration file based on the provided key.
+    Retrieve a value from TOML config based on the provided key.
 
     Args:
-        key (str): The key to retrieve the value for, specified as a dot-separated path. 
-                   For example, "bot.token" would retrieve the value of "token" inside the "bot" section.
+        key (str): The key to retrieve, as a dot-separated path. E.g.,
+                   "bot.token" would get "token" inside the "bot" section.
 
     Returns:
-        int | str | dict[str, Any]: The value associated with the provided key. 
-                                    This can be an integer, string, or dictionary.
+        int | str | Dict[str, Any] | List[int | str | float]:
+            The value for the provided key. Can be an integer, string, 
+            dictionary, or a list of integers, strings, and floats.
 
     Raises:
-        KeyError: If the specified key is not found in the configuration.
+        KeyError: If the key is not found in the configuration.
     """
     with open('config.toml', 'rb') as f:
         target = tomllib.load(f)
