@@ -1,5 +1,6 @@
 import datetime as dt
 
+from typing import Union
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from timezonefinder import TimezoneFinder
 from aiogram import Bot
@@ -8,55 +9,109 @@ from src import config
 from src.database import Database
 from src.routers.user.prediction import get_prediction_text
 
-
 date_format: str = config.get('database.date_format')
 time_format: str = config.get('database.time_format')
 
+TaskID = Union[str, tuple]
+reminder_times = [36, 12]
 
 class EveryDayPredictionScheduler(AsyncIOScheduler):
+    """
+    Scheduler to manage daily prediction messages and subscription 
+    renewal reminders.
+    """
+    
     _timezone_finder = TimezoneFinder()
 
-    def _get_timezone(self, latitude: float, longitude: float) -> str | None:
-        # Получаем имя временной зоны
+    def _get_timezone(
+        self, 
+        latitude: float, 
+        longitude: float
+    ) -> str | None:
+        """Return the timezone for a given latitude and longitude."""
         return EveryDayPredictionScheduler._timezone_finder.timezone_at(
             lat=latitude, 
             lng=longitude
         )
 
-    # Every day prediction
+    def _task_id_str(self, task_id: TaskID) -> str:
+        """
+        Convert a task ID into a string format suitable for the scheduler.
+        """
+        if isinstance(task_id, tuple):
+            return "__".join(map(str, task_id))
+        return task_id
+
+    def add_task(
+        self, 
+        function, 
+        trigger, 
+        task_id: TaskID, 
+        **kwargs
+    ):
+        """
+        Add a new task to the scheduler using the provided details.
+        """
+        self.add_job(
+            function, 
+            trigger, 
+            id=self._task_id_str(task_id), 
+            **kwargs
+        )
+
+    def remove_task(self, task_id: TaskID):
+        """Remove an existing task using its ID."""
+        self.remove_job(job_id=self._task_id_str(task_id))
+
     async def _send_message(
         self, 
         user_id: int, 
-        database: Database,
+        database: Database, 
         bot: Bot
     ):
+        """Send the daily prediction message to a user."""
         target_date = dt.datetime.now()
         text: str = await get_prediction_text(
-            target_date=target_date,
-            database=database,
+            target_date=target_date, 
+            database=database, 
             user_id=user_id
         )
-        await bot.send_message(chat_id=user_id, text=text) 
+        await bot.send_message(chat_id=user_id, text=text)
+
+    async def _send_renewal_reminder(
+        self, 
+        user_id: int, 
+        bot: Bot
+    ):
+        """
+        Send a reminder to the user that their subscription is 
+        about to end.
+        """
+        await bot.send_message(
+            chat_id=user_id, 
+            text="Your subscription is about to end! Please renew."
+        )
 
     async def add_send_message_job(
         self, 
-        user_id: int,
-        database: Database,
+        user_id: int, 
+        database: Database, 
         bot: Bot
     ):
+        """
+        Add daily prediction and renewal reminder tasks for a user.
+        """
         user = database.get_user(user_id=user_id)
+
         subscription_end_datetime = dt.datetime.strptime(
             user.subscription_end_date, 
             "%d.%m.%Y %H:%M"
         )
-        
         time = dt.datetime.strptime(
             user.every_day_prediction_time, 
             time_format
         )
-
-        hour = time.hour
-        minute = time.minute
+        hour, minute = time.hour, time.minute
 
         current_location = database.get_location(
             location_id=user.current_location_id
@@ -66,24 +121,40 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             latitude=current_location.latitude
         )
 
-        return self.add_job(
-            self._send_message, 
-            'cron', 
-            hour=hour, 
-            minute=minute, 
+        self.add_task(
+            self._send_message, 'cron', str(user_id), 
+            hour=hour, minute=minute, 
             args=[user_id, database, bot], 
-            id=str(user_id),
-            timezone=timezone_str,
+            timezone=timezone_str, 
             end_date=subscription_end_datetime
         )
-    
+
+        for hours_before_end in reminder_times:
+            reminder_time = subscription_end_datetime - dt.timedelta(
+                hours=hours_before_end
+            )
+            self.add_task(
+                self._send_renewal_reminder, 
+                'date', 
+                ("reminder", user_id, hours_before_end), 
+                run_date=reminder_time, 
+                args=[user_id, bot], 
+                timezone=timezone_str
+            )
+
     async def edit_send_message_job(
         self, 
-        user_id: int,
-        database: Database,
+        user_id: int, 
+        database: Database, 
         bot: Bot
     ):
-        self.remove_job(job_id=str(user_id))
-        await self.add_send_message_job(user_id, database, bot)
+        """
+        Update the daily prediction and renewal reminder tasks for a user.
+        """
 
+        self.remove_task(str(user_id))
+        for hours_before_end in reminder_times:
+            self.remove_task(("reminder", user_id, hours_before_end))
+
+        await self.add_send_message_job(user_id, database, bot)
 
