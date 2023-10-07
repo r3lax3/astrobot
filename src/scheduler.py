@@ -45,8 +45,13 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         bot: Bot
     ):
         user = database.get_user(user_id=user_id)
+        subscription_end_datetime = dt.datetime.strptime(
+            user.subscription_end_date, 
+            "%d.%m.%Y %H:%M"
+        )
+        
         time = dt.datetime.strptime(
-            user.every_day_prediction_time,
+            user.every_day_prediction_time, 
             time_format
         )
 
@@ -60,6 +65,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             longitude=current_location.longitude, 
             latitude=current_location.latitude
         )
+
         return self.add_job(
             self._send_message, 
             'cron', 
@@ -67,7 +73,8 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             minute=minute, 
             args=[user_id, database, bot], 
             id=str(user_id),
-            timezone=timezone_str
+            timezone=timezone_str,
+            end_date=subscription_end_datetime
         )
     
     async def edit_send_message_job(

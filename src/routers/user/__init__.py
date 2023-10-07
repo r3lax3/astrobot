@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from aiogram import Router, F, Bot
+from aiogram.methods import delete_message
 from aiogram.types import (
     Message,
     CallbackQuery,
@@ -207,6 +208,19 @@ async def to_main_menu_button_handler(
     bot: Bot
 ):
     await main_menu(callback.message, state, keyboards, bot)
+
+
+@r.message(F.text, F.text == bt.about_bot)
+async def about_bot(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    bot_message = await message.answer(
+        messages.about_bot,
+        keyboards.to_main_menu
+    )
+    await state.update_data(del_messages=[bot_message.message_id])
 
 
 # Всякая хуйня которую я ещё не написал
