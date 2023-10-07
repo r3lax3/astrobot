@@ -107,9 +107,9 @@ def formatted_moon_events(events: List[AstroEvent]):
     unfavourably = '\n'.join(unfavourably)
 
     formatted_text = (
-        'Благоприятно:\n'
+        '🟢Благоприятно:\n'
         f'{favourably}\n\n'
-        'Неблагоприятно:\n'
+        '🟢Неблагоприятно:\n'
         f'{unfavourably}\n'
     )
 
@@ -193,9 +193,9 @@ def filtered_and_formatted_prediction(
         else:
             formatted_text = (
                 f'<strong>{formatted_date}</strong>\n\n'
-                '<strong>*В первой половине дня*</strong>\n\n'
+                '<strong>🌟В первой половине дня🌟</strong>\n\n'
                 f'{first_half_moon_events_formatted or messages.neutral_background_go_to_other_menus}\n'
-                '<strong>*Во второй половине дня*</strong>\n\n'
+                '<strong>🌟Во второй половине дня🌟</strong>\n\n'
                 f'{second_half_moon_events_formatted or messages.neutral_background_go_to_other_menus}'
             )
     else:
@@ -214,9 +214,9 @@ def filtered_and_formatted_prediction(
             formatted_text = (
                 f'<strong>{formatted_date}</strong>\n\n'
                 f'{day_events_formatted}\n\n'
-                '<strong>*В первой половине дня*</strong>\n\n'
+                '<strong>🌟В первой половине дня🌟</strong>\n\n'
                 f'{first_half_moon_events_formatted or messages.neutral_background}\n'
-                '<strong>*Во второй половине дня*</strong>\n\n'
+                '<strong>🌟Во второй половине дня🌟</strong>\n\n'
                 f'{second_half_moon_events_formatted or messages.neutral_background}'
             )
 
