@@ -40,3 +40,11 @@ class Subscription(StatesGroup):
     check_payment_status = State()
     payment_ended = State()
 
+
+class AdminStates(StatesGroup):
+    choose_action = State()
+    
+    general_prediction_add = State()
+    user_settings = State()
+
+    

@@ -239,7 +239,6 @@ async def get_prediction_callback_redirect(
 
 
 @r.message(F.text, F.text == bt.prediction)
-@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == bt.back)
 async def get_prediction(
     message: Message,
     state: FSMContext,

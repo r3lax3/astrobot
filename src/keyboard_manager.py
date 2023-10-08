@@ -11,45 +11,48 @@ from src.utils import is_int
 
 
 buttons_text = {
-    'enter_birth_data':       'Ввести данные рождения',
-    'night':                  'Ночь',
-    'morning':                'Утро',
-    'day':                    'День',
-    'evening':                'Вечер',
-    'back':                   '🔙 Назад',
-    'subscription':           '🌟Подписка',
-    'prediction':             '🔮Прогноз',
-    'dreams':                 '💫 Сны',
-    'card_of_the_day':        '🃏Карта Дня',
-    'general_predictions':    '🌒 Общие прогнозы',
-    'moon_in_sign':           '🌗 Луна в знаке',
-    'change_timezone':        '✈️Смена часового пояса',
-    'tech_support':           '🔧 Техническая поддержка',
-    'prediction_for_date':    '🕓 Прогноз на дату',
-    'prediction_for_today':   'Прогноз на сегодня'
-    'daily_prediction':       '⌚️ Ежедневный прогноз',
-    'main_menu':              'В главное меню',
-    'check_another_date':     'Проверить другую дату',
-    'change_prediction_time': '⌛Изменить время прогноза',
-    'confirm':                'Подтверждаю ☑',
-    'decline':                'Нет, вернуться назад ❎',
-    'one_month':              '1 месяц | 400 рублей',
-    'two_month':              '2 месяца | 750 рублей',
-    'three_month':            '3 месяца | 1050 рублей',
-    'six_month':              '6 месяцев | 2000 рублей',
-    'twelve_month':           '12 месяцев | 3800 рублей',
-    'yookassa':               'YooKassa',
-    'offer':                  'Оффер',
-    'redirect_button_text':   'Оплатить подписку',
-    'check_payment_status':   'Проверить статус платежа',
-    'try_again':              'Попробовать ещё раз',
-    'back_to_menu':           'Вернуться в меню',
-    'try_in_deal':            'Испытать в деле',
-    'compatibility':          'Совместимость',
-    'male':                   'Мужчина',
-    'female':                 'Женщина',
-    'profile_settings':       'Настройки Профиля',
-    'gender':                 'Пол'
+    'enter_birth_data':        'Ввести данные рождения',
+    'night':                   'Ночь',
+    'morning':                 'Утро',
+    'day':                     'День',
+    'evening':                 'Вечер',
+    'back':                    '🔙 Назад',
+    'subscription':            '🌟Подписка',
+    'prediction':              '🔮Прогноз',
+    'dreams':                  '💫 Сны',
+    'card_of_the_day':         '🃏Карта Дня',
+    'general_predictions':     '🌒 Общие прогнозы',
+    'moon_in_sign':            '🌗 Луна в знаке',
+    'change_timezone':         '✈️Смена часового пояса',
+    'tech_support':            '🔧 Техническая поддержка',
+    'prediction_for_date':     '🕓 Прогноз на дату',
+    'prediction_for_today':    'Прогноз на сегодня'
+    'daily_prediction':        '⌚️ Ежедневный прогноз',
+    'main_menu':               'В главное меню',
+    'check_another_date':      'Проверить другую дату',
+    'change_prediction_time':  '⌛Изменить время прогноза',
+    'confirm':                 'Подтверждаю ☑',
+    'decline':                 'Нет, вернуться назад ❎',
+    'one_month':               '1 месяц | 400 рублей',
+    'two_month':               '2 месяца | 750 рублей',
+    'three_month':             '3 месяца | 1050 рублей',
+    'six_month':               '6 месяцев | 2000 рублей',
+    'twelve_month':            '12 месяцев | 3800 рублей',
+    'yookassa':                'YooKassa',
+    'offer':                   'Оффер',
+    'redirect_button_text':    'Оплатить подписку',
+    'check_payment_status':    'Проверить статус платежа',
+    'try_again':               'Попробовать ещё раз',
+    'back_to_menu':            'Вернуться в меню',
+    'try_in_deal':             'Испытать в деле',
+    'compatibility':           'Совместимость',
+    'male':                    'Мужчина',
+    'female':                  'Женщина',
+    'profile_settings':        'Настройки Профиля',
+    'gender':                  'Пол',
+    'general_predictions_add': 'Добавление Общих Прогнозов'
+    'user_settings':           'Настройки пользователя',
+    'back_to_adminpanel':      'Назад в админ-панель'
 }
 
 bt = SimpleNamespace(**buttons_text) 
@@ -59,6 +62,10 @@ class KeyboardManager:
     def __init__(self, database: Database):
         self.database = database
         
+        
+        # ADMIN
+
+
 
         # Birth data
         
@@ -200,7 +207,7 @@ class KeyboardManager:
 
         self.profile_settings = self.build_keyboard_from_structure(
             [
-                [bt.],
+                [bt.gender],
                 [bt.change_timezone],
                 [bt.main_menu]
             ],
@@ -243,6 +250,20 @@ class KeyboardManager:
                 [bt.back]
             ]
         )
+
+
+        # ADMIN
+
+
+        
+        self.adminpanel = self.build_keyboard_from_structure(
+            [
+                [bt.general_predictions_add],
+                [bt.user_settings]
+            ],
+            is_inline=True
+        )
+
 
     def predict_choose_date(self, date: str) -> InlineKeyboardMarkup:
         markup = self.build_keyboard_from_structure(

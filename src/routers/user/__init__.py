@@ -51,6 +51,7 @@ async def try_start_again_for_sub(
     await user_command_start_handler(callback.message, state, keyboards)
 
 
+
 @r.message(CommandStart())
 async def user_command_start_handler(
     message: Message,
@@ -165,6 +166,7 @@ async def main_menu_command(
         await main_menu(message, state, keyboards, bot)
 
 
+@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == bt.back)
 @r.message(F.text, F.text == bt.main_menu)
 async def main_menu(
     message: Message,
