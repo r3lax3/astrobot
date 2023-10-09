@@ -22,9 +22,9 @@ week_format: str = config.get('database.week_format')
 month_format: str = config.get('database.month_format')
 
 pred_type_to_date_fmt = {
-    bt.day: date_format,
-    bt.week: week_format,
-    bt.month: month_format
+    bt.prediction_on_day: date_format,
+    bt.prediction_on_week: week_format,
+    bt.prediction_on_month: month_format
 }
 
 
@@ -109,7 +109,8 @@ async def enter_general_prediction_date(
 async def get_general_prediction_date(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager
+    keyboards: KeyboardManager,
+    database: Database
 ):
     try:
         data = await state.get_data()
@@ -120,7 +121,7 @@ async def get_general_prediction_date(
         )
 
         await state.update_data(general_prediction_date=message.text)
-        await enter_general_prediction_text(message, state, keyboards)
+        await enter_general_prediction_text(message, state, keyboards, database)
     except ValueError:
         await get_general_prediction_date_error_hendler(
             message, 
@@ -151,17 +152,32 @@ async def get_general_prediction_date_error_hendler(
 async def enter_general_prediction_text(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager
+    keyboards: KeyboardManager,
+    database: Database
 ):
     data = await state.get_data()
 
-    bot_message = await message.answer(
-        messages.enter_general_prediction_text.format(
-            type=data['general_predictions_type'],
-            date=data['general_prediction_date']
-        ),
-        reply_markup=keyboards.back
+    general_prediction = database.get_general_prediction(
+        data['general_prediction_date']
     )
+    
+    if general_prediction is not None:
+        bot_message = await message.answer(
+            messages.enter_general_prediction_text.format(
+                type=data['general_predictions_type'],
+                date=data['general_prediction_date'],
+                text=general_prediction
+            ),
+            reply_markup=keyboards.back
+        )
+    else:
+        bot_message = await message.answer(
+            messages.enter_general_prediction_text.format(
+                type=data['general_predictions_type'],
+                date=data['general_prediction_date']
+            ),
+            reply_markup=keyboards.back
+        )
 
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.get_general_prediction_text)

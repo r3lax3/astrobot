@@ -1,6 +1,6 @@
 from aiogram.fsm.state import State, StatesGroup, StatesGroupMeta
 
-from src.routers.admin import get_general_prediction_type
+from src.routers.admin import general_predictions_add_menu, get_general_prediction_type
 
 
 class GetBirthData(StatesGroup):
@@ -32,6 +32,8 @@ class MainMenu(StatesGroup):
     predictin_every_day_enter_time = State()
 
     prediction_end = State()
+
+    general_predictions_get_type = State()
 
     end_action = State()
 

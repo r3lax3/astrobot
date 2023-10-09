@@ -224,6 +224,18 @@ class KeyboardManager:
         )
 
 
+        # General Predictions
+
+        self.user_gen_pred_type = self.build_keyboard_from_structure(
+            [
+                [bt.prediction_on_day],
+                [bt.prediction_on_week],
+                [bt.prediction_on_month],
+                [bt.main_menu]
+            ],
+            is_inline=True
+        )
+
         # No category
 
 
