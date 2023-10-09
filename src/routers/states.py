@@ -1,5 +1,7 @@
 from aiogram.fsm.state import State, StatesGroup, StatesGroupMeta
 
+from src.routers.admin import get_general_prediction_type
+
 
 class GetBirthData(StatesGroup):
     date = State()
@@ -44,7 +46,12 @@ class Subscription(StatesGroup):
 class AdminStates(StatesGroup):
     choose_action = State()
     
-    general_prediction_add = State()
+    choose_general_prediction_type = State()
+    get_general_prediction_date = State()
+    get_general_prediction_text = State()
+
     user_settings = State()
+
+    action_ended = State()
 
     

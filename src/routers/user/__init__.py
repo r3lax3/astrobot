@@ -220,7 +220,7 @@ async def about_bot(
 ):
     bot_message = await message.answer(
         messages.about_bot,
-        keyboards.to_main_menu
+        reply_markup=keyboards.to_main_menu
     )
     await state.update_data(del_messages=[bot_message.message_id])
 

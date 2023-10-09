@@ -52,7 +52,7 @@ months_to_str_months = {
 @r.callback_query(MainMenu.prediction_access_denied, F.data == bt.subscription)
 @r.callback_query(Subscription.payment_ended, F.data == bt.back_to_menu)
 @r.callback_query(Subscription.payment_method, F.data == bt.back)
-async def sub_menu_callback_query_handler(
+async def subscription_menu_callback_query_handler(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,

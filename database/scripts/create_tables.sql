@@ -24,6 +24,12 @@ CREATE TABLE IF NOT EXISTS interpretations (
   PRIMARY KEY (natal_planet, transit_planet, aspect)
 );
 
+CREATE TABLE IF NOT EXISTS general_predictions (
+  date TEXT PRIMARY KEY,
+  prediction TEXT
+)
+
+
 --CREATE TABLE IF NOT EXISTS mandatory_sub_channels (
 --    channel_id INT PRIMARY KEY,
 --    title VARCHAR(256),

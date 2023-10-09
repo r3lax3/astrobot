@@ -3,6 +3,9 @@
 
 
 
+from src.routers.admin import general_predictions_add_menu
+
+
 start = '''
 <b>Здравствуйте 👋 </b>Рад, что Вы решили использовать мои астрологические знания и опыт! 
  
@@ -288,5 +291,34 @@ payment_check_error = '''
 
 admin_menu = '''
 #admin_menu
+'''
+
+
+# General prediction
+
+
+choose_general_prediction_type = '''
+#choose_general_prediction_type
+'''
+enter_general_prediction_date = '''
+#add_general_prediction_on_day
+
+Выбранный тип прогноза: {type}
+'''
+enter_general_prediction_text = '''
+#enter_general_prediction_text
+
+Выбранный тип прогноза: {type}
+Указанная дата: {date}
+'''
+general_prediction_added = '''
+#general_prediction_added
+
+Выбранный тип прогноза: {type}
+Указанная дата: {date}
+
+Текст прогноза: 
+
+{text}
 '''
 

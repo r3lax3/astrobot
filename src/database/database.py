@@ -60,7 +60,7 @@ class Database:
         birth_location: Location, 
         current_location: Location | None,
         subscription_end_date: str,
-        gender: str
+        gender: str | None
     ):
         # Add locations
         birth_location_id = self.add_location(birth_location)  # add and return id of row
@@ -242,6 +242,30 @@ class Database:
                 interpretation_obj.interpretation
             )
         )
+
+    # General Predictions
+
+    def add_general_prediction(self, date: str, prediction: str):
+        query = """
+            INSERT OR REPLACE INTO general_predictions (date, prediction)
+            VALUES (?, ?)
+        """
+        self.execute_query(query, params=(date, prediction))
+
+    def get_general_prediction(self, date: str) -> Optional[str]:
+        query = """
+            SELECT prediction FROM general_predictions
+        """
+        result = self.execute_query(query, kwargs={'date': date}, fetchone=True)
+        if result:
+            return result[0]
+        return None
+
+    def delete_general_prediction(self, date: str):
+        query = "DELETE FROM general_predictions"
+        self.execute_query(query, kwargs={'date': date})
+
+
 
     # MandatorySubChannel table methods
 
