@@ -345,3 +345,17 @@ general_prediction_added = '''
 {text}
 '''
 
+# User settings
+
+send_user_message_for_identification = '''
+#send_user_message_for_identification
+'''
+user_info = '''
+#user_info
+
+Конец подписки: {subscription_end}
+Неиспользованных прогнозов: {unused_predictions}
+'''
+user_not_found = '''
+#user_not_found
+'''

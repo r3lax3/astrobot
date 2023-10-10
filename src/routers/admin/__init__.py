@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 
 from aiogram import F, Router
+from aiogram.dispatcher.event.handler import CallbackType
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -209,6 +210,45 @@ async def get_general_prediction_text(
     await state.set_state(AdminStates.action_ended)
 
 
-# @r.callback_query(AdminStates.choose_action, F.data == bt.user_settings)
-#
+@r.callback_query(AdminStates.choose_action, F.data == bt.user_settings)
+async def user_settings_menu(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    bot_message = await callback.message.answer(
+        messages.send_user_message_for_identification,
+        reply_markup=keyboards.back_to_adminpanel
+    )
+    await state.update_data(del_messages=[bot_message.message_id])
+    await state.set_state(AdminStates.get_user_message)
+
+
+@r.message(AdminStates.get_user_message, F.forward_from)
+async def get_user_message(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database
+):
+    user = database.get_user(user_id=message.forward_from.id)
+    if user:
+        unused_predictions = database.get_unviewed_predictions_count(
+            user_id=message.forward_from.id
+        )
+
+        bot_message = await message.answer(
+            messages.user_info.format(
+                subscription_end=user.subscription_end_date,
+                unused_predictions=unused_predictions
+            ),
+            reply_markup=keyboards.back_to_adminpanel
+        )
+    else:
+        bot_message = await message.answer(
+            messages.user_not_found,
+            reply_markup=keyboards.back_to_adminpanel
+        )
+    await state.update_data(del_messages=[bot_message.message_id])
+    await state.set_state(AdminStates.action_ended)
 

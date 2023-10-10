@@ -30,12 +30,13 @@ CREATE TABLE IF NOT EXISTS general_predictions (
 );
 
 CREATE TABLE viewed_predictions (
-  view_id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  prediction_date TEXT,
+  prediction_date TEXT NOT NULL,
   view_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, prediction_date),
   FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
+
 
 --CREATE TABLE IF NOT EXISTS mandatory_sub_channels (
 --    channel_id INT PRIMARY KEY,

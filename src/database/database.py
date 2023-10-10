@@ -145,14 +145,24 @@ class Database:
         query = "DELETE FROM users"
         self.execute_query(query, kwargs={'user_id': user_id})
 
-    def update_subscription_end_date(self, user_id: int, period: timedelta) -> None:
+    def update_subscription_end_date(
+        self, 
+        user_id: int, 
+        period: timedelta
+    ) -> None:
         user: User = self.get_user(user_id)
-        current_location = self.get_location(user.current_location_id)
-
-        time_offset: int = get_timezone_offset(current_location.latitude, current_location.longitude)
+        current_location = self.get_location(
+            user.current_location_id
+        )
+        time_offset: int = get_timezone_offset(
+            current_location.latitude, 
+            current_location.longitude
+        )
 
         now = datetime.utcnow() + timedelta(hours=time_offset)
-        current_user_subscription_end_date = datetime.strptime(user.subscription_end_date, database_datetime_format)
+        current_user_subscription_end_date = datetime.strptime(
+            user.subscription_end_date, database_datetime_format
+        )
         start = max([current_user_subscription_end_date, now])
         
         query = "UPDATE users SET subscription_end_date = ?"
@@ -274,11 +284,10 @@ class Database:
 
     # Viewed Predictions
 
-
     # Create
     def add_viewed_prediction(self, user_id: int, prediction_date: str):
         query = """
-            INSERT INTO viewed_predictions (user_id, prediction_date)
+            INSERT OR REPLACE INTO viewed_predictions (user_id, prediction_date)
             VALUES (?, ?)
         """
         self.execute_query(query, params=(user_id, prediction_date))
@@ -290,11 +299,42 @@ class Database:
         """
         return self.execute_query(query, kwargs={'user_id': user_id}, fetchall=True)
 
-    # Delete
-    def delete_viewed_prediction(self, view_id: int):
-        query = "DELETE FROM viewed_predictions WHERE view_id=?"
-        self.execute_query(query, params=(view_id,))
+    def get_unviewed_predictions_count(self, user_id: int) -> int | None:
+        # Get the user and their details.
+        user = self.get_user(user_id)
+        current_location = self.get_location(user.current_location_id)
 
+        # Calculate the current date using the user's timezone.
+        time_offset: int = get_timezone_offset(current_location.latitude, current_location.longitude)
+        now = datetime.utcnow() + timedelta(hours=time_offset)
+
+        # Check if the subscription has already ended.
+        subscription_end_date = datetime.strptime(user.subscription_end_date, "%d.%m.%Y")
+        if subscription_end_date < now:
+            return 0  # Subscription has ended.
+
+        # Calculate the total number of days from now to the end of the subscription.
+        days_left = (subscription_end_date - now).days + 1  # "+1" to include the start date.
+
+        # Calculate how many days of predictions the user has already viewed, starting from today.
+        viewed_dates_query = """
+            SELECT prediction_date FROM viewed_predictions 
+            WHERE user_id=? AND strftime('%Y-%m-%d', prediction_date, 'start of day', 'localtime') >= ?
+        """
+        viewed_dates = self.execute_query(
+            viewed_dates_query, 
+            params=(user_id, now.strftime('%Y-%m-%d')), fetchall=True
+        )
+        viewed_dates_count = len(viewed_dates)
+
+        # Return the number of unviewed predictions.
+        unviewed_predictions = days_left - viewed_dates_count
+        return max(0, unviewed_predictions)  # Ensuring the result is non-negative.
+
+    # Delete
+    def delete_viewed_prediction(self, user_id: int, prediction_date: str):
+        query = "DELETE FROM viewed_predictions WHERE user_id=? AND prediction_date=?"
+        self.execute_query(query, params=(user_id, prediction_date))
 
         
     # MandatorySubChannel table methods

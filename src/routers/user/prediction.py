@@ -34,7 +34,8 @@ from src.prediction_analys import (
 regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"
 database_datetime_format: str = config.get('database.datetime_format')
 date_format: str = config.get('database.date_format')
-time_format = "%H:%M"
+time_format = config.get('database.time_format')
+
 
 days: dict = config.get('constants.days')
 months: dict = config.get('constants.months')

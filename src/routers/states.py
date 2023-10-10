@@ -52,7 +52,7 @@ class AdminStates(StatesGroup):
     get_general_prediction_date = State()
     get_general_prediction_text = State()
 
-    user_settings = State()
+    get_user_message = State()
 
     action_ended = State()
 
