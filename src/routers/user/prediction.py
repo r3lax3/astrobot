@@ -435,6 +435,12 @@ async def prediction_on_date_get_prediction(
             text=text,
             reply_markup=keyboards.predict_completed
         )
+        
+        database.add_viewed_prediction(
+            user_id=event_from_user.id,
+            prediction_date=data['date']
+        )
+
         await state.update_data(prediction_message_id=prediction_message.message_id)
         await state.set_state(MainMenu.prediction_end)
     else:

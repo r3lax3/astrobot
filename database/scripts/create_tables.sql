@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS interpretations (
 CREATE TABLE IF NOT EXISTS general_predictions (
   date TEXT PRIMARY KEY,
   prediction TEXT
-)
+);
 
 CREATE TABLE viewed_predictions (
-    view_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    forecast_date DATE NOT NULL,
-    view_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(user_id)
+  view_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  prediction_date TEXT,
+  view_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
 
 --CREATE TABLE IF NOT EXISTS mandatory_sub_channels (

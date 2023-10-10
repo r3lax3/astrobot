@@ -52,6 +52,8 @@ class Database:
 
     # Users table methods
 
+
+    # Create
     def add_user(
         self, 
         user_id, 
@@ -175,6 +177,8 @@ class Database:
 
     # Location table methods
 
+
+    # Create
     def add_location(self, location: Location) -> int:
         """
         Метод используется для добавления локации в список
@@ -228,6 +232,7 @@ class Database:
             return result[0]
         return None
 
+    # Create
     def add_or_update_interpretation(self, interpretation_obj: Interpretation):
         query = """
         INSERT OR REPLACE INTO interpretations (natal_planet, transit_planet, aspect, interpretation)
@@ -245,6 +250,7 @@ class Database:
 
     # General Predictions
 
+    # Create
     def add_general_prediction(self, date: str, prediction: str):
         query = """
             INSERT OR REPLACE INTO general_predictions (date, prediction)
@@ -266,7 +272,31 @@ class Database:
         self.execute_query(query, kwargs={'date': date})
 
 
+    # Viewed Predictions
 
+
+    # Create
+    def add_viewed_prediction(self, user_id: int, prediction_date: str):
+        query = """
+            INSERT INTO viewed_predictions (user_id, prediction_date)
+            VALUES (?, ?)
+        """
+        self.execute_query(query, params=(user_id, prediction_date))
+
+    # Read
+    def get_viewed_predictions_by_user(self, user_id: int) -> list:
+        query = """
+            SELECT prediction_date, view_timestamp FROM viewed_predictions
+        """
+        return self.execute_query(query, kwargs={'user_id': user_id}, fetchall=True)
+
+    # Delete
+    def delete_viewed_prediction(self, view_id: int):
+        query = "DELETE FROM viewed_predictions WHERE view_id=?"
+        self.execute_query(query, params=(view_id,))
+
+
+        
     # MandatorySubChannel table methods
 
     # def add_mandatory_channel(self, channel: MandatorySubChannel):
