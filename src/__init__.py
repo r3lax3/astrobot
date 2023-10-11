@@ -5,7 +5,7 @@ from aiogram.types import BufferedInputFile
 from aiogram.fsm.storage.redis import RedisStorage
 
 from src import config
-from src.routers import user_router
+from src.routers import user_router, admin_router
 from src.database import Database
 from src.scheduler import EveryDayPredictionScheduler
 from src.keyboard_manager import KeyboardManager
@@ -51,14 +51,13 @@ async def check_users_and_schedule(
     bot: Bot
 ):
     rows = database.execute_query(
-        query="SELECT user_id, every_day_prediction_time FROM users",
+        query="SELECT user_id FROM users",
         fetchall=True
     )
     for row in rows:
-        user_id, time_str = row
+        user_id = row[0]
         await scheduler.add_send_message_job(
             user_id, 
-            time_str, 
             database, 
             bot
         )
@@ -110,7 +109,10 @@ async def main():
     dp.message.middleware(SkipAdminchatUpdates())
     dp.callback_query.middleware(PredictionMessageDeleteKeyboardMiddleware())
 
-    dp.include_router(user_router)
+    dp.include_routers(
+        user_router,
+        admin_router
+    )
 
     try:
         await dp.start_polling(bot)

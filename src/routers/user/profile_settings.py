@@ -4,11 +4,10 @@ from aiogram.types import (
     Message,
     CallbackQuery
 )
-from magic_filter.operations import call
 
 from src.utils import get_location_by_coords
 from src.routers import messages
-from src.routers.states import ProfileSettings, GetBirthData, GetCurrentLocation
+from src.routers.states import ProfileSettings, GetBirthData
 from src.database import Database
 from src.keyboard_manager import KeyboardManager, bt
 
@@ -19,6 +18,15 @@ from_gender_to_text = {
 }
 
 r = Router()
+
+@r.callback_query(ProfileSettings.choose_gender, F.data == bt.back)
+@r.callback_query(F.data == bt.profile_settings)
+async def profile_settings_menu_callback_handler(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    await profile_settings_menu(callback.message, state, keyboards)
 
 
 @r.message(F.text, F.text == bt.profile_settings)
@@ -32,6 +40,7 @@ async def profile_settings_menu(
         reply_markup=keyboards.profile_settings
     )
     await state.update_data(del_messages=[bot_message.message_id])
+    await state.set_state(ProfileSettings.choose_option)
 
 
 # Gender
@@ -70,7 +79,7 @@ async def gender_is_male(
         gender='male', 
         user_id=callback.from_user.id
     )
-    await choose_gender(callback, state, keyboards)
+    await choose_gender(callback, state, keyboards, database)
 
 
 @r.callback_query(ProfileSettings.choose_gender, F.data == bt.female)
@@ -84,7 +93,7 @@ async def gender_is_female(
         gender='female', 
         user_id=callback.from_user.id
     )
-    await choose_gender(callback, state, keyboards)
+    await choose_gender(callback, state, keyboards, database)
 
 
 # Current Location 
@@ -110,7 +119,7 @@ async def enter_current_location(
     await state.update_data(
         del_messages=[bot_message.message_id]
     )
-    await state.set_state(GetCurrentLocation.location)
+    await state.set_state(ProfileSettings.get_current_location)
 
 
 @r.message(ProfileSettings.get_current_location, F.location)
@@ -124,7 +133,7 @@ async def get_current_location(
 
     bot_message = await message.answer(
         messages.get_current_location_confirm.format(
-            location=get_location_by_coords(
+            current_location=get_location_by_coords(
                 longitude=longitude, latitude=latitude
             )
         ),

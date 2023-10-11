@@ -34,7 +34,7 @@ from src.prediction_analys import (
 regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"
 database_datetime_format: str = config.get('database.datetime_format')
 date_format: str = config.get('database.date_format')
-time_format = config.get('database.time_format')
+time_format: str = config.get('database.time_format')
 
 
 days: dict = config.get('constants.days')
@@ -297,8 +297,12 @@ async def prediction_on_date(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    today = dt.date.today().strftime(date_format)
-    await state.update_data(date=today, today=today)
+    data = await state.get_data()
+    today = dt.datetime.utcnow().date() + timedelta(hours=data['time_offset'])
+    await state.update_data(
+        date=today.strftime(date_format), 
+        today=today.strftime(date_format)
+    )
     await update_prediction_date(message, state, keyboards)
 
 
@@ -321,7 +325,12 @@ async def prediction_for_today(
         longitude=current_location.longitude
     )
     today_date = datetime.today() + datetime.timedelta(hours=timezone_offset)
-    await state.update_data(date=today_date.strptime(today_date, date_format))
+    await state.update_data(
+        date=today_date.strptime(
+            today_date, 
+            date_format
+        )
+    )
     
     await prediction_on_date_get_prediction(
         message,
@@ -342,7 +351,14 @@ async def prediction_on_date_back(
     bot: Bot,
     event_from_user: User
 ):
-    await get_prediction(callback.message, state, keyboards, bot, database, event_from_user)
+    await get_prediction(
+        callback.message, 
+        state, 
+        keyboards, 
+        bot, 
+        database, 
+        event_from_user
+    )
 
 
 async def get_prediction_text(
@@ -378,6 +394,10 @@ async def get_prediction_text(
     )
 
     text = await future
+    database.add_viewed_prediction(
+        user_id=event_from_user.id,
+        prediction_date=target_date.strftime(date_format)
+    )
     return text
 
 
@@ -415,8 +435,9 @@ async def prediction_on_date_get_prediction(
     
     subscription_end_date = datetime.strptime(user.subscription_end_date, database_datetime_format)
     target_date = datetime.strptime(data['date'], date_format)
+    timezone_offset = timedelta(hours=data['time_offset'])
 
-    if subscription_end_date + timedelta(hours=data['time_offset']) > target_date:
+    if subscription_end_date + timezone_offset > target_date:
         wait_message = await message.answer(messages.wait)
         sticker_message = await message.answer_sticker(wait_sticker)
 
@@ -437,10 +458,7 @@ async def prediction_on_date_get_prediction(
             reply_markup=keyboards.predict_completed
         )
         
-        database.add_viewed_prediction(
-            user_id=event_from_user.id,
-            prediction_date=data['date']
-        )
+
 
         await state.update_data(prediction_message_id=prediction_message.message_id)
         await state.set_state(MainMenu.prediction_end)
@@ -563,15 +581,7 @@ async def enter_prediction_time(
         del_messages=[bot_message.message_id, message.message_id]
     )
     await state.set_state(MainMenu.predictin_every_day_choose_action)
-
-    if scheduler.get_job(str(event_from_user.id)):
-        scheduler.remove_job(str(event_from_user.id))
-        await scheduler.add_send_message_job(
-            event_from_user.id, 
-            message.text, 
-            database, 
-            bot
-        )
+    await scheduler.edit_send_message_job(event_from_user.id, database, bot)
 
 
 # @r.message(F.text, F.text == 'тест')

@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from aiogram import Router, F
-from aiogram.types import Message, User, CallbackQuery
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from src import config
 from src.routers import messages
 from src.routers.states import MainMenu
 from src.keyboard_manager import KeyboardManager, bt
@@ -22,6 +23,15 @@ pred_type_to_date_fmt = {
 }
 
 
+@r.callback_query(F.data == bt.general_predictions)
+async def general_predictions_menu(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    await general_predictions_menu(callback.message, state, keyboards)
+
+
 
 @r.message(F.text, F.text == bt.general_predictions)
 async def general_predictions_menu(
@@ -31,7 +41,7 @@ async def general_predictions_menu(
 ):
     bot_message = await message.answer(
         messages.user_choose_general_prediction_type,
-        reply_markup=keyboards.user_choose_general_prediction_type
+        reply_markup=keyboards.user_gen_pred_type
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(MainMenu.general_predictions_get_type)

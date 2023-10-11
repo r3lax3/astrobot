@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from aiogram import Router, F, Bot
-from aiogram.methods import delete_message
 from aiogram.types import (
     Message,
     CallbackQuery,
@@ -21,6 +20,7 @@ from src.routers.user.prediction import r as prediction_router
 from src.routers.user.subsription import r as subsription_router
 from src.routers.user.compatibility import r as compatibility_router
 from src.routers.user.profile_settings import r as profile_settings_router
+from src.routers.user.general_predictions import r as general_predictions_router
 
 from src.database import Database
 from src.database.models import Location
@@ -35,11 +35,13 @@ r.include_routers(
     technical_support_router,
     prediction_router,
     subsription_router,
-    compatibility_router
+    compatibility_router,
+    general_predictions_router
 )
 
 start_video: str = config.get('files.start_video')
 database_datetime_format: str = config.get('database.datetime_format')
+not_implemented_list = [bt.dreams, bt.card_of_the_day, bt.moon_in_sign]
 
 
 @r.callback_query(F.data == 'Попробовать зайти ещё раз')
@@ -226,7 +228,18 @@ async def about_bot(
 
 
 # Всякая хуйня которую я ещё не написал
-@r.message(F.text, F.text.in_(['💫 Сны', '🃏 Карта дня', '🌒 Общие прогнозы', '🌗 Луна в знаке']))
+@r.callback_query(F.data.in_(not_implemented_list))
+async def not_implemented_error_callback_handler(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    bot: Bot
+):
+    await not_implemented_error(callback.message, state, keyboards, bot)
+
+
+# Всякая хуйня которую я ещё не написал
+@r.message(F.text, F.text.in_(not_implemented_list))
 async def not_implemented_error(
     message: Message,
     state: FSMContext,

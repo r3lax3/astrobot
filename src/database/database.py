@@ -3,14 +3,14 @@ import sqlite3
 
 from typing import Optional, Any
 
-from apscheduler.schedulers.base import timedelta_seconds
-
 from src import config
 from src.utils import get_timezone_offset
 from src.database.models import User, Location, Interpretation
 
 
 database_datetime_format: str = config.get('database.datetime_format')
+date_format: str = config.get('database.date_format')
+
 
 
 class Database:
@@ -190,23 +190,22 @@ class Database:
         )
         new_subscription_end_date = date + timedelta(hours=time_offset)
 
-        query = "UPDATE users SET subscription_end_date = ?"
+        query = "UPDATE users SET subscription_end_date = ? WHERE user_id = ?"
         self.execute_query(
             query=query,
             params=(
-                new_subscription_end_date.strftime(database_datetime_format),
-            ),
-            kwargs={'user_id': user_id}
+                new_subscription_end_date.strftime(database_datetime_format), 
+                user_id
+            )
         )
     
-    def change_user_gender(self, gender: str | None, user_id: int):
-        query = 'UPDATE users SET gender = ?'
+    def change_user_gender(self, gender: str | None, user_id: int) -> None:
+        query = 'UPDATE users SET gender = ? WHERE user_id = ?'
         self.execute_query(
             query=query,
             params=(
-                (gender,)
-            ),
-            kwargs={'user_id': user_id}
+                (gender, user_id)
+            )
         )
 
 
@@ -330,11 +329,17 @@ class Database:
         current_location = self.get_location(user.current_location_id)
 
         # Calculate the current date using the user's timezone.
-        time_offset: int = get_timezone_offset(current_location.latitude, current_location.longitude)
+        time_offset: int = get_timezone_offset(
+            current_location.latitude, 
+            current_location.longitude
+        )
         now = datetime.utcnow() + timedelta(hours=time_offset)
 
         # Check if the subscription has already ended.
-        subscription_end_date = datetime.strptime(user.subscription_end_date, "%d.%m.%Y")
+        subscription_end_date = datetime.strptime(
+            user.subscription_end_date, 
+            database_datetime_format
+        )
         if subscription_end_date < now:
             return 0  # Subscription has ended.
 
@@ -342,14 +347,21 @@ class Database:
         days_left = (subscription_end_date - now).days + 1  # "+1" to include the start date.
 
         # Calculate how many days of predictions the user has already viewed, starting from today.
-        viewed_dates_query = """
-            SELECT prediction_date FROM viewed_predictions 
-            WHERE user_id=? AND strftime('%Y-%m-%d', prediction_date, 'start of day', 'localtime') >= ?
+        viewed_dates_query = f"""
+            SELECT prediction_date 
+            FROM viewed_predictions 
+            WHERE user_id = ?
+            AND strftime(
+                '%Y-%m-%d', 
+                substr(prediction_date,7,4)||'-'||substr(prediction_date,4,2)||'-'||substr(prediction_date,1,2)
+            ) >= ? 
+
         """
         viewed_dates = self.execute_query(
             viewed_dates_query, 
             params=(user_id, now.strftime('%Y-%m-%d')), fetchall=True
         )
+        print(f'{viewed_dates}')
         viewed_dates_count = len(viewed_dates)
 
         # Return the number of unviewed predictions.

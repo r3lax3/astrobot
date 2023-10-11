@@ -1,7 +1,5 @@
 from aiogram.fsm.state import State, StatesGroup, StatesGroupMeta
 
-from src.routers.admin import general_predictions_add_menu, get_general_prediction_type
-
 
 class GetBirthData(StatesGroup):
     date = State()

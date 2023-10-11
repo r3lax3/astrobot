@@ -22,6 +22,7 @@ buttons_text = {
     'card_of_the_day':               '🃏Карта Дня',
     'general_predictions':           '🌒 Общие прогнозы',
     'moon_in_sign':                  '🌗 Луна в знаке',
+    'about_bot':                     '🤔 О боте',
     'change_timezone':               '✈️Смена часового пояса',
     'tech_support':                  '🔧 Техническая поддержка',
     'prediction_for_date':           '🕓 Прогноз на дату',
@@ -112,7 +113,7 @@ class KeyboardManager:
                 [bt.subscription, bt.prediction],
                 [bt.dreams, bt.card_of_the_day],
                 [bt.general_predictions, bt.moon_in_sign],
-                [bt.compatibility],
+                [bt.compatibility, bt.about_bot],
                 [bt.profile_settings, bt.tech_support]
             ]
         )

@@ -295,7 +295,7 @@ general_prediction_not_added = '''
 # ADMIN
 
 admin_menu = '''
-#admin_menu
+<b>-----=== Админ-панель ===-----</b>
 '''
 
 
@@ -303,15 +303,16 @@ admin_menu = '''
 
 
 choose_general_prediction_type = '''
-#choose_general_prediction_type
+Выберите тип общего прогноза, который вы хотите добавить
 '''
 enter_general_prediction_date = '''
-#add_general_prediction_on_day
-
 Выбранный тип прогноза: {type}
+Указанная дата: ____
+
+Укажите дату, соответствующую типу прогноза.
 '''
 enter_general_prediction_text = '''
-#enter_general_prediction_text
+Информация о прогнозе:
 
 Выбранный тип прогноза: {type}
 Указанная дата: {date}
@@ -319,53 +320,55 @@ enter_general_prediction_text = '''
 На эту дату текста не обнаружено. Отправьте его, если хотите добавить
 '''
 enter_general_prediction_text_already_added= '''
-#enter_general_prediction_text_already_added
+<b>На эту дату текст уже добавлен.</b>
+
+Информация о прогнозе:
 
 Выбранный тип прогноза: {type}
 Указанная дата: {date}
 
-На эту дату текст уже добавлен: 
-
-
-
+"""
 {text}
-
-
+"""
 
 Отправьте новый текст если желаете его изменить.
 '''
 general_prediction_added = '''
-#general_prediction_added
+<b>Прогноз успешно добавлен!</b>
 
 Выбранный тип прогноза: {type}
 Указанная дата: {date}
 
-Текст прогноза: 
+Текст прогноза:
 
+"""
 {text}
+"""
 '''
 
 # User settings
 
 send_user_message_for_identification = '''
-#send_user_message_for_identification
+Перешлите сообщение от пользователя чтобы бот мог идентифицировать его
 '''
 user_info = '''
-#user_info
+<b>Информация о пользователе</b>
 
 Конец подписки: {subscription_end}
 Неиспользованных прогнозов: {unused_predictions}
 '''
 user_not_found = '''
-#user_not_found
+Пользователь не найден. Или он никогда не заходил в этого бота, или вы отправили сообщение не от того человека
 '''
 enter_new_subscription_end_date = '''
-#enter_new_subscription_end_date
+Введите новую дату окончания подписки (в формате "ДД.ММ.ГГГГ ЧЧ:ММ", например "01.01.2024 7:59"). 
+Эта дата будет записана в международном формате, тобишь часовой пояс +0
 '''
 changed_subscription_end_date = '''
-#changed_subscription_end_date
+<b>Информация о пользователе</b>
 
 Предыдущая дата окончания подписки - {past_sub_end_date}
+
 Новая дата, которую вы указали - {changed_date}
 Неиспользованных прогнозов: {unused_predictions}
 '''

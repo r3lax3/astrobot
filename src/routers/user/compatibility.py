@@ -11,7 +11,7 @@ from src.database.database import Database, User as DBUser
 r = Router()
 
 
-@r.message(F.text == bt.compability)
+@r.message(F.text == bt.compatibility)
 async def compability_menu(
     message: Message,
     state: FSMContext,
@@ -32,4 +32,5 @@ async def compability_menu(
             reply_markup=keyboards.gender_not_choosen
         )
     await state.update_data(del_messages=[bot_message.message_id])
+
 

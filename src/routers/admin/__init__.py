@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from aiogram import F, Router
+from aiogram import F, Bot, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -30,7 +30,7 @@ pred_type_to_date_fmt = {
 }
 
 
-@r.message(Command(commands=['/admin']), F.from_user.id.in_(admins))
+@r.message(Command(commands=['admin']), F.from_user.id.in_(admins))
 async def adminpanel(
     message: Message,
     state: FSMContext,
@@ -85,7 +85,11 @@ async def get_general_prediction_date(
     keyboards: KeyboardManager
 ):
     await state.update_data(general_predictions_type=callback.data)
-    await enter_general_prediction_date(callback, state, keyboards)
+    await enter_general_prediction_date(
+        callback.message, 
+        state, 
+        keyboards
+    )
 
 
 async def enter_general_prediction_date(
@@ -238,7 +242,7 @@ async def get_user_message(
 
 @r.callback_query(
     AdminStates.user_get_subscription_end_date,
-    bt.back
+    F.data==bt.back
 )
 async def get_user_info_menu_callback_handler(
     callback: CallbackQuery,
@@ -302,6 +306,31 @@ async def change_user_subscription_end_menu(
     )
 
 
+@r.callback_query(
+    AdminStates.user_get_subscription_end_date,
+    F.data == bt.delete_user_subscription
+)
+async def delete_user_subscription(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    scheduler,
+    bot: Bot
+):
+    await state.update_data(
+        new_subscription_end_date=datetime.utcnow().strftime(datetime_format)
+    )
+    await change_user_subscription_end_date(
+        callback.message, 
+        state, 
+        keyboards, 
+        database,
+        scheduler,
+        bot
+    )
+
+
 @r.message(
     AdminStates.user_get_subscription_end_date, 
     F.text, 
@@ -311,15 +340,44 @@ async def get_user_subscription_end_date(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database
+    database: Database,
+    scheduler,
+    bot: Bot
+
+):
+    await state.update_data(
+        new_subscription_end_date=message.text
+    )
+    await change_user_subscription_end_date(
+        message, 
+        state, 
+        keyboards, 
+        database,
+        scheduler,
+        bot
+    )
+
+async def change_user_subscription_end_date(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    scheduler,
+    bot: Bot
 ):
     data = await state.get_data()
+
     database.update_subscription_end_date(
         user_id=data['user_id'],
         date=datetime.strptime(
-            message.text, 
+            data['new_subscription_end_date'], 
             datetime_format
         ) 
+    )
+    await scheduler.edit_send_message_job(
+        user_id=data['user_id'],
+        database=database,
+        bot=bot
     )
     user = database.get_user(user_id=data['user_id'])
 

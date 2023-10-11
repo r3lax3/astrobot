@@ -18,19 +18,22 @@ class DeleteMessagesMiddleware(BaseMiddleware):
         state_data = await data['state'].get_data()
 
         messages_ids = state_data.get('del_messages', [])
-        main_menu_message_id = state_data['main_menu_message_id']
+        main_menu_message_id = state_data.get('main_menu_message_id', None)
         # logging.info(f'{main_menu_message_id = }')
         
         user: User = data["event_from_user"]
         bot = data['bot']
 
-        for message_id in messages_ids:
-            if not message_id == main_menu_message_id:
-                try:
-                    await bot.delete_message(chat_id=user.id, message_id=message_id)
-                    # logging.info(f'del message with id = {message_id}')
-                except TelegramBadRequest:
-                    pass
+        if main_menu_message_id is not None:
+
+            for message_id in messages_ids:
+                if not message_id == main_menu_message_id:
+
+                    try:
+                        await bot.delete_message(chat_id=user.id, message_id=message_id)
+                        # logging.info(f'del message with id = {message_id}')
+                    except TelegramBadRequest:
+                        pass
 
         result = await handler(event, data)
         if not isinstance(event, Message):

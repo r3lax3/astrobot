@@ -1,14 +1,18 @@
 import datetime as dt
-
 from typing import Union
+
+from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from timezonefinder import TimezoneFinder
 from aiogram import Bot
 
 from src import config
+from src.utils import get_timezone_offset
 from src.database import Database
 from src.routers.user.prediction import get_prediction_text
 
+datetime_format: str = config.get('database.datetime_format')
 date_format: str = config.get('database.date_format')
 time_format: str = config.get('database.time_format')
 
@@ -105,22 +109,24 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
         subscription_end_datetime = dt.datetime.strptime(
             user.subscription_end_date, 
-            "%d.%m.%Y %H:%M"
+            datetime_format
+        )
+        if not subscription_end_datetime > dt.datetime.utcnow():
+            return
+
+        current_location = database.get_location(
+            location_id=user.current_location_id
+        )
+
+        timezone_str = self._get_timezone(
+            longitude=current_location.longitude, 
+            latitude=current_location.latitude
         )
         time = dt.datetime.strptime(
             user.every_day_prediction_time, 
             time_format
         )
         hour, minute = time.hour, time.minute
-
-        current_location = database.get_location(
-            location_id=user.current_location_id
-        )
-        timezone_str = self._get_timezone(
-            longitude=current_location.longitude, 
-            latitude=current_location.latitude
-        )
-
         self.add_task(
             self._send_message, 'cron', str(user_id), 
             hour=hour, minute=minute, 
@@ -151,10 +157,12 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         """
         Update the daily prediction and renewal reminder tasks for a user.
         """
-
-        self.remove_task(str(user_id))
-        for hours_before_end in reminder_times:
-            self.remove_task(("reminder", user_id, hours_before_end))
+        try:
+            self.remove_task(str(user_id))
+            for hours_before_end in reminder_times:
+                self.remove_task(("reminder", user_id, hours_before_end))
+        except JobLookupError:
+            pass
 
         await self.add_send_message_job(user_id, database, bot)
 
