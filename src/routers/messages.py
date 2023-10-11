@@ -359,3 +359,13 @@ user_info = '''
 user_not_found = '''
 #user_not_found
 '''
+enter_new_subscription_end_date = '''
+#enter_new_subscription_end_date
+'''
+changed_subscription_end_date = '''
+#changed_subscription_end_date
+
+Предыдущая дата окончания подписки - {past_sub_end_date}
+Новая дата, которую вы указали - {changed_date}
+Неиспользованных прогнозов: {unused_predictions}
+'''

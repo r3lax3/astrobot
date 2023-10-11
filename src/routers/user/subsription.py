@@ -206,7 +206,7 @@ async def check_payment_status(
             await get_payment_menu(bot_message, state, keyboards)
             return
         case 'waiting_for_capture':
-            database.update_subscription_end_date(
+            database.add_period_to_subscription_end_date(
                 user_id=event_from_user.id, 
                 period=timedelta(
                     days=data['months'] * 30

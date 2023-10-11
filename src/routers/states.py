@@ -53,6 +53,8 @@ class AdminStates(StatesGroup):
     get_general_prediction_text = State()
 
     get_user_message = State()
+    user_info_menu = State()
+    user_get_subscription_end_date = State()
 
     action_ended = State()
 

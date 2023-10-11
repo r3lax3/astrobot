@@ -145,7 +145,7 @@ class Database:
         query = "DELETE FROM users"
         self.execute_query(query, kwargs={'user_id': user_id})
 
-    def update_subscription_end_date(
+    def add_period_to_subscription_end_date(
         self, 
         user_id: int, 
         period: timedelta
@@ -170,6 +170,31 @@ class Database:
             query=query,
             params=(
                 (start + period).strftime(database_datetime_format),
+            ),
+            kwargs={'user_id': user_id}
+        )
+
+    def update_subscription_end_date(
+        self, 
+        user_id: int, 
+        date: datetime
+    ) -> None:
+        user: User = self.get_user(user_id)
+        current_location = self.get_location(
+            user.current_location_id
+        )
+
+        time_offset: int = get_timezone_offset(
+            current_location.latitude, 
+            current_location.longitude
+        )
+        new_subscription_end_date = date + timedelta(hours=time_offset)
+
+        query = "UPDATE users SET subscription_end_date = ?"
+        self.execute_query(
+            query=query,
+            params=(
+                new_subscription_end_date.strftime(database_datetime_format),
             ),
             kwargs={'user_id': user_id}
         )
