@@ -395,7 +395,7 @@ async def get_prediction_text(
 
     text = await future
     database.add_viewed_prediction(
-        user_id=event_from_user.id,
+        user_id=user_id,
         prediction_date=target_date.strftime(date_format)
     )
     return text
