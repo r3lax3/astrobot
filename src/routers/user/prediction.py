@@ -218,7 +218,7 @@ def filtered_and_formatted_prediction(
                 '<strong>🌟В первой половине дня🌟</strong>\n\n'
                 f'{first_half_moon_events_formatted or messages.neutral_background}\n'
                 '<strong>🌟Во второй половине дня🌟</strong>\n\n'
-                f'{second_half_moon_events_formatted or messages.neutral_background}'
+f'{second_half_moon_events_formatted or messages.neutral_background}'
             )
 
     # p2 = time.time() - start - p1
