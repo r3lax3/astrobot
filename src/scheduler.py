@@ -10,6 +10,7 @@ from aiogram import Bot
 from src import config
 from src.utils import get_timezone_offset
 from src.database import Database
+from src.routers import messages
 from src.routers.user.prediction import get_prediction_text
 
 datetime_format: str = config.get('database.datetime_format')
@@ -93,7 +94,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         """
         await bot.send_message(
             chat_id=user_id, 
-            text="Your subscription is about to end! Please renew."
+            text=messages.renew_subscription_remind
         )
 
     async def add_send_message_job(

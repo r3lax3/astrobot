@@ -276,6 +276,11 @@ payment_canceled = '''
 payment_check_error = '''
 #payment_check_error
 '''
+renew_subscription_remind = '''
+#renew_subscription_remind
+
+Ваша подписка подходит к концу. Не забудьте её продолжить.
+'''
 
 
 # General prediction
