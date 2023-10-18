@@ -225,7 +225,7 @@ async def check_payment_status(
         case _:
             payment_end_message = await callback.message.answer(
                 messages.payment_check_error,
-                reply_markup=payment_canceled
+                reply_markup=keyboards.payment_canceled
             )
     await state.update_data(del_messages=[payment_end_message.message_id])
     await state.set_state(Subscription.payment_ended)
