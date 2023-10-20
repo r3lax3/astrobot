@@ -43,7 +43,10 @@ async def adminpanel(
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.choose_action)
 
-
+@r.callback_query(
+    AdminStates.get_general_prediction_date,
+    F.data == bt.back
+)
 @r.callback_query(F.data == bt.back_to_adminpanel)
 async def adminpane_callback_query_handler(
     callback: CallbackQuery,
@@ -54,8 +57,8 @@ async def adminpane_callback_query_handler(
 
 
 @r.callback_query(
-    AdminStates.get_general_prediction_date, 
-    F.date == bt.back
+    AdminStates.get_general_prediction_date,
+    F.data == bt.back
 )
 @r.callback_query(
     AdminStates.choose_action, 
@@ -78,8 +81,10 @@ async def general_predictions_add_menu(
     )
 
 
-@r.callback_query(AdminStates.choose_general_prediction_type)
-async def get_general_prediction_date(
+@r.callback_query(
+    AdminStates.choose_general_prediction_type
+)
+async def get_general_prediction_date_menu(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager
@@ -111,7 +116,10 @@ async def enter_general_prediction_date(
     await state.set_state(AdminStates.get_general_prediction_date)
 
 
-@r.message(AdminStates.get_general_prediction_date, F.text)
+@r.message(
+    AdminStates.get_general_prediction_date, 
+    F.text
+)
 async def get_general_prediction_date(
     message: Message,
     state: FSMContext,
@@ -126,8 +134,15 @@ async def get_general_prediction_date(
             pred_type_to_date_fmt[data['general_predictions_type']]
         )
 
-        await state.update_data(general_prediction_date=message.text)
-        await enter_general_prediction_text(message, state, keyboards, database)
+        await state.update_data(
+            general_prediction_date=message.text
+        )
+        await enter_general_prediction_text(
+            message,
+            state,
+            keyboards,
+            database
+        )
     except ValueError:
         await get_general_prediction_date_error_hendler(
             message, 
@@ -215,7 +230,10 @@ async def get_general_prediction_text(
     await state.set_state(AdminStates.action_ended)
 
 
-@r.callback_query(AdminStates.choose_action, F.data == bt.user_settings)
+@r.callback_query(
+    AdminStates.choose_action,
+    F.data == bt.user_settings
+)
 async def user_settings_menu(
     callback: CallbackQuery,
     state: FSMContext,

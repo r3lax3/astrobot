@@ -137,25 +137,32 @@ async def yookassa_payment(
     data = await state.get_data()
     price = months_to_rub_price[data['months']]
     months_str = months_to_str_months[data['months']]
-    idempotence_key  = str(uuid.uuid4())
+    
+    idempotence_key = str(uuid.uuid4())
     
     # Ниже я получаю дату автоматической отмены платежа, которая должна быть спустя 6 часов после создания платежа
     now = datetime.utcnow()
     payment_auto_cancel_datetime = (now + timedelta(hours=6)).replace(microsecond=0).isoformat() + 'Z' 
     
-    payment = Payment.create({
-        "amount": {
-            "value": f"{price}",
-            "currency": "RUB"
-        },
-        "confirmation": {
-            "type": "redirect",
-            "return_url": return_url 
-        },
-        "capture": False,
-        "expires_at": payment_auto_cancel_datetime,
-        "description": f"Покупка/Продление подписки на АстроНавигатор, {months_str}"
-    }, idempotence_key)
+    payment = Payment.create(
+        {
+            "amount": {
+                "value": f"{price}",
+                "currency": "RUB"
+            },
+            "confirmation": {
+                "type": "redirect",
+                "return_url": return_url 
+            },
+            "capture": 
+                False,
+            "expires_at": 
+                payment_auto_cancel_datetime,
+            "description": 
+                f"Покупка/Продление подписки на АстроНавигатор, {months_str}"
+        }, 
+        idempotence_key
+    )
 
     await state.update_data(
         redirect_url=payment.confirmation.confirmation_url,
@@ -182,12 +189,18 @@ async def get_payment_menu(
         )
     )
     await state.update_data(
-        del_messages=[bot_message.message_id, message.message_id]
+        del_messages=[
+            bot_message.message_id, 
+            message.message_id
+        ]
     )
     await state.set_state(Subscription.check_payment_status)
 
 
-@r.callback_query(Subscription.check_payment_status, F.data == bt.check_payment_status)
+@r.callback_query(
+    Subscription.check_payment_status, 
+    F.data == bt.check_payment_status
+)
 async def check_payment_status(
     callback: CallbackQuery,
     state: FSMContext,
@@ -227,6 +240,8 @@ async def check_payment_status(
                 messages.payment_check_error,
                 reply_markup=keyboards.payment_canceled
             )
-    await state.update_data(del_messages=[payment_end_message.message_id])
+    await state.update_data(
+        del_messages=[payment_end_message.message_id]
+    )
     await state.set_state(Subscription.payment_ended)
 
