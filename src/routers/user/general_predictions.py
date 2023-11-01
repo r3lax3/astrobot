@@ -23,7 +23,9 @@ pred_type_to_date_fmt = {
 }
 
 
-@r.callback_query(F.data == bt.general_predictions)
+@r.callback_query(
+    F.data == bt.general_predictions
+)
 async def general_predictions_menu(
     callback: CallbackQuery,
     state: FSMContext,
@@ -47,7 +49,9 @@ async def general_predictions_menu(
     await state.set_state(MainMenu.general_predictions_get_type)
 
 
-@r.callback_query(MainMenu.general_predictions_get_type)
+@r.callback_query(
+    MainMenu.general_predictions_get_type
+)
 async def get_prediction_type(
     callback: CallbackQuery,
     state: FSMContext,

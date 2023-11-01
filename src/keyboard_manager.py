@@ -67,15 +67,11 @@ class KeyboardManager:
     def __init__(self, database: Database):
         self.database = database
         
-        
-        # ADMIN
-
-
-
+     
         # Birth data
         
 
-        self.start = self.build_keyboard_from_structure(
+        self.enter_birth_data = self.build_keyboard_from_structure(
             [
                 [bt.enter_birth_data]
             ],

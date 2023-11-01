@@ -1,4 +1,4 @@
-from aiogram.fsm.state import State, StatesGroup, StatesGroupMeta
+from aiogram.fsm.state import State, StatesGroup
 
 
 class GetBirthData(StatesGroup):
@@ -19,6 +19,9 @@ class ProfileSettings(StatesGroup):
 
 
 class MainMenu(StatesGroup):
+    get_name = State()
+    enter_birth_date = State()
+
     choose_action = State()
 
     prediction_access_denied = State()

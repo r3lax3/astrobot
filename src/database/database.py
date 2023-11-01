@@ -8,8 +8,12 @@ from src.utils import get_timezone_offset
 from src.database.models import User, Location, Interpretation
 
 
-database_datetime_format: str = config.get('database.datetime_format')
-date_format: str = config.get('database.date_format')
+database_datetime_format: str = config.get(
+    'database.datetime_format'
+)
+date_format: str = config.get(
+    'database.date_format'
+)
 
 
 
@@ -57,7 +61,8 @@ class Database:
     def add_user(
         self, 
         user_id, 
-        role, 
+        name,
+        role,
         birth_datetime, 
         birth_location: Location, 
         current_location: Location | None,
@@ -73,7 +78,8 @@ class Database:
         self.execute_query(
             query="""
                 INSERT OR REPLACE INTO users (
-                    user_id, 
+                    user_id,
+                    name,
                     role, 
                     birth_datetime, 
                     birth_location_id, 
@@ -82,10 +88,11 @@ class Database:
                     subscription_end_date,
                     gender
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             params=(
-                user_id, 
+                user_id,
+                name,
                 role, 
                 birth_datetime, 
                 birth_location_id, 
@@ -99,7 +106,8 @@ class Database:
     def get_user(self, user_id: int) -> User | None:
         query = """
         SELECT 
-            user_id, 
+            user_id,
+            name,
             role, 
             birth_datetime, 
             birth_location_id, 
@@ -109,19 +117,36 @@ class Database:
             gender
         FROM users
         """
-        result = self.execute_query(query, kwargs={'user_id': user_id}, fetchone=True)
+        result = self.execute_query(
+            query, 
+            kwargs={'user_id': user_id},
+            fetchone=True
+        )
         if result:
             return User(*result)
 
-    def update_user_every_day_prediction_time(self, user_id: int, hour: int, minute: int):
-        query = 'UPDATE users SET every_day_prediction_time=? WHERE user_id=?'
+    def update_user_every_day_prediction_time(
+        self, 
+        user_id: int,
+        hour: int, 
+        minute: int
+    ):
+        query = '''
+        UPDATE users 
+        SET every_day_prediction_time = ? 
+        WHERE user_id = ?
+        '''
 
         time = "{:02d}:{:02d}".format(hour, minute)
         params = (time, user_id)
 
         self.execute_query(query, params=params)
 
-    def update_user_current_location(self, user_id: int, new_location: Location):
+    def update_user_current_location(
+        self,
+        user_id: int, 
+        new_location: Location
+    ):
         # 1. Get the current location id of the user
         user = self.get_user(user_id)
         if user is not None:
@@ -132,9 +157,14 @@ class Database:
 
             # 3. Update the user's current location id
             query = """
-                UPDATE users SET current_location_id=? WHERE user_id=?
+                UPDATE users 
+                SET current_location_id=? 
+                WHERE user_id=?
             """
-            self.execute_query(query, params=(new_location_id, user_id))
+            self.execute_query(
+                query,
+                params=(new_location_id, user_id)
+            )
 
             # 4. Delete the old location from the locations table
             self.delete_location(old_location_id)
@@ -232,22 +262,42 @@ class Database:
         
         location_id =  self.cursor.lastrowid
         if location_id is None:
-            raise Exception('Айдишник не возвращается, хотя должен. Ошибка в add_location')
+            raise Exception(
+                'Айдишник не возвращается, хотя должен. Ошибка в add_location'
+            )
         else:
             return location_id
 
     def get_location(self, location_id: int) -> Location:
         query = "SELECT id, type, longitude, latitude FROM locations"
-        result = self.execute_query(query, kwargs={'id': location_id}, fetchone=True)
+        result = self.execute_query(
+            query, 
+            kwargs={'id': location_id}, 
+            fetchone=True
+        )
         if result:
             return Location(*result)
-        raise Exception(f'Чет локейшн в табличке с юзерами записан, а самой локации нет. Айди - {location_id}')
+        raise Exception(
+            'Чет локейшн в табличке с юзерами записан, а самой локации нет. '
+            f'Айди - {location_id}'
+        )
 
     def update_location(self, location: Location):
         query = """
-        UPDATE locations SET longitude=?, latitude=? WHERE id=?
+        UPDATE locations 
+        SET 
+            longitude = ?, 
+            latitude = ? 
+        WHERE id=?
         """
-        self.execute_query(query, params=(location.longitude, location.latitude, location.id))
+        self.execute_query(
+            query, 
+            params=(
+                location.longitude, 
+                location.latitude, 
+                location.id
+            )
+        )
 
     def delete_location(self, location_id: int):
         query = "DELETE FROM locations"
@@ -255,21 +305,42 @@ class Database:
 
     # Interpretations table methods
 
-    def get_interpretation(self, natal_planet: str, transit_planet: str, aspect: str) -> Optional[str]:
+    def get_interpretation(
+        self, 
+        natal_planet: str,
+        transit_planet: str,
+        aspect: str
+    ) -> Optional[str]:
         query = """
         SELECT interpretation
         FROM interpretations
         WHERE natal_planet = ? AND transit_planet = ? AND aspect = ?
         """
-        result = self.execute_query(query, params=(natal_planet, transit_planet, aspect), fetchone=True)
+        result = self.execute_query(
+            query, 
+            params=(
+                natal_planet, 
+                transit_planet, 
+                aspect
+            ),
+            fetchone=True
+        )
         if result:
             return result[0]
         return None
 
     # Create
-    def add_or_update_interpretation(self, interpretation_obj: Interpretation):
+    def add_or_update_interpretation(
+        self, 
+        interpretation_obj: Interpretation
+    ):
         query = """
-        INSERT OR REPLACE INTO interpretations (natal_planet, transit_planet, aspect, interpretation)
+        INSERT OR REPLACE INTO interpretations (
+            natal_planet, 
+            transit_planet,
+            aspect, 
+            interpretation
+        )
         VALUES (?, ?, ?, ?)
         """
         self.execute_query(
@@ -285,18 +356,32 @@ class Database:
     # General Predictions
 
     # Create
-    def add_general_prediction(self, date: str, prediction: str):
+    def add_general_prediction(
+        self, 
+        date: str,
+        prediction: str
+    ):
         query = """
-            INSERT OR REPLACE INTO general_predictions (date, prediction)
+            INSERT OR REPLACE INTO general_predictions (
+                date, 
+                prediction
+            )
             VALUES (?, ?)
         """
-        self.execute_query(query, params=(date, prediction))
+        self.execute_query(
+            query, 
+            params=(date, prediction)
+        )
 
     def get_general_prediction(self, date: str) -> Optional[str]:
         query = """
             SELECT prediction FROM general_predictions
         """
-        result = self.execute_query(query, kwargs={'date': date}, fetchone=True)
+        result = self.execute_query(
+            query, 
+            kwargs={'date': date},
+            fetchone=True
+        )
         if result:
             return result[0]
         return None
@@ -309,24 +394,44 @@ class Database:
     # Viewed Predictions
 
     # Create
-    def add_viewed_prediction(self, user_id: int, prediction_date: str):
+    def add_viewed_prediction(
+        self, 
+        user_id: int, 
+        prediction_date: str
+    ):
         query = """
-            INSERT OR REPLACE INTO viewed_predictions (user_id, prediction_date)
-            VALUES (?, ?)
+        INSERT OR REPLACE INTO viewed_predictions (
+            user_id, 
+            prediction_date
+        )
+        VALUES (?, ?)
         """
-        self.execute_query(query, params=(user_id, prediction_date))
+        self.execute_query(
+            query, 
+            params=(user_id, prediction_date)
+        )
 
     # Read
     def get_viewed_predictions_by_user(self, user_id: int) -> list:
         query = """
-            SELECT prediction_date, view_timestamp FROM viewed_predictions
+            SELECT prediction_date, view_timestamp 
+            FROM viewed_predictions
         """
-        return self.execute_query(query, kwargs={'user_id': user_id}, fetchall=True)
+        return self.execute_query(
+            query,
+            kwargs={'user_id': user_id}, 
+            fetchall=True
+        )
 
-    def get_unviewed_predictions_count(self, user_id: int) -> int | None:
+    def get_unviewed_predictions_count(
+        self,
+        user_id: int
+    ) -> int | None:
         # Get the user and their details.
         user = self.get_user(user_id)
-        current_location = self.get_location(user.current_location_id)
+        current_location = self.get_location(
+            user.current_location_id
+        )
 
         # Calculate the current date using the user's timezone.
         time_offset: int = get_timezone_offset(
@@ -366,12 +471,26 @@ class Database:
 
         # Return the number of unviewed predictions.
         unviewed_predictions = days_left - viewed_dates_count
-        return max(0, unviewed_predictions)  # Ensuring the result is non-negative.
+         # Ensuring the result is non-negative.
+        return max(0, unviewed_predictions) 
 
     # Delete
-    def delete_viewed_prediction(self, user_id: int, prediction_date: str):
-        query = "DELETE FROM viewed_predictions WHERE user_id=? AND prediction_date=?"
-        self.execute_query(query, params=(user_id, prediction_date))
+    def delete_viewed_prediction(
+        self, 
+        user_id: int,
+        prediction_date: str
+    ):
+        query = """
+        DELETE FROM viewed_predictions
+        WHERE 
+            user_id=? 
+            AND 
+            prediction_date=?
+        """
+        self.execute_query(
+            query, 
+            params=(user_id, prediction_date)
+        )
 
         
     # MandatorySubChannel table methods

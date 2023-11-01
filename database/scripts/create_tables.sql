@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
 	user_id	BIGINT PRIMARY KEY,
+  name TEXT,
 	role VARCHAR(10),
 	birth_datetime TEXT,
 	birth_location_id INTEGER,

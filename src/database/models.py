@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class User:
     user_id: int
+    name: str
     role: str
     birth_datetime: str
     birth_location_id: int

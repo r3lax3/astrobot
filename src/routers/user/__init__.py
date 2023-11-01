@@ -39,18 +39,32 @@ r.include_routers(
     general_predictions_router
 )
 
-start_video: str = config.get('files.start_video')
-database_datetime_format: str = config.get('database.datetime_format')
-not_implemented_list = [bt.dreams, bt.card_of_the_day, bt.moon_in_sign]
+start_video: str = config.get(
+    'files.start_video'
+)
+database_datetime_format: str = config.get(
+    'database.datetime_format'
+)
+not_implemented_list = [
+    bt.dreams, 
+    bt.card_of_the_day, 
+    bt.moon_in_sign
+]
 
 
-@r.callback_query(F.data == 'Попробовать зайти ещё раз')
+@r.callback_query(
+    F.data == 'Попробовать зайти ещё раз'
+)
 async def try_start_again_for_sub(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    await user_command_start_handler(callback.message, state, keyboards)
+    await user_command_start_handler(
+        callback.message,
+        state, 
+        keyboards
+    )
 
 
 
@@ -58,7 +72,6 @@ async def try_start_again_for_sub(
 async def user_command_start_handler(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
     bot: Bot
     # database: Database,
     # event_from_user: User
@@ -66,14 +79,13 @@ async def user_command_start_handler(
     # user = database.get_user(user_id=event_from_user.id)
 
     # if user is None:
-        await start(message, keyboards, state, bot)
+        await start(message, state, bot)
     # else:
     #     await main_menu(message, state, keyboards)
 
 
 async def start(
     message: Message,
-    keyboards: KeyboardManager,
     state: FSMContext,
     bot: Bot
 ):
@@ -91,17 +103,24 @@ async def start(
     
     start_message = await message.answer_video(
         video=start_video,
-        caption=messages.start,
-        reply_markup=keyboards.start
+        caption=messages.start
+    )
+    bot_message = await message.answer(
+        messages.enter_your_name
     )
     await state.update_data(
         main_menu_message_id=start_message.message_id, 
-        start_message_id=start_message.message_id
+        start_message_id=start_message.message_id,
+        del_messages=[bot_message.message_id]
     )
+    await state.set_state(MainMenu.get_name)
 
 
 # Confirm
-@r.callback_query(ProfileSettings.location_confirm, F.data == bt.confirm)
+@r.callback_query(
+    ProfileSettings.location_confirm, 
+    F.data == bt.confirm
+)
 async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
@@ -112,6 +131,8 @@ async def get_current_location_confirmed(
     scheduler: EveryDayPredictionScheduler
 ):
     data = await state.get_data()
+    
+    name = data['name']
     current_location = data['current_location']
 
     if data['first_time']:
@@ -119,15 +140,26 @@ async def get_current_location_confirmed(
         birth_location = data['birth_location']
         
         now = datetime.utcnow()
-        test_period_end = now + timedelta(days=3)
+        test_period_end = now + timedelta(days=5)
 
         database.add_user(
             user_id=event_from_user.id,
+            name=name,
             role='user',
             birth_datetime=birth_datetime,
-            birth_location=Location(id=0, type='birth', **birth_location),
-            current_location=Location(id=0, type='current', **current_location),
-            subscription_end_date=test_period_end.strftime(database_datetime_format),
+            birth_location=Location(
+                id=0,
+                type='birth', 
+                **birth_location
+            ),
+            current_location=Location(
+                id=0,
+                type='current',
+                **current_location
+            ),
+            subscription_end_date=test_period_end.strftime(
+                database_datetime_format
+            ),
             gender=None
         )
         await scheduler.add_send_message_job(
@@ -135,19 +167,33 @@ async def get_current_location_confirmed(
             database=database,
             bot=bot
         )
-        await main_menu(callback.message, state, keyboards, bot)
+        await main_menu(
+            callback.message, 
+            state,
+            keyboards,
+            bot
+        )
 
     else:
         database.update_user_current_location(
             event_from_user.id, 
-            Location(id=0, type='current', **current_location)
+            Location(
+                id=0,
+                type='current', 
+                **current_location
+            )
         )
         await scheduler.edit_send_message_job(
             user_id=event_from_user.id, 
             database=database,
             bot=bot
         )
-        await main_menu(callback.message, state, keyboards, bot)
+        await main_menu(
+            callback.message, 
+            state,
+            keyboards,
+            bot
+        )
 
 
 @r.message(Command(commands=['menu']))
@@ -162,14 +208,23 @@ async def main_menu_command(
     user = database.get_user(user_id=event_from_user.id)
 
     if user is None:
-        bot_message = await message.answer('Вы ещё не ввели данные рождения.')
+        bot_message = await message.answer(
+            'Вы ещё не ввели данные рождения.'
+        )
         await user_command_start_handler(bot_message, state)
     else:
         await main_menu(message, state, keyboards, bot)
 
 
-@r.message(MainMenu.predictin_every_day_choose_action, F.text, F.text == bt.back)
-@r.message(F.text, F.text == bt.main_menu)
+@r.message(
+    MainMenu.predictin_every_day_choose_action, 
+    F.text,
+    F.text == bt.back
+)
+@r.message(
+    F.text, 
+    F.text == bt.main_menu
+)
 async def main_menu(
     message: Message,
     state: FSMContext,
@@ -177,11 +232,17 @@ async def main_menu(
     bot: Bot
 ):
     data = await state.get_data()
-    main_menu_message_id = data.get('main_menu_message_id', None)
+    main_menu_message_id = data.get(
+        'main_menu_message_id',
+        None
+    )
 
     if main_menu_message_id is not None:
         try:
-            await bot.delete_message(chat_id=message.chat.id, message_id=main_menu_message_id)
+            await bot.delete_message(
+                chat_id=message.chat.id, 
+                message_id=main_menu_message_id
+            )
         except TelegramBadRequest:
             pass
 
@@ -198,12 +259,20 @@ async def main_menu(
             reply_markup=keyboards.main_menu
         )
 
-    await state.update_data(del_messages=[message.message_id], main_menu_message_id=main_menu_message.message_id)
+    await state.update_data(
+        del_messages=[message.message_id], 
+        main_menu_message_id=main_menu_message.message_id
+    )
     await state.set_state(MainMenu.choose_action)
 
 
-@r.callback_query(F.data == bt.main_menu)
-@r.callback_query(Subscription.period, F.data == bt.back)
+@r.callback_query(
+    F.data == bt.main_menu
+)
+@r.callback_query(
+    Subscription.period,
+    F.data == bt.back
+)
 async def to_main_menu_button_handler(
     callback: CallbackQuery,
     state: FSMContext,
@@ -235,7 +304,12 @@ async def not_implemented_error_callback_handler(
     keyboards: KeyboardManager,
     bot: Bot
 ):
-    await not_implemented_error(callback.message, state, keyboards, bot)
+    await not_implemented_error(
+        callback.message,
+        state,
+        keyboards,
+        bot
+    )
 
 
 # Всякая хуйня которую я ещё не написал

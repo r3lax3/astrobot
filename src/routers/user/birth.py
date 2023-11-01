@@ -11,7 +11,7 @@ from aiogram.types import (
 from src import config
 from src.utils import get_location_by_coords
 from src.routers import messages
-from src.routers.states import GetBirthData
+from src.routers.states import GetBirthData, MainMenu
 from src.filters import IsDate
 from src.keyboard_manager import KeyboardManager, bt
 
@@ -19,12 +19,75 @@ from src.keyboard_manager import KeyboardManager, bt
 r = Router()
 
 regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"
-database_datetime_format = config.get('database.datetime_format')
-date_format = config.get('database.date_format')
-guide_send_geopos_images_file_id = config.get('files.how_to_send_geopos_screenshots')
+database_datetime_format = config.get(
+    'database.datetime_format'
+)
+date_format = config.get(
+    'database.date_format'
+)
+guide_send_geopos_images_file_id = config.get(
+    'files.how_to_send_geopos_screenshots'
+)
+
+@r.message(
+    MainMenu.get_name, 
+    F.text,
+    len(F.text) <= 20
+)
+async def get_name_success(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    name = message.text
+
+    bot_message = await message.answer(
+        messages.hello.format(
+            name=name
+        ),
+        reply_markup=keyboards.enter_birth_data
+    )
+    await state.update_data(
+        del_messages=[bot_message.message_id],
+        name=name
+    )
+    await state.set_state(MainMenu.enter_birth_date)
 
 
-@r.callback_query(F.data == bt.enter_birth_data)
+@r.message(
+    MainMenu.get_name,
+    F.text, 
+    len(F.text) > 20
+)
+async def get_name_max_length_error(
+    message: Message,
+    state: FSMContext
+):
+    bot_message = await message.answer(
+        messages.get_name_max_length_error
+    )
+    await state.update_data(
+        del_messages=[bot_message.message_id]
+    )
+
+
+@r.message(MainMenu.get_name)
+async def get_name_no_text_error(
+    message: Message,
+    state: FSMContext
+):
+    bot_message = await message.answer(
+        messages.get_name_no_text_error
+    )
+    await state.update_data(
+        del_messages=[bot_message.message_id]
+    )
+
+
+@r.callback_query(
+    MainMenu.enter_birth_date,
+    F.data == bt.enter_birth_data
+)
 async def enter_birth_date_handler(
     callback: CallbackQuery,
     state: FSMContext,
