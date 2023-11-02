@@ -1,5 +1,7 @@
 from aiogram.fsm.state import State, StatesGroup
 
+from src.routers.user.profile_settings import change_name
+
 
 class GetBirthData(StatesGroup):
     date = State()
@@ -15,6 +17,8 @@ class ProfileSettings(StatesGroup):
     location_confirm = State()
 
     choose_gender = State()
+    
+    get_new_name = State()
     
 
 

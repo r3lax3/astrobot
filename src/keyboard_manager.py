@@ -259,6 +259,7 @@ class KeyboardManager:
         self.profile_settings = self.build_keyboard_from_structure(
             [
                 [bt.gender],
+                [bt.name],
                 [bt.change_timezone],
                 [bt.main_menu]
             ],
@@ -271,7 +272,6 @@ class KeyboardManager:
             ],
             is_inline=True
         )
-
 
         # General Predictions
 

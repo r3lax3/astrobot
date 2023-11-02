@@ -407,6 +407,12 @@ changed_subscription_end_date = '''
 Неиспользованных прогнозов: {unused_predictions}
 '''
 
+change_name = '''
+#change_name
+
+📝 {name}, укажите новое имя для вашего профиля:
+'''
+
 no_interpretation = '''
 Не обнаружено интерпретации для Т. {transit_planet} - Н. {natal_planet}, {aspect}
 '''
