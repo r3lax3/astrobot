@@ -51,20 +51,40 @@ database_datetime_format: str = config.get(
 date_format: str = config.get(
     'database.date_format'
 )
+
 time_format: str = config.get(
     'database.time_format'
-)
-
-days: dict = config.get(
-    'constants.days'
-)
-months: dict = config.get(
-    'constants.months'
 )
 
 wait_sticker = config.get(
     'files.wait_sticker'
 )
+
+days = [
+    "Понедельник",
+    "Вторник",
+    "Среда",
+    "Четверг",
+    "Пятница",
+    "Суббота",
+    "Воскресенье",
+]
+months = [
+    "января",
+    "февраля",
+    "марта",
+    "апреля",
+    "мая",
+    "июня",
+    "июля",
+    "августа",
+    "сентября",
+    "октября",
+    "ноября",
+    "декабря",
+]
+
+
 
 with open(
     file='interpretations.csv', 
@@ -84,7 +104,7 @@ for interpretation in interpretations:
         (
             interpretation[0], 
             interpretation[1], 
-            int(interpretation[2])
+            interpretation[2]
         )
     ] = Interpretation(*interpretation)  
 
@@ -104,7 +124,7 @@ PLANET_ID_TO_NAME_RU = {
 r = Router()
 
 
-def formatted_day_events(events: List[AstroEvent]) -> str:
+def formatted_general_events(events: List[AstroEvent]) -> str:
     interpretations = []
     for event in events:
         transit_planet = PLANET_ID_TO_NAME_RU[event.transit_planet]
@@ -203,7 +223,7 @@ def filtered_and_formatted_prediction(
 
     # Day events
     day_events_formatted = (
-        formatted_day_events(day_events)
+        formatted_general_events(day_events)
         if day_events
         else None
     )
