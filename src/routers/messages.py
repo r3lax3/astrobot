@@ -406,3 +406,7 @@ changed_subscription_end_date = '''
 Новая дата, которую вы указали - {changed_date}
 Неиспользованных прогнозов: {unused_predictions}
 '''
+
+no_interpretation = '''
+Не обнаружено интерпретации для Т. {transit_planet} - Н. {natal_planet}, {aspect}
+'''

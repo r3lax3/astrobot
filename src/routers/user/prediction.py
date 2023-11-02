@@ -7,6 +7,7 @@ import csv
 
 from datetime import datetime, timedelta
 from typing import List
+from dataclasses import dataclass
 
 from aiogram import Router, Bot, exceptions, F
 from aiogram.fsm.context import FSMContext
@@ -33,16 +34,37 @@ from src.prediction_analys import (
 from src.image_processing import generate_image_with_date_for_prediction
 
 
+@dataclass
+class Interpretation:
+    natal_planet: str
+    transit_planet: str
+    aspect: int
+    general: str
+    favorably: str
+    unfavorably: str
+
+
 regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"
-database_datetime_format: str = config.get('database.datetime_format')
-date_format: str = config.get('database.date_format')
-time_format: str = config.get('database.time_format')
+database_datetime_format: str = config.get(
+    'database.datetime_format'
+)
+date_format: str = config.get(
+    'database.date_format'
+)
+time_format: str = config.get(
+    'database.time_format'
+)
 
+days: dict = config.get(
+    'constants.days'
+)
+months: dict = config.get(
+    'constants.months'
+)
 
-days: dict = config.get('constants.days')
-months: dict = config.get('constants.months')
-
-wait_sticker = config.get('files.wait_sticker')
+wait_sticker = config.get(
+    'files.wait_sticker'
+)
 
 with open(
     file='interpretations.csv', 
@@ -50,12 +72,21 @@ with open(
     newline="", 
     encoding="utf-8"
 ) as file:
-    interpretations = [row for row in csv.reader(file)]
+    interpretations = [
+        row 
+        for row in csv.reader(file)
+    ]
 
 interpretations_dict = {}
-for intrpr in interpretations:
+for interpretation in interpretations:
     # key is tuple(transit_planet, natal_planet, event_aspect)
-    interpretations_dict[( intrpr[0], intrpr[1], int(intrpr[2]) )] = intrpr  
+    interpretations_dict[
+        (
+            interpretation[0], 
+            interpretation[1], 
+            int(interpretation[2])
+        )
+    ] = Interpretation(*interpretation)  
 
 PLANET_ID_TO_NAME_RU = {
     0: "Солнце",
@@ -74,21 +105,28 @@ r = Router()
 
 
 def formatted_day_events(events: List[AstroEvent]) -> str:
-    intrprs = []
+    interpretations = []
     for event in events:
         transit_planet = PLANET_ID_TO_NAME_RU[event.transit_planet]
         natal_planet = PLANET_ID_TO_NAME_RU[event.natal_planet]
+        aspect=event.aspect
 
         key = (transit_planet, natal_planet, event.aspect)
         interpretation = interpretations_dict.get(key)
 
         if not interpretation:
             logging.info(
-                f'Не обнаружено интерпретации для Т. {transit_planet} - Н. {natal_planet}, {event.aspect}'
+                messages.no_interpretation.format(
+                    transit_planet=transit_planet,
+                    natal_planet=natal_planet,
+                    aspect=aspect
+                )
             )
             continue
-        intrprs.append(f'{interpretation[3]}')
-    return '\n'.join(intrprs)
+        interpretations.append(
+            f'{interpretation.general}'
+        )
+    return '\n'.join(interpretations)
 
 
 def formatted_moon_events(events: List[AstroEvent]):
@@ -98,18 +136,23 @@ def formatted_moon_events(events: List[AstroEvent]):
     for event in events:
         transit_planet = PLANET_ID_TO_NAME_RU[event.transit_planet]
         natal_planet = PLANET_ID_TO_NAME_RU[event.natal_planet]
+        aspect=event.aspect
 
         key = (transit_planet, natal_planet, event.aspect)
         interpretation = interpretations_dict.get(key)
 
         if not interpretation:
             logging.info(
-                f'Не обнаружено интерпретации для Т. {transit_planet} - Н. {natal_planet}, {event.aspect}'
+                messages.no_interpretation.format(
+                    transit_planet=transit_planet,
+                    natal_planet=natal_planet,
+                    aspect=aspect
+                )
             )
             continue
 
-        favourably.append(interpretation[4])
-        unfavourably.append(interpretation[5])
+        favourably.append(interpretation.favorably)
+        unfavourably.append(interpretation.unfavorably)
 
     favourably = '\n'.join(favourably)
     unfavourably = '\n'.join(unfavourably)
@@ -159,7 +202,11 @@ def filtered_and_formatted_prediction(
     ]
 
     # Day events
-    day_events_formatted = formatted_day_events(day_events) if day_events else None
+    day_events_formatted = (
+        formatted_day_events(day_events)
+        if day_events
+        else None
+    )
 
     # Moon events
     first_half_moon_events = [
@@ -169,7 +216,9 @@ def filtered_and_formatted_prediction(
         and start_of_day < event.peak_at < middle_of_day
     ]
     first_half_moon_events_formatted = (
-        formatted_moon_events(first_half_moon_events) if first_half_moon_events else None
+        formatted_moon_events(first_half_moon_events) 
+        if first_half_moon_events
+        else None
     )
 
     second_half_moon_events = [
@@ -179,7 +228,9 @@ def filtered_and_formatted_prediction(
         and middle_of_day < event.peak_at < end_of_day
     ]
     second_half_moon_events_formatted = (
-        formatted_moon_events(second_half_moon_events) if second_half_moon_events else None
+        formatted_moon_events(second_half_moon_events) 
+        if second_half_moon_events 
+        else None
     )
 
     # Date
@@ -228,8 +279,6 @@ def filtered_and_formatted_prediction(
                 f'{second_half_moon_events_formatted or messages.neutral_background}'
             )
 
-    # p2 = time.time() - start - p1
-    # print(f"Время форматирования текста = {p2}")
     return formatted_text
 
 
@@ -243,7 +292,14 @@ async def get_prediction_callback_redirect(
     database: Database,
     event_from_user: User
 ):
-    await get_prediction(callback.message, state, keyboards, bot, database, event_from_user)
+    await get_prediction(
+        callback.message,
+        state,
+        keyboards,
+        bot,
+        database,
+        event_from_user
+    )
 
 
 @r.message(F.text, F.text == bt.prediction)
@@ -669,7 +725,9 @@ async def enter_prediction_time(
             message.message_id
         ]
     )
-    await state.set_state(MainMenu.predictin_every_day_choose_action)
+    await state.set_state(
+        MainMenu.predictin_every_day_choose_action
+    )
     await scheduler.edit_send_message_job(
         event_from_user.id, 
         database,
