@@ -218,7 +218,7 @@ async def check_payment_status(
             )
             await get_payment_menu(bot_message, state, keyboards)
             return
-        case 'waiting_for_capture':
+        case 'waiting_for_capture' | 'paid':
             database.add_period_to_subscription_end_date(
                 user_id=event_from_user.id, 
                 period=timedelta(
