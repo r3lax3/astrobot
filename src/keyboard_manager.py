@@ -2,7 +2,12 @@ from typing import List
 
 from types import SimpleNamespace
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (
+    InlineKeyboardMarkup, 
+    InlineKeyboardButton,
+    ReplyKeyboardMarkup,
+    KeyboardButton
+)
 from aiogram.filters.callback_data import CallbackData
 
 from src.database import Database
@@ -107,7 +112,9 @@ buttons_text = {
     'delete_user_subscription':      
         'Выключить подписку пользователя',
     'name':                          
-        'Имя'
+        'Имя',
+    'theme':
+        'Тема'
 }
 
 bt = SimpleNamespace(**buttons_text) 
@@ -258,9 +265,9 @@ class KeyboardManager:
 
         self.profile_settings = self.build_keyboard_from_structure(
             [
-                [bt.gender],
-                [bt.name],
                 [bt.change_timezone],
+                [bt.gender, bt.name],
+                [bt.theme],
                 [bt.main_menu]
             ],
             is_inline=True
@@ -382,32 +389,60 @@ class KeyboardManager:
         )
         return markup
 
-    def payment_redirect(self, redirect_url: str, offer_url: str) -> InlineKeyboardMarkup:
+    def payment_redirect(
+        self, 
+        redirect_url: str,
+        offer_url: str
+    ) -> InlineKeyboardMarkup:
         return InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text=bt.redirect_button_text, url=redirect_url),
-                    InlineKeyboardButton(text=bt.offer, url=offer_url)
+                    InlineKeyboardButton(
+                        text=bt.redirect_button_text,
+                        url=redirect_url
+                    ),
+                    InlineKeyboardButton(
+                        text=bt.offer, 
+                        url=offer_url
+                    )
                 ],
                 [
-                    InlineKeyboardButton(text=bt.check_payment_status, callback_data=bt.check_payment_status)
+                    InlineKeyboardButton(
+                        text=bt.check_payment_status,
+                        callback_data=bt.check_payment_status
+                    )
                 ],
                 [
-                    InlineKeyboardButton(text=bt.back, callback_data=bt.back)
+                    InlineKeyboardButton(
+                        text=bt.back, 
+                        callback_data=bt.back
+                    )
                 ]
             ]
         )
 
     @staticmethod
-    def pack_button(item: str | tuple, is_inline: bool):
+    def pack_button(
+        item: str | tuple, 
+        is_inline: bool
+    ):
         if is_inline:
             if isinstance(item, str):
-                return InlineKeyboardButton(text=item, callback_data=item)
+                return InlineKeyboardButton(
+                    text=item, 
+                    callback_data=item
+                )
             elif isinstance(item, tuple):
                 if isinstance(item[1], str):
-                    return InlineKeyboardButton(text=item[0], callback_data=item[1])
+                    return InlineKeyboardButton(
+                        text=item[0], 
+                        callback_data=item[1]
+                    )
                 elif isinstance(item[1], CallbackData):
-                    return InlineKeyboardButton(text=item[0], callback_data=item[1].pack())
+                    return InlineKeyboardButton(
+                        text=item[0],
+                        callback_data=item[1].pack()
+                    )
         else:
             if isinstance(item, str):
                 return KeyboardButton(text=item)
@@ -434,9 +469,14 @@ class KeyboardManager:
         markup: InlineKeyboardMarkup | ReplyKeyboardMarkup
 
         if is_inline:
-            markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+            markup = InlineKeyboardMarkup(
+                inline_keyboard=keyboard
+            )
         else:
-            markup = ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+            markup = ReplyKeyboardMarkup(
+                keyboard=keyboard, 
+                resize_keyboard=True
+            )
         
         return markup
     

@@ -48,7 +48,8 @@ database_datetime_format: str = config.get(
 not_implemented_list = [
     bt.dreams, 
     bt.card_of_the_day, 
-    bt.moon_in_sign
+    bt.moon_in_sign,
+    bt.theme
 ]
 
 
