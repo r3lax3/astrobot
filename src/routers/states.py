@@ -61,6 +61,8 @@ class AdminStates(StatesGroup):
     user_info_menu = State()
     user_get_subscription_end_date = State()
 
+    get_card_of_day = State()
+
     action_ended = State()
 
     

@@ -12,7 +12,9 @@ class User:
     every_day_prediction_time: str
     subscription_end_date: str
     gender: str | None
-
+    timezone_offset: int
+    last_card_update: str
+    card_message_id: int
 
 @dataclass
 class Location:

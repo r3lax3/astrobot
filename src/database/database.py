@@ -1,11 +1,17 @@
-from datetime import timedelta, datetime
 import sqlite3
+import logging
 
-from typing import Optional, Any
+from datetime import timedelta, datetime
+
+from typing import Optional, Any, List
 
 from src import config
 from src.utils import get_timezone_offset
-from src.database.models import User, Location, Interpretation
+from src.database.models import (
+    User,
+    Location, 
+    Interpretation 
+)
 
 
 database_datetime_format: str = config.get(
@@ -60,14 +66,17 @@ class Database:
     # Create
     def add_user(
         self, 
-        user_id, 
-        name,
-        role,
+        user_id: int, 
+        name: str,
+        role: str,
         birth_datetime, 
         birth_location: Location, 
-        current_location: Location | None,
         subscription_end_date: str,
-        gender: str | None
+        current_location: Optional[Location] = None,
+        gender: Optional[str] = None,
+        timezone_offset: Optional[int] = None,
+        last_card_update: Optional[str] = None,
+        card_id: Optional[int] = None
     ):
         # Add locations
         birth_location_id = self.add_location(birth_location)  # add and return id of row
@@ -77,18 +86,21 @@ class Database:
             current_location_id = 0
         self.execute_query(
             query="""
-                INSERT OR REPLACE INTO users (
-                    user_id,
-                    name,
-                    role, 
-                    birth_datetime, 
-                    birth_location_id, 
-                    current_location_id, 
-                    every_day_prediction_time,
-                    subscription_end_date,
-                    gender
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO users (
+                user_id,
+                name,
+                role, 
+                birth_datetime, 
+                birth_location_id, 
+                current_location_id, 
+                every_day_prediction_time,
+                subscription_end_date,
+                gender,
+                timezone_offset,
+                last_card_update,
+                card_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             params=(
                 user_id,
@@ -99,7 +111,10 @@ class Database:
                 current_location_id, 
                 "07:30", 
                 subscription_end_date,
-                gender
+                gender,
+                timezone_offset,
+                last_card_update,
+                card_id
             )
         )
 
@@ -114,7 +129,10 @@ class Database:
             current_location_id, 
             every_day_prediction_time,
             subscription_end_date,
-            gender
+            gender,
+            timezone_offset,
+            last_card_update,
+            card_id
         FROM users
         """
         result = self.execute_query(
@@ -169,7 +187,28 @@ class Database:
             # 4. Delete the old location from the locations table
             self.delete_location(old_location_id)
         else:
-            print(f"User with ID {user_id} not found.")
+            logging.info(f"User with ID {user_id} not found.")
+
+    def update_user_card_of_day(
+        self,
+        user_id: int,
+        card_message_id: int,
+        card_update_time: str
+    ):
+        query = '''
+        UPDATE users
+        SET last_card_update = ?, card_message_id = ?
+        WHERE user_id = ?
+        '''
+        self.execute_query(
+            query,
+            params=(
+                card_update_time, 
+                card_message_id, 
+                user_id
+            )
+        )
+
 
     def delete_user(self, user_id: int):
         query = "DELETE FROM users"
@@ -220,17 +259,31 @@ class Database:
         )
         new_subscription_end_date = date + timedelta(hours=time_offset)
 
-        query = "UPDATE users SET subscription_end_date = ? WHERE user_id = ?"
+        query = '''
+        UPDATE users 
+        SET subscription_end_date = ? 
+        WHERE user_id = ?
+        '''
         self.execute_query(
             query=query,
             params=(
-                new_subscription_end_date.strftime(database_datetime_format), 
+                new_subscription_end_date.strftime(
+                    database_datetime_format
+                ), 
                 user_id
             )
         )
     
-    def change_user_gender(self, gender: str | None, user_id: int) -> None:
-        query = 'UPDATE users SET gender = ? WHERE user_id = ?'
+    def change_user_gender(
+        self,
+        gender: str | None,
+        user_id: int
+    ) -> None:
+        query = '''
+        UPDATE users 
+        SET gender = ? 
+        WHERE user_id = ?
+        '''
         self.execute_query(
             query=query,
             params=(
@@ -250,8 +303,12 @@ class Database:
         """
         self.execute_query(
             query="""
-                INSERT INTO locations (type, longitude, latitude)
-                VALUES (?, ?, ?)
+            INSERT INTO locations (
+                type,
+                longitude, 
+                latitude
+            )
+            VALUES (?, ?, ?)
             """,
             params=(
                 location.type,
@@ -269,7 +326,14 @@ class Database:
             return location_id
 
     def get_location(self, location_id: int) -> Location:
-        query = "SELECT id, type, longitude, latitude FROM locations"
+        query = """
+        SELECT 
+            id,
+            type, 
+            longitude, 
+            latitude
+        FROM locations
+        """
         result = self.execute_query(
             query, 
             kwargs={'id': location_id}, 
@@ -490,6 +554,43 @@ class Database:
         self.execute_query(
             query, 
             params=(user_id, prediction_date)
+        )
+    
+    # Cards of Day table methods
+
+    # Create
+    def add_card_of_day(self, message_id: int) -> None:
+        query = """
+        INSERT INTO cards_of_day (
+            message_id
+        )
+        VALUES (?)
+        """
+        self.execute_query(
+            query,
+            params=(message_id,)
+        )
+
+    def get_all_card_of_day(self) -> Optional[List[int]]:
+        query = """
+        SELECT message_id
+        FROM cards_of_day
+        """
+        rows = self.execute_query(
+            query, 
+            fetchall=True
+        )
+        return [row[0] for row in rows]
+
+
+    # Delete
+    def delete_card_of_day(self, message_id: int) -> None:
+        query = """
+        DELETE FROM cards_of_day
+        """
+        self.execute_query(
+            query, 
+            kwargs={'message_id': message_id}
         )
 
         

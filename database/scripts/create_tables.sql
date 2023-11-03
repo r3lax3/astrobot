@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS users (
 	current_location_id INTEGER,
   every_day_prediction_time TEXT,
   subscription_end_date TEXT,
-  gender TEXT
+  gender TEXT,
+  timezone_offset INTEGER,
+  last_card_update TEXT,
+  card_message_id INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS locations (
@@ -38,6 +41,9 @@ CREATE TABLE viewed_predictions (
   FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
 
+CREATE TABLE IF NOT EXISTS cards_of_day (
+  message_id INTEGER
+)
 
 --CREATE TABLE IF NOT EXISTS mandatory_sub_channels (
 --    channel_id INT PRIMARY KEY,

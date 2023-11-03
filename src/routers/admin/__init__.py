@@ -17,7 +17,12 @@ from src.filters import IsDatetime
 r = Router()
 
 admins: List[int] = config.get('admins.ids')
-
+admin_chat_id: int = config.get(
+    'admin_chat.id'
+)
+admin_chat_thread_cards_of_day = config.get(
+    'admin_chat.threads.cards_of_day'
+)
 datetime_format: str = config.get('database.datetime_format')
 date_format: str = config.get('database.date_format')
 week_format: str = config.get('database.week_format')
@@ -30,7 +35,10 @@ pred_type_to_date_fmt = {
 }
 
 
-@r.message(Command(commands=['admin']), F.from_user.id.in_(admins))
+@r.message(
+    Command(commands=['admin']),
+    F.from_user.id.in_(admins)
+)
 async def adminpanel(
     message: Message,
     state: FSMContext,
@@ -47,7 +55,10 @@ async def adminpanel(
     AdminStates.get_general_prediction_date,
     F.data == bt.back
 )
-@r.callback_query(F.data == bt.back_to_adminpanel)
+@r.callback_query(
+    F.from_user.id.in_(admins),
+    F.data == bt.back_to_adminpanel
+)
 async def adminpane_callback_query_handler(
     callback: CallbackQuery,
     state: FSMContext,
@@ -412,5 +423,47 @@ async def change_user_subscription_end_date(
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(
         AdminStates.user_info_menu
+     )
+
+@r.callback_query(
+    AdminStates.choose_action,
+    F.data == bt.add_card_of_day
+)
+async def add_card_of_day(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+):
+    bot_message = await callback.message.answer(
+        messages.send_me_card,
+        reply_markup=keyboards.back_to_adminpanel
+    )
+    await state.update_data(del_messages=[bot_message.message_id])
+    await state.set_state(AdminStates.get_card_of_day)
+
+
+@r.message(
+    AdminStates.get_card_of_day,
+    F.photo,
+    F.media_group_id is None
+)
+async def get_card_of_day(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+):
+    image_resend_message = await message.copy_to(
+        chat_id=admin_chat_id,
+        message_thread_id=admin_chat_thread_cards_of_day
     )
 
+    database.add_card_of_day(
+        message_id=image_resend_message.message_id
+    )
+
+    bot_message = await message.answer(
+        messages.card_of_day_successful_saved,
+        reply_markup=keyboards.back_to_adminpanel
+    )
+    await state.update_data(del_messages=[bot_message.message_id])

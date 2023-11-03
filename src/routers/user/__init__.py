@@ -18,6 +18,7 @@ from src.routers.user.birth import r as birth_router
 from src.routers.user.technical_support import r as technical_support_router
 from src.routers.user.prediction import r as prediction_router
 from src.routers.user.subsription import r as subsription_router
+from src.routers.user.card_of_day import r as card_of_day_router
 from src.routers.user.compatibility import r as compatibility_router
 from src.routers.user.profile_settings import r as profile_settings_router
 from src.routers.user.general_predictions import r as general_predictions_router
@@ -26,6 +27,7 @@ from src.database import Database
 from src.database.models import Location
 
 from src.keyboard_manager import KeyboardManager, bt
+from src.utils import get_timezone_offset
 
 
 r = Router()
@@ -36,7 +38,8 @@ r.include_routers(
     prediction_router,
     subsription_router,
     compatibility_router,
-    general_predictions_router
+    general_predictions_router,
+    card_of_day_router
 )
 
 start_video: str = config.get(
@@ -47,10 +50,13 @@ database_datetime_format: str = config.get(
 )
 not_implemented_list = [
     bt.dreams, 
-    bt.card_of_the_day, 
+    bt.card_of_day, 
     bt.moon_in_sign,
     bt.theme
 ]
+subscription_test_period_in_days: int = config.get(
+    'subsription.test_period_in_days'
+)
 
 
 @r.callback_query(
@@ -141,7 +147,9 @@ async def get_current_location_confirmed(
         birth_location = data['birth_location']
         
         now = datetime.utcnow()
-        test_period_end = now + timedelta(days=5)
+        test_period_end = now + timedelta(
+            days=subscription_test_period_in_days
+        )
 
         database.add_user(
             user_id=event_from_user.id,
@@ -161,7 +169,9 @@ async def get_current_location_confirmed(
             subscription_end_date=test_period_end.strftime(
                 database_datetime_format
             ),
-            gender=None
+            timezone_offset=get_timezone_offset(
+                **current_location
+            )
         )
         await scheduler.add_send_message_job(
             user_id=event_from_user.id, 
@@ -278,7 +288,6 @@ async def to_main_menu_button_handler(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    # database: Database,
     bot: Bot
 ):
     await main_menu(callback.message, state, keyboards, bot)

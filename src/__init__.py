@@ -1,8 +1,11 @@
 import asyncio
 
+from aiohttp import web
+
 from aiogram import Bot, Dispatcher
 from aiogram.types import BufferedInputFile
 from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from src import config
 from src.routers import user_router, admin_router
@@ -12,18 +15,32 @@ from src.keyboard_manager import KeyboardManager
 from src.middlewares import (
     DeleteMessagesMiddleware, 
     MediaGroupMiddleware, 
-    SkipAdminchatUpdates,
+    SkipGroupsUpdates,
     NullMiddleware,
     PredictionMessageDeleteKeyboardMiddleware
 )
 
 
-admin_chat_id: int = config.get('admin_chat.id')
-backup_thread_id: int = config.get('admin_chat.threads.backup')
-database_datetime_format: str = config.get('database.datetime_format')
-date_format: str = config.get('database.date_format')
-time_format: str = config.get('database.time_format')
+admin_chat_id: int = config.get(
+    'admin_chat.id'
+)
+backup_thread_id: int = config.get(
+    'admin_chat.threads.backup'
+)
+database_datetime_format: str = config.get(
+    'database.datetime_format'
+)
+date_format: str = config.get(
+    'database.date_format'
+)
+time_format: str = config.get(
+    'database.time_format'
+)
 
+WEB_SERVER_HOST = "127.0.0.1"
+WEB_SERVER_PORT = 8080
+WEBHOOK_PATH = "/astrobot_webhook"
+BASE_WEBHOOK_URL = "https://vm4720745.25ssd.had.wf"
 
 # Database backup
 async def backup_db(db: Database, bot: Bot):
@@ -62,6 +79,10 @@ async def check_users_and_schedule(
             bot
         )
 
+async def on_startup(bot: Bot) -> None:
+    # If you have a self-signed SSL certificate, then you will need to send a public
+    # certificate to Telegram
+    await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 async def main():
     token: str = config.get('bot.token')
@@ -95,27 +116,52 @@ async def main():
         ]
     )
 
-    # Album handler
-    dp.message.middleware(MediaGroupMiddleware())
+    # Message
 
-    # If null in callback - pass event
-    dp.callback_query.middleware(NullMiddleware())
+    dp.message.middleware(
+        MediaGroupMiddleware()
+    )
+    dp.message.middleware(
+        SkipGroupsUpdates()
+    )
+    dp.message.middleware(
+        DeleteMessagesMiddleware()
+    )
 
-    # One-screen logic
-    dp.message.middleware(DeleteMessagesMiddleware())
-    dp.callback_query.middleware(DeleteMessagesMiddleware())
+    # Callback
 
-    # Admin chat updates skip
-    dp.message.middleware(SkipAdminchatUpdates())
-    dp.callback_query.middleware(PredictionMessageDeleteKeyboardMiddleware())
+    dp.callback_query.middleware(
+        NullMiddleware()
+    )
+    dp.callback_query.middleware(
+        DeleteMessagesMiddleware()
+    )
+    dp.callback_query.middleware(
+        PredictionMessageDeleteKeyboardMiddleware()
+    )
+
+    # Include routers
 
     dp.include_routers(
         user_router,
         admin_router
     )
 
-    try:
-        await dp.start_polling(bot)
-    except KeyboardInterrupt:
-        scheduler.shutdown()
+    # Create aiohttp.web.Application instance
+    app = web.Application()
+    
+    # Create an instance of request handler,
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=dp,
+        bot=bot
+    )
+
+    # Register webhook handler on application
+    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
+
+    # Mount dispatcher startup and shutdown hooks to aiohttp application
+    setup_application(app, dp, bot=bot)
+
+    # And finally start webserver
+    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
 

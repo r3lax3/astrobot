@@ -33,7 +33,7 @@ buttons_text = {
         '🔮Прогноз',
     'dreams':                        
         '💫 Сны',
-    'card_of_the_day':               
+    'card_of_day':               
         '🃏Карта Дня',
     'general_predictions':           
         '🌒 Общие прогнозы',
@@ -114,7 +114,9 @@ buttons_text = {
     'name':                          
         'Имя',
     'theme':
-        'Тема'
+        'Тема',
+    'add_card_of_day':
+        'Добавить карту дня'
 }
 
 bt = SimpleNamespace(**buttons_text) 
@@ -164,7 +166,7 @@ class KeyboardManager:
         self.main_menu = self.build_keyboard_from_structure(
             [
                 [bt.subscription, bt.prediction],
-                [bt.dreams, bt.card_of_the_day],
+                [bt.dreams, bt.card_of_day],
                 [bt.general_predictions, bt.moon_in_sign],
                 [bt.compatibility, bt.about_bot],
                 [bt.profile_settings, bt.tech_support]
@@ -329,7 +331,8 @@ class KeyboardManager:
         self.adminpanel = self.build_keyboard_from_structure(
             [
                 [bt.general_predictions_add],
-                [bt.user_settings]
+                [bt.user_settings],
+                [bt.add_card_of_day]
             ],
             is_inline=True
         )

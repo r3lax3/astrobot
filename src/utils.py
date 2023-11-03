@@ -53,7 +53,14 @@ def split_list(input_list: list, sublist_len: int = 2):
 
 
 def get_location_by_coords(longitude: float, latitude: float) -> str:
-    location = geolocator.reverse((latitude, longitude), language='ru', exactly_one=True)
+    location = geolocator.reverse(
+        (
+            latitude, 
+            longitude
+        ),
+        language='ru',
+        exactly_one=True
+    )
 
     if location and "address" in location.raw:
         address_info = location.raw["address"]
@@ -78,6 +85,6 @@ def get_location_by_coords(longitude: float, latitude: float) -> str:
         else:
             return country
 
-    return "Ошибка. Напишите @mrAx3 насчет этого если увидите этот текст и не подтверждайте. Что-то сломалось."
+    return "Ошибка. Напишите @mrAx3 насчет этого если увидите этот текст и ничего не трогайте. Что-то сломалось."
 
 

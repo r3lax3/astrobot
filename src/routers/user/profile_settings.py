@@ -47,7 +47,9 @@ async def profile_settings_menu(
     keyboards: KeyboardManager
 ):
     bot_message = await message.answer(
-        messages.profile_settings,
+        messages.profile_settings.format(
+
+        ),
         reply_markup=keyboards.profile_settings
     )
     await state.update_data(
