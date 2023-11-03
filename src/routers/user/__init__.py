@@ -24,10 +24,10 @@ from src.routers.user.profile_settings import r as profile_settings_router
 from src.routers.user.general_predictions import r as general_predictions_router
 
 from src.database import Database
-from src.database.models import Location
+from src.database.models import Location, User as DBUser
 
 from src.keyboard_manager import KeyboardManager, bt
-from src.utils import get_timezone_offset
+from src.utils import get_location_by_coords, get_timezone_offset
 
 
 r = Router()
@@ -141,10 +141,12 @@ async def get_current_location_confirmed(
     
     name = data['name']
     current_location = data['current_location']
+    current_location_title = data['current_location_title']
 
     if data['first_time']:
         birth_datetime = data['birth_datetime']
         birth_location = data['birth_location']
+        birth_location_title = data['birth_location_title']
         
         now = datetime.utcnow()
         test_period_end = now + timedelta(
@@ -152,25 +154,27 @@ async def get_current_location_confirmed(
         )
 
         database.add_user(
-            user_id=event_from_user.id,
-            name=name,
-            role='user',
-            birth_datetime=birth_datetime,
-            birth_location=Location(
-                id=0,
-                type='birth', 
-                **birth_location
-            ),
-            current_location=Location(
-                id=0,
-                type='current',
-                **current_location
-            ),
-            subscription_end_date=test_period_end.strftime(
-                database_datetime_format
-            ),
-            timezone_offset=get_timezone_offset(
-                **current_location
+            DBUser(
+                user_id=event_from_user.id,
+                name=name,
+                role='user',
+                birth_datetime=birth_datetime,
+                birth_location=Location(
+                    type='birth', 
+                    **birth_location,
+                    title=current_location_title
+                ),
+                current_location=Location(
+                    type='current',
+                    **current_location,
+                    title=birth_location_title
+                ),
+                subscription_end_date=test_period_end.strftime(
+                    database_datetime_format
+                ),
+                timezone_offset=get_timezone_offset(
+                    **current_location
+                )
             )
         )
         await scheduler.add_send_message_job(
@@ -191,7 +195,8 @@ async def get_current_location_confirmed(
             Location(
                 id=0,
                 type='current', 
-                **current_location
+                **current_location,
+                title=get_location_by_coords(**current_location)
             )
         )
         await scheduler.edit_send_message_job(

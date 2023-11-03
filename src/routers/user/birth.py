@@ -362,11 +362,12 @@ async def enter_birth_data_confirm(
     longitude = data['longitude']
     latitude = data['latitude']
 
+    birth_location_title = get_location_by_coords(longitude, latitude)
     birth_data_confirm_message = await message.answer(
         messages.birth_data_confirm.format(
             date=date_str,
             time=time_str,
-            birth_location=get_location_by_coords(longitude, latitude)
+            birth_location=birth_location_title
         ),
         reply_markup=keyboards.confirm
     )
@@ -380,7 +381,8 @@ async def enter_birth_data_confirm(
         birth_location={
             'latitude': latitude,
             'longitude': longitude
-        }
+        },
+        birth_location_title=birth_location_title
     )
     await state.set_state(GetBirthData.confirm)
     # Подтверждение перекидывает в логику, 

@@ -2,15 +2,18 @@ import sqlite3
 import logging
 
 from datetime import timedelta, datetime
-
 from typing import Optional, Any, List
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from src import config
 from src.utils import get_timezone_offset
 from src.database.models import (
     User,
     Location, 
-    Interpretation 
+    Interpretation,
+    CardOfDay
 )
 
 
@@ -22,126 +25,18 @@ date_format: str = config.get(
 )
 
 
-
 class Database:
     def __init__(self):
-        self.connection = sqlite3.connect("database.db")
-        self.cursor = self.connection.cursor()
+        self.engine = create_engine('sqlite:///database.db')
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session()
 
-    def execute_query(
-        self,
-        query: str,
-        kwargs: dict = {},
-        params: tuple = (),
-        fetchone: bool = False,
-        fetchall: bool = False,
-    ) -> Any:
-        if kwargs:
-            keys = []
-            kwargs_params = []
+    def add_user(self, user: User):
+        self.session.add(user)
+        self.session.commit()
 
-            for k, v in kwargs.items():
-                keys.append(
-                    f'{k} = ?'
-                )
-                kwargs_params.append(v)
-
-            query += ' WHERE ' + ' AND '.join(keys)
-            params = tuple(kwargs_params)
-
-        # print(f'{query = }')
-        # print(f'{params = }')
-
-        self.cursor.execute(query, params)
-        if fetchone:
-            return self.cursor.fetchone()
-        elif fetchall:
-            return self.cursor.fetchall()
-        else:
-            self.connection.commit()
-
-    # Users table methods
-
-
-    # Create
-    def add_user(
-        self, 
-        user_id: int, 
-        name: str,
-        role: str,
-        birth_datetime, 
-        birth_location: Location, 
-        subscription_end_date: str,
-        current_location: Optional[Location] = None,
-        gender: Optional[str] = None,
-        timezone_offset: Optional[int] = None,
-        last_card_update: Optional[str] = None,
-        card_id: Optional[int] = None
-    ):
-        # Add locations
-        birth_location_id = self.add_location(birth_location)  # add and return id of row
-        if current_location is not None:
-            current_location_id = self.add_location(current_location)  # here too
-        else:
-            current_location_id = 0
-        self.execute_query(
-            query="""
-            INSERT OR REPLACE INTO users (
-                user_id,
-                name,
-                role, 
-                birth_datetime, 
-                birth_location_id, 
-                current_location_id, 
-                every_day_prediction_time,
-                subscription_end_date,
-                gender,
-                timezone_offset,
-                last_card_update,
-                card_id
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            params=(
-                user_id,
-                name,
-                role, 
-                birth_datetime, 
-                birth_location_id, 
-                current_location_id, 
-                "07:30", 
-                subscription_end_date,
-                gender,
-                timezone_offset,
-                last_card_update,
-                card_id
-            )
-        )
-
-    def get_user(self, user_id: int) -> User | None:
-        query = """
-        SELECT 
-            user_id,
-            name,
-            role, 
-            birth_datetime, 
-            birth_location_id, 
-            current_location_id, 
-            every_day_prediction_time,
-            subscription_end_date,
-            gender,
-            timezone_offset,
-            last_card_update,
-            card_id
-        FROM users
-        """
-        result = self.execute_query(
-            query, 
-            kwargs={'user_id': user_id},
-            fetchone=True
-        )
-        if result:
-            return User(*result)
+    def get_user(self, user_id: int) -> User:
+        return self.session.query(User).filter_by(user_id=user_id).first()
 
     def update_user_every_day_prediction_time(
         self, 
@@ -149,147 +44,155 @@ class Database:
         hour: int, 
         minute: int
     ):
-        query = '''
-        UPDATE users 
-        SET every_day_prediction_time = ? 
-        WHERE user_id = ?
-        '''
+        user = self.session.query(
+            User
+        ).filter_by(
+            user_id=user_id
+        ).first()
+        if user:
+            user.every_day_prediction_time = "{:02d}:{:02d}".format(
+                hour, 
+                minute
+            )
+            self.session.commit()
 
-        time = "{:02d}:{:02d}".format(hour, minute)
-        params = (time, user_id)
 
-        self.execute_query(query, params=params)
-
-    def update_user_current_location(
-        self,
-        user_id: int, 
-        new_location: Location
-    ):
-        # 1. Get the current location id of the user
-        user = self.get_user(user_id)
-        if user is not None:
+    def update_user_current_location(self, user_id: int, new_location: Location):
+        user = self.session.query(
+            User
+        ).filter_by(
+            user_id=user_id
+        ).first()
+        if user:
             old_location_id = user.current_location_id
 
-            # 2. Insert the new location
+            # Добавляем новое местоположение и получаем его ID
             new_location_id = self.add_location(new_location)
 
-            # 3. Update the user's current location id
-            query = """
-                UPDATE users 
-                SET current_location_id=? 
-                WHERE user_id=?
-            """
-            self.execute_query(
-                query,
-                params=(new_location_id, user_id)
-            )
+            # Обновляем ID текущего местоположения пользователя
+            user.current_location_id = new_location_id
 
-            # 4. Delete the old location from the locations table
-            self.delete_location(old_location_id)
+            # Удаляем старое местоположение
+            old_location = self.session.query(
+                Location
+            ).filter_by(
+                id=old_location_id
+            ).first()
+            if old_location:
+                self.session.delete(old_location)
+
+            self.session.commit()
         else:
             logging.info(f"User with ID {user_id} not found.")
 
+
     def update_user_card_of_day(
-        self,
-        user_id: int,
+        self, 
+        user_id: int, 
         card_message_id: int,
         card_update_time: str
     ):
-        query = '''
-        UPDATE users
-        SET last_card_update = ?, card_message_id = ?
-        WHERE user_id = ?
-        '''
-        self.execute_query(
-            query,
-            params=(
-                card_update_time, 
-                card_message_id, 
-                user_id
-            )
-        )
-
+        user = self.session.query(
+            User
+        ).filter_by(
+            user_id=user_id
+        ).first()
+        if user:
+            user.last_card_update = card_update_time
+            user.card_message_id = card_message_id
+            self.session.commit()
 
     def delete_user(self, user_id: int):
-        query = "DELETE FROM users"
-        self.execute_query(query, kwargs={'user_id': user_id})
+        user = self.session.query(
+            User
+        ).filter_by(
+            user_id=user_id
+        ).first()
+        if user:
+            self.session.delete(user)
+            self.session.commit()
 
     def add_period_to_subscription_end_date(
-        self, 
-        user_id: int, 
+        self,
+        user_id: int,
         period: timedelta
-    ) -> None:
-        user: User = self.get_user(user_id)
-        current_location = self.get_location(
-            user.current_location_id
-        )
-        time_offset: int = get_timezone_offset(
-            current_location.latitude, 
-            current_location.longitude
-        )
-
-        now = datetime.utcnow() + timedelta(hours=time_offset)
-        current_user_subscription_end_date = datetime.strptime(
-            user.subscription_end_date, database_datetime_format
-        )
-        start = max([current_user_subscription_end_date, now])
-        
-        query = "UPDATE users SET subscription_end_date = ?"
-        self.execute_query(
-            query=query,
-            params=(
-                (start + period).strftime(database_datetime_format),
-            ),
-            kwargs={'user_id': user_id}
-        )
+    ):
+        user = self.session.query(
+            User
+        ).filter_by(
+            user_id=user_id
+        ).first()
+        if user:
+            current_location = self.session.query(
+                Location
+            ).filter_by(
+                id=user.current_location_id
+            ).first()
+            if current_location:
+                time_offset = get_timezone_offset(
+                    current_location.latitude, 
+                    current_location.longitude
+                )
+                now = datetime.utcnow() + timedelta(hours=time_offset)
+                current_user_subscription_end_date = datetime.strptime(
+                    user.subscription_end_date,
+                    database_datetime_format
+                )
+                start = max(
+                    [
+                        current_user_subscription_end_date,
+                        now
+                    ]
+                )
+                user.subscription_end_date = (start + period).strftime(
+                    database_datetime_format
+                )
+                self.session.commit()
 
     def update_subscription_end_date(
         self, 
         user_id: int, 
         date: datetime
-    ) -> None:
-        user: User = self.get_user(user_id)
-        current_location = self.get_location(
-            user.current_location_id
-        )
-
-        time_offset: int = get_timezone_offset(
-            current_location.latitude, 
-            current_location.longitude
-        )
-        new_subscription_end_date = date + timedelta(hours=time_offset)
-
-        query = '''
-        UPDATE users 
-        SET subscription_end_date = ? 
-        WHERE user_id = ?
-        '''
-        self.execute_query(
-            query=query,
-            params=(
-                new_subscription_end_date.strftime(
+    ):
+        user = self.session.query(
+            User
+        ).filter_by(
+            user_id=user_id
+        ).first()
+        if user:
+            current_location = self.session.query(
+                Location
+            ).filter_by(
+                id=user.current_location_id
+            ).first()
+            if current_location:
+                time_offset: int = get_timezone_offset(
+                    current_location.latitude, 
+                    current_location.longitude
+                )
+                new_subscription_end_date = date + timedelta(
+                    hours=time_offset
+                )
+                user.subscription_end_date = new_subscription_end_date.strftime(
                     database_datetime_format
-                ), 
-                user_id
-            )
-        )
+                )
+                self.session.commit()
+
     
     def change_user_gender(
-        self,
-        gender: str | None,
-        user_id: int
-    ) -> None:
-        query = '''
-        UPDATE users 
-        SET gender = ? 
-        WHERE user_id = ?
-        '''
-        self.execute_query(
-            query=query,
-            params=(
-                (gender, user_id)
-            )
-        )
+        self, 
+        user_id: int,
+        gender: str | None
+    ):
+        user = self.session.query(
+            User
+        ).filter_by(
+            user_id=user_id
+        ).first()
+        if user:
+            user.gender = gender
+            self.session.commit()
+
 
 
     # Location table methods
@@ -298,161 +201,101 @@ class Database:
     # Create
     def add_location(self, location: Location) -> int:
         """
-        Метод используется для добавления локации в список
-        тип может быть "birth" или "current"
+        Метод используется для добавления локации в список.
+        Тип может быть "birth" или "current".
         """
-        self.execute_query(
-            query="""
-            INSERT INTO locations (
-                type,
-                longitude, 
-                latitude
-            )
-            VALUES (?, ?, ?)
-            """,
-            params=(
-                location.type,
-                location.longitude,
-                location.latitude
-            )
-        )
-        
-        location_id =  self.cursor.lastrowid
-        if location_id is None:
-            raise Exception(
-                'Айдишник не возвращается, хотя должен. Ошибка в add_location'
-            )
-        else:
-            return location_id
+        self.session.add(location)
+        self.session.commit()
+        return location.id
 
     def get_location(self, location_id: int) -> Location:
-        query = """
-        SELECT 
-            id,
-            type, 
-            longitude, 
-            latitude
-        FROM locations
-        """
-        result = self.execute_query(
-            query, 
-            kwargs={'id': location_id}, 
-            fetchone=True
-        )
-        if result:
-            return Location(*result)
+        location = self.session.query(
+            Location
+        ).filter_by(
+            id=location_id
+        ).first()
+        if location:
+            return location
         raise Exception(
             'Чет локейшн в табличке с юзерами записан, а самой локации нет. '
             f'Айди - {location_id}'
         )
 
+
     def update_location(self, location: Location):
-        query = """
-        UPDATE locations 
-        SET 
-            longitude = ?, 
-            latitude = ? 
-        WHERE id=?
-        """
-        self.execute_query(
-            query, 
-            params=(
-                location.longitude, 
-                location.latitude, 
-                location.id
-            )
-        )
+        existing_location = self.session.query(
+            Location
+        ).filter_by(
+            id=location.id
+        ).first()
+        if existing_location:
+            existing_location.longitude = location.longitude
+            existing_location.latitude = location.latitude
+            self.session.commit()
 
     def delete_location(self, location_id: int):
-        query = "DELETE FROM locations"
-        self.execute_query(query, kwargs={'id': location_id})
+        location = self.session.query(Location).filter_by(id=location_id).first()
+        if location:
+            self.session.delete(location)
+            self.session.commit()
+
 
     # Interpretations table methods
 
     def get_interpretation(
-        self, 
+        self,
         natal_planet: str,
-        transit_planet: str,
+        transit_planet: str, 
         aspect: str
     ) -> Optional[str]:
-        query = """
-        SELECT interpretation
-        FROM interpretations
-        WHERE natal_planet = ? AND transit_planet = ? AND aspect = ?
-        """
-        result = self.execute_query(
-            query, 
-            params=(
-                natal_planet, 
-                transit_planet, 
-                aspect
-            ),
-            fetchone=True
-        )
-        if result:
-            return result[0]
+        interpretation = self.session.query(
+            Interpretation
+        ).filter_by(
+            natal_planet=natal_planet, 
+            transit_planet=transit_planet, 
+            aspect=aspect
+        ).first()
+        if interpretation:
+            return interpretation.interpretation
         return None
+
 
     # Create
     def add_or_update_interpretation(
         self, 
         interpretation_obj: Interpretation
     ):
-        query = """
-        INSERT OR REPLACE INTO interpretations (
-            natal_planet, 
-            transit_planet,
-            aspect, 
-            interpretation
-        )
-        VALUES (?, ?, ?, ?)
-        """
-        self.execute_query(
-            query,
-            params=(
-                interpretation_obj.natal_planet,
-                interpretation_obj.transit_planet,
-                interpretation_obj.aspect,
-                interpretation_obj.interpretation
-            )
-        )
+        existing_interpretation = self.session.query(
+            Interpretation
+        ).filter_by(
+            natal_planet=interpretation_obj.natal_planet, 
+            transit_planet=interpretation_obj.transit_planet, 
+            aspect=interpretation_obj.aspect
+        ).first()
+        if existing_interpretation:
+            existing_interpretation.interpretation = interpretation_obj.interpretation
+        else:
+            self.session.add(interpretation_obj)
+        self.session.commit()
+
 
     # General Predictions
 
-    # Create
-    def add_general_prediction(
-        self, 
-        date: str,
-        prediction: str
-    ):
-        query = """
-            INSERT OR REPLACE INTO general_predictions (
-                date, 
-                prediction
-            )
-            VALUES (?, ?)
-        """
-        self.execute_query(
-            query, 
-            params=(date, prediction)
-        )
+    def add_general_prediction(self, date: str, prediction: str):
+        general_prediction = GeneralPrediction(date=date, prediction=prediction)
+        self.session.add(general_prediction)
+        self.session.commit()
 
     def get_general_prediction(self, date: str) -> Optional[str]:
-        query = """
-            SELECT prediction FROM general_predictions
-        """
-        result = self.execute_query(
-            query, 
-            kwargs={'date': date},
-            fetchone=True
-        )
-        if result:
-            return result[0]
-        return None
+        prediction = self.session.query(GeneralPrediction).filter_by(date=date).first()
+        return prediction.prediction if prediction else None
 
     def delete_general_prediction(self, date: str):
-        query = "DELETE FROM general_predictions"
-        self.execute_query(query, kwargs={'date': date})
+        prediction = self.session.query(GeneralPrediction).filter_by(date=date).first()
+        if prediction:
+            self.session.delete(prediction)
+            self.session.commit()
+
 
 
     # Viewed Predictions
@@ -463,135 +306,134 @@ class Database:
         user_id: int, 
         prediction_date: str
     ):
-        query = """
-        INSERT OR REPLACE INTO viewed_predictions (
-            user_id, 
-            prediction_date
+        viewed_prediction = ViewedPrediction(
+            user_id=user_id,
+            prediction_date=prediction_date
         )
-        VALUES (?, ?)
-        """
-        self.execute_query(
-            query, 
-            params=(user_id, prediction_date)
-        )
+        self.session.add(viewed_prediction)
+        self.session.commit()
+
 
     # Read
-    def get_viewed_predictions_by_user(self, user_id: int) -> list:
-        query = """
-            SELECT prediction_date, view_timestamp 
-            FROM viewed_predictions
-        """
-        return self.execute_query(
-            query,
-            kwargs={'user_id': user_id}, 
-            fetchall=True
-        )
-
-    def get_unviewed_predictions_count(
-        self,
+    def get_viewed_predictions_by_user(
+        self, 
         user_id: int
-    ) -> int | None:
-        # Get the user and their details.
-        user = self.get_user(user_id)
-        current_location = self.get_location(
-            user.current_location_id
-        )
+    ) -> list:
+        predictions = self.session.query(
+            ViewedPrediction
+        ).filter_by(
+            user_id=user_id
+        ).all()
+        return [
+            (
+                p.prediction_date,
+                p.view_timestamp
+            ) 
+            for p in predictions
+        ]
 
-        # Calculate the current date using the user's timezone.
+    def get_unviewed_predictions_count(self, user_id: int) -> int:
+        # Получаем пользователя и его детали.
+        user = self.session.query(
+            User
+        ).filter_by(
+            user_id=user_id
+        ).first()
+        if not user:
+            return 0  # Пользователь не найден.
+
+        current_location = self.session.query(
+            Location
+        ).filter_by(
+            id=user.current_location_id
+        ).first()
+        if not current_location:
+            return 0  # Местоположение пользователя не найдено.
+
+        # Вычисляем текущую дату с учетом часового пояса пользователя.
         time_offset: int = get_timezone_offset(
             current_location.latitude, 
             current_location.longitude
         )
         now = datetime.utcnow() + timedelta(hours=time_offset)
 
-        # Check if the subscription has already ended.
+        # Проверяем, не истекла ли подписка.
         subscription_end_date = datetime.strptime(
             user.subscription_end_date, 
             database_datetime_format
         )
         if subscription_end_date < now:
-            return 0  # Subscription has ended.
+            return 0  # Подписка истекла.
 
-        # Calculate the total number of days from now to the end of the subscription.
-        days_left = (subscription_end_date - now).days + 1  # "+1" to include the start date.
+        # Вычисляем общее количество дней от текущей даты до окончания подписки.
+        days_left = (subscription_end_date - now).days + 1  # "+1" чтобы включить начальную дату.
 
-        # Calculate how many days of predictions the user has already viewed, starting from today.
-        viewed_dates_query = f"""
-            SELECT prediction_date 
-            FROM viewed_predictions 
-            WHERE user_id = ?
-            AND strftime(
-                '%Y-%m-%d', 
-                substr(prediction_date,7,4)||'-'||substr(prediction_date,4,2)||'-'||substr(prediction_date,1,2)
-            ) >= ? 
+        # Получаем все даты прогнозов для данного пользователя.
+        viewed_dates_strings = self.session.query(
+            ViewedPrediction.prediction_date
+        ).filter(
+            ViewedPrediction.user_id == user_id
+        ).all()
 
-        """
-        viewed_dates = self.execute_query(
-            viewed_dates_query, 
-            params=(user_id, now.strftime('%Y-%m-%d')), fetchall=True
-        )
-        print(f'{viewed_dates}')
-        viewed_dates_count = len(viewed_dates)
+        # Преобразуем строки дат в объекты datetime.
+        viewed_dates = [
+            datetime.strptime(date[0], '%d.%m.%Y') 
+            for date in viewed_dates_strings
+        ]
 
-        # Return the number of unviewed predictions.
+        # Фильтруем даты, которые больше или равны текущей дате.
+        viewed_dates_after_now = [
+            date 
+            for date in viewed_dates 
+            if date >= now
+        ]
+
+        viewed_dates_count = len(viewed_dates_after_now)
+
+        # Возвращаем количество непросмотренных прогнозов.
         unviewed_predictions = days_left - viewed_dates_count
-         # Ensuring the result is non-negative.
-        return max(0, unviewed_predictions) 
+        return max(0, unviewed_predictions)  # Убеждаемся, что результат неотрицательный.
+
 
     # Delete
     def delete_viewed_prediction(
         self, 
-        user_id: int,
+        user_id: int, 
         prediction_date: str
     ):
-        query = """
-        DELETE FROM viewed_predictions
-        WHERE 
-            user_id=? 
-            AND 
-            prediction_date=?
-        """
-        self.execute_query(
-            query, 
-            params=(user_id, prediction_date)
-        )
+        prediction = self.session.query(
+            ViewedPrediction
+        ).filter_by(
+            user_id=user_id, 
+            prediction_date=prediction_date
+        ).first()
+        if prediction:
+            self.session.delete(prediction)
+            self.session.commit()
     
     # Cards of Day table methods
 
     # Create
     def add_card_of_day(self, message_id: int) -> None:
-        query = """
-        INSERT INTO cards_of_day (
-            message_id
-        )
-        VALUES (?)
-        """
-        self.execute_query(
-            query,
-            params=(message_id,)
-        )
+        card_of_day = CardOfDay(message_id=message_id)
+        self.session.add(card_of_day)
+        self.session.commit()
 
     def get_all_card_of_day(self) -> Optional[List[int]]:
-        query = """
-        SELECT message_id
-        FROM cards_of_day
-        """
-        rows = self.execute_query(
-            query, 
-            fetchall=True
-        )
-        return [row[0] for row in rows]
+        cards = self.session.query(
+            CardOfDay
+        ).all()
+        return [card.message_id for card in cards]
 
-
-    # Delete
     def delete_card_of_day(self, message_id: int) -> None:
-        query = """
-        DELETE FROM cards_of_day
-        """
-        self.execute_query(
-            query, 
-            kwargs={'message_id': message_id}
-        )
+        card_of_day = self.session.query(
+            CardOfDay
+        ).filter_by(
+            message_id=message_id
+        ).first()
+        if card_of_day:
+            self.session.delete(card_of_day)
+            self.session.commit()
 
         
     # MandatorySubChannel table methods

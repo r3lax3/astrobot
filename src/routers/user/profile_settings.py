@@ -201,12 +201,12 @@ async def get_current_location(
 ):
     longitude = message.location.longitude
     latitude = message.location.latitude
-
+    current_location_title = get_location_by_coords(
+        longitude=longitude, latitude=latitude
+    )
     bot_message = await message.answer(
         messages.get_current_location_confirm.format(
-            current_location=get_location_by_coords(
-                longitude=longitude, latitude=latitude
-            )
+            current_location=current_location_title
         ),
         reply_markup=keyboards.confirm
     )
@@ -218,7 +218,8 @@ async def get_current_location(
         current_location={
             'latitude': latitude,
             'longitude': longitude
-        }
+        },
+        current_location_title=current_location_title
     )
     await state.set_state(ProfileSettings.location_confirm)
 
