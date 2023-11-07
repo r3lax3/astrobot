@@ -1,4 +1,10 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
+from sqlalchemy import (
+    Column, 
+    Integer,
+    String, 
+    Float, 
+    ForeignKey,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -12,10 +18,16 @@ class User(Base):
     user_id = Column(Integer, primary_key=True)
     name = Column(String)
     role = Column(String)
-    birth_datetime = Column(String)
-    birth_location_id = Column(Integer, ForeignKey('locations.id'))
-    current_location_id = Column(Integer, ForeignKey('locations.id'))
-    every_day_prediction_time = Column(String)
+    birth_datetime = Column(String)  # "%d.%m.%Y %H:%M" as default
+    birth_location_id = Column(
+        Integer, 
+        ForeignKey('locations.id')
+    )
+    current_location_id = Column(
+        Integer, 
+        ForeignKey('locations.id')
+    )
+    every_day_prediction_time = Column(String)  # "%H:%M" as default
     subscription_end_date = Column(String)
     gender = Column(String)
     timezone_offset = Column(Integer)
@@ -62,9 +74,16 @@ class GeneralPrediction(Base):
 class ViewedPrediction(Base):
     __tablename__ = 'viewed_predictions'
     
-    user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
-    prediction_date = Column(String, primary_key=True)
-    view_timestamp = Column(DateTime, default=func.current_timestamp())
+    user_id = Column(
+        Integer, 
+        ForeignKey('users.user_id'),
+        primary_key=True
+    )
+    prediction_date = Column(
+        String, 
+        primary_key=True
+    )
+    view_timestamp = Column(String)  # "%d.%m.%Y" as default
     
     user = relationship("User", back_populates="viewed_predictions")
 
@@ -75,8 +94,13 @@ class CardOfDay(Base):
     message_id = Column(Integer, primary_key=True)
 
 
-# @dataclass
-# class MandatorySubChannel:
-#     channel_id: int
-#     title: str
-#     invite_link: str
+class Payment(Base):
+    __tablename__ = 'payments'
+
+    payment_id = Column(String)
+    user_id = Column(Integer, ForeignKey('users.user_id'))
+    status = Column(String)  # 'success' | 'failed' | 'pending'
+    period = Column(Integer)
+    created_at = Column(String)  # "%d.%m.%Y %H:%M" as default
+    ended_at = Column(String)  # "%d.%m.%Y %H:%M" as default
+

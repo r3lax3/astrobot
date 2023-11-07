@@ -13,26 +13,35 @@ from src.models import SubscriptionPeriod
 from src.routers import messages
 from src.routers.states import Subscription, MainMenu
 from src.database import Database
+from src.database.models import Payment as DBPayment
 from src.keyboard_manager import KeyboardManager, bt
 
 
-yookassa_token: str = config.get('payments.yookassa_token')
-yookassa_shop_id: int = config.get('payments.yookassa_shop_id')
+yookassa_token: str = config.get(
+    'payments.yookassa_token'
+)
+yookassa_shop_id: int = config.get(
+    'payments.yookassa_shop_id'
+)
 
-database_datetime_format: str = config.get('database.datetime_format')
-database_date_format: str = config.get('database.date_format')
+database_datetime_format: str = config.get(
+    'database.datetime_format'
+)
+database_date_format: str = config.get(
+    'database.date_format'
+)
 
-bot_username: str = config.get('bot.username')
+bot_username: str = config.get(
+    'bot.username'
+)
+offer_url: str = config.get(
+    'payments.offer_url'
+)
+
 return_url = f'https://t.me/{bot_username}'
-
-offer_url: str = config.get('payments.offer_url')
 
 Configuration.account_id = yookassa_shop_id
 Configuration.secret_key = yookassa_token
-
-
-r = Router()
-
 
 months_to_rub_price = {
     1: 400.00,
@@ -49,9 +58,21 @@ months_to_str_months = {
     12: '12 месяцев'
 }
 
-@r.callback_query(MainMenu.prediction_access_denied, F.data == bt.subscription)
-@r.callback_query(Subscription.payment_ended, F.data == bt.back_to_menu)
-@r.callback_query(Subscription.payment_method, F.data == bt.back)
+r = Router()
+
+
+@r.callback_query(
+    MainMenu.prediction_access_denied,
+    F.data == bt.subscription
+)
+@r.callback_query(
+    Subscription.payment_ended, 
+    F.data == bt.back_to_menu
+)
+@r.callback_query(
+    Subscription.payment_method, 
+    F.data == bt.back
+)
 async def subscription_menu_callback_query_handler(
     callback: CallbackQuery,
     state: FSMContext,
@@ -59,10 +80,19 @@ async def subscription_menu_callback_query_handler(
     database: Database,
     event_from_user: User
 ):
-    await subscription_menu(callback.message, state, keyboards, database, event_from_user)
+    await subscription_menu(
+        callback.message, 
+        state, 
+        keyboards, 
+        database,
+        event_from_user
+    )
 
 
-@r.message(F.text, F.text == bt.subscription)
+@r.message(
+    F.text,
+    F.text == bt.subscription
+)
 async def subscription_menu(
     message: Message, 
     state: FSMContext,
@@ -70,8 +100,12 @@ async def subscription_menu(
     database: Database,
     event_from_user: User
 ):
-    user = database.get_user(user_id=event_from_user.id)
-    current_location = database.get_location(user.current_location_id)
+    user = database.get_user(
+        user_id=event_from_user.id
+    )
+    current_location = database.get_location(
+        location_id=user.current_location_id
+    )
 
     time_offset: int = get_timezone_offset(
         current_location.latitude,
@@ -83,7 +117,7 @@ async def subscription_menu(
         user.subscription_end_date, 
         database_datetime_format
     ) + offset 
-    now = datetime.utcnow() + offset
+    now = datetime.utcnow()
 
     if now > user_subscription_end_datetime:
         bot_message = await message.answer(
@@ -91,14 +125,24 @@ async def subscription_menu(
             reply_markup=keyboards.subscription
         )
     else:
+        subscription_end_datetime = (
+            (
+                user_subscription_end_datetime + offset
+            ).strftime(
+                database_datetime_format
+            )
+        )
+
         bot_message = await message.answer(
             messages.subscription_check_and_buy.format(
-                subscription_end_datetime=user_subscription_end_datetime.strftime(database_datetime_format)
+                subscription_end_datetime=subscription_end_datetime
             ),
             reply_markup=keyboards.subscription
         )
     
-    await state.update_data(del_messages=[bot_message.message_id])
+    await state.update_data(
+        del_messages=[bot_message.message_id]
+    )
     await state.set_state(Subscription.period)
 
 
@@ -113,7 +157,10 @@ async def get_choosed_period(
     await choose_payment_method(callback, state, keyboards)
 
 
-@r.callback_query(Subscription.check_payment_status, F.data == bt.back)
+@r.callback_query(
+    Subscription.check_payment_status,
+    F.data == bt.back
+)
 async def choose_payment_method(
     callback: CallbackQuery,
     state: FSMContext,
@@ -127,12 +174,20 @@ async def choose_payment_method(
     await state.set_state(Subscription.payment_method)
 
 
-@r.callback_query(Subscription.payment_ended, F.data == bt.try_again)
-@r.callback_query(Subscription.payment_method, F.data == bt.yookassa)
+@r.callback_query(
+    Subscription.payment_ended, 
+    F.data == bt.try_again
+)
+@r.callback_query(
+    Subscription.payment_method,
+    F.data == bt.yookassa
+)
 async def yookassa_payment(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User
 ):
     data = await state.get_data()
     price = months_to_rub_price[data['months']]
@@ -140,9 +195,16 @@ async def yookassa_payment(
     
     idempotence_key = str(uuid.uuid4())
     
-    # Ниже я получаю дату автоматической отмены платежа, которая должна быть спустя 6 часов после создания платежа
+    # Ниже я получаю дату автоматической отмены платежа, 
+    # которая должна быть спустя 6 часов после создания платежа
     now = datetime.utcnow()
-    payment_auto_cancel_datetime = (now + timedelta(hours=6)).replace(microsecond=0).isoformat() + 'Z' 
+    payment_auto_cancel_datetime = (
+        (
+            now + timedelta(hours=6)
+        ).replace(
+            microsecond=0
+        ).isoformat() + 'Z'
+    )
     
     payment = Payment.create(
         {
@@ -162,6 +224,15 @@ async def yookassa_payment(
                 f"Покупка/Продление подписки на АстроНавигатор, {months_str}"
         }, 
         idempotence_key
+    )
+    database.add_payment(
+        DBPayment(
+            payment_id=payment.id,
+            user_id=event_from_user.id,
+            status='pending',
+            period=data['months'],
+            created_at=datetime.utcnow().strftime(database_datetime_format)
+        )
     )
 
     await state.update_data(
@@ -216,7 +287,11 @@ async def check_payment_status(
             bot_message = await callback.message.answer(
                 messages.payment_pending
             )
-            await get_payment_menu(bot_message, state, keyboards)
+            await get_payment_menu(
+                bot_message, 
+                state,
+                keyboards
+            )
             return
         case 'waiting_for_capture' | 'paid':
             database.add_period_to_subscription_end_date(
@@ -226,16 +301,25 @@ async def check_payment_status(
                 )
             )
             Payment.capture(payment_id)
+            database.update_payment(
+                payment_id=payment_id, 
+                status='success',
+                ended_at=datetime.utcnow().strftime(database_datetime_format)
+            )
             payment_end_message = await callback.message.answer(
                 messages.payment_succeess,
                 reply_markup=keyboards.payment_succeess
             )
-        case 'canceled':
-            payment_end_message = await callback.message.answer(
-                messages.payment_canceled,
-                reply_markup=keyboards.payment_canceled
+            await state.update_data(
+                prediction_access=True,
+                subscription_end_date=True
             )
-        case _:
+        case _:  # 'canceled' or 'failed'. Or something else
+            database.update_payment(
+                payment_id=payment_id, 
+                status='failed',
+                ended_at=datetime.utcnow().strftime(database_datetime_format)
+            )
             payment_end_message = await callback.message.answer(
                 messages.payment_check_error,
                 reply_markup=keyboards.payment_canceled

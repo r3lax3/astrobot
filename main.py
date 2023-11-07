@@ -3,7 +3,6 @@ import logging
 import sqlite3
 import argparse
 
-
 from src import main as bot_main
 
 

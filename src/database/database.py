@@ -1,8 +1,7 @@
-import sqlite3
 import logging
 
 from datetime import timedelta, datetime
-from typing import Optional, Any, List
+from typing import Optional, List
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -13,7 +12,9 @@ from src.database.models import (
     User,
     Location, 
     Interpretation,
-    CardOfDay
+    CardOfDay,
+    Payment,
+    ViewedPrediction
 )
 
 
@@ -173,10 +174,10 @@ class Database:
                 new_subscription_end_date = date + timedelta(
                     hours=time_offset
                 )
-                user.subscription_end_date = new_subscription_end_date.strftime(
+            user.subscription_end_date = new_subscription_end_date.strftime(
                     database_datetime_format
                 )
-                self.session.commit()
+            self.session.commit()
 
     
     def change_user_gender(
@@ -435,31 +436,26 @@ class Database:
             self.session.delete(card_of_day)
             self.session.commit()
 
-        
-    # MandatorySubChannel table methods
+    # Payments
+    def add_payment(self, payment: Payment):
+        self.session.add(payment)
+        self.session.commit()
 
-    # def add_mandatory_channel(self, channel: MandatorySubChannel):
-    #     query = """
-    #     INSERT INTO mandatory_sub_channels (channel_id, title, invite_link)
-    #     VALUES (?, ?, ?)
-    #     """
-    #     self.execute_query(query, params=(channel.channel_id, channel.title, channel.invite_link))
-    #
-    # def get_mandatory_channel(self, channel_id: int) -> Optional[MandatorySubChannel]:
-    #     query = "SELECT * FROM mandatory_sub_channels WHERE channel_id = ?"
-    #     result = self.execute_query(query, params=(channel_id,), fetchone=True)
-    #     if result:
-    #         return MandatorySubChannel(*result)
-    #     return None
-    #
-    # def update_mandatory_channel(self, channel: MandatorySubChannel):
-    #     query = """
-    #     UPDATE mandatory_sub_channels
-    #     SET title = ?, invite_link = ?
-    #     WHERE channel_id = ?
-    #     """
-    #     self.execute_query(query, params=(channel.title, channel.invite_link, channel.channel_id))
-    #
-    # def delete_mandatory_channel(self, channel_id: int):
-    #     query = "DELETE FROM mandatory_sub_channels WHERE channel_id = ?"
-    #     self.execute_query(query, params=(channel_id,))
+    def update_payment(self, payment_id: int, **kwargs):
+        payment = self.session.query(
+            Payment
+        ).filter_by(
+            payment_id=payment_id
+        ).first()
+        if not payment:
+            raise ValueError(f"No payment found with id {payment_id}")
+
+        for key, value in kwargs.items():
+            if hasattr(payment, key):
+                setattr(payment, key, value)
+
+        self.session.commit()
+
+    def get_payments(self, **filters) -> List[Payment]:
+        return self.session.query(Payment).filter_by(**filters).all()
+

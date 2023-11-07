@@ -2,10 +2,10 @@ import tomllib
 
 import tomli_w
 
-from typing import Any, Dict, List
+from typing import Any
 
 
-def get(key: str) -> int | str | Dict[str, Any] | List[int | str | float]:
+def get(key: str) -> Any:
     """
     Retrieve a value from TOML config based on the provided key.
 

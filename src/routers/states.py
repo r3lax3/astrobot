@@ -1,4 +1,5 @@
 from aiogram.fsm.state import State, StatesGroup
+from src.routers.user import moon_in_sign
 
 from src.routers.user.profile_settings import change_name
 
@@ -39,6 +40,9 @@ class MainMenu(StatesGroup):
     prediction_end = State()
 
     general_predictions_get_type = State()
+
+    moon_in_sign_general = State()
+    moon_in_sign_description = State()
 
     end_action = State()
 

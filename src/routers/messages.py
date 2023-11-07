@@ -429,7 +429,6 @@ card_of_day = """
 
 Сконцентрируйтесь на изображении и используйте <b>метод ассоциаций</b>, чтобы получить подсказку подсознания 🧩
 """
-
 send_me_card = '''
 Отправьте мне изображение карты дня и я его сохраню
 '''
@@ -437,11 +436,62 @@ card_of_day_successful_saved = '''
 Карта дня успешно сохранена.
 '''
 
-moon_changed_sign = '''
-<strong>До {changed_time} Луна в {start_sign}</strong>
+moon_sign_not_changed = '''
+<strong>Луна в {start_sign} на протяжении всего дня</strong>
 
-{start_description}
-
-<strong>C {changed_time} Луна в {end_sign}</strong>
+{text}
 
 '''
+moon_sign_changed = '''
+<strong>До {first_time} Луна в {start_sign}</strong>
+
+{first_part}
+
+<strong>C {second_time} Луна в {end_sign}</strong>
+
+{second_part}
+'''
+moon_sign_favourable = '''
+Благоприятно:
+
+{text}
+'''
+moon_sign_unfavourable = '''
+Неблагоприятно:
+
+{text}
+'''
+
+admin_statistics = '''
+<code>---=== Статистика ===---</code>
+
+<b>Пользователи</b>
+
+Всего: {all_users} 
+Триальщики: {trial_users}
+Клиенты: {clients}
+Активные клиенты: {active_clients}
+Пользуются бесплатно: {free_users}
+Средний возраст: {average_age} лет
+Женщины: {percentage_women}%
+Мужчины: {percentage_men}%
+
+<b>Подписка</b>
+
+1 мес. : {subscription_1_month} шт.
+2 мес. : {subscription_2_month} шт.
+3 мес. : {subscription_3_month} шт.
+6 мес. : {subscription_6_month} шт.
+1 год   : {subscription_1_year} шт.
+
+<b>Платежи</b>
+
+Всего: {total_transctions}
+Успешные: {successful_transactions}
+Отклоненные: {declined_transactions}
+
+<b>Доход</b>
+
+Общий: {total_revenue} 
+'''
+

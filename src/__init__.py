@@ -10,6 +10,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from src import config
 from src.routers import user_router, admin_router
 from src.database import Database
+from src.database.models import User
 from src.scheduler import EveryDayPredictionScheduler
 from src.keyboard_manager import KeyboardManager
 from src.middlewares import (
@@ -42,6 +43,7 @@ WEB_SERVER_PORT = 8080
 WEBHOOK_PATH = "/astrobot_webhook"
 BASE_WEBHOOK_URL = "https://vm4720745.25ssd.had.wf"
 
+
 # Database backup
 async def backup_db(db: Database, bot: Bot):
     db_str = '\n'.join(list(db.connection.iterdump()))
@@ -67,10 +69,9 @@ async def check_users_and_schedule(
     database: Database, 
     bot: Bot
 ):
-    rows = database.execute_query(
-        query="SELECT user_id FROM users",
-        fetchall=True
-    )
+    rows = database.session.query(
+        User.id
+    ).all()
     for row in rows:
         user_id = row[0]
         await scheduler.add_send_message_job(
@@ -79,10 +80,14 @@ async def check_users_and_schedule(
             bot
         )
 
+
 async def on_startup(bot: Bot) -> None:
     # If you have a self-signed SSL certificate, then you will need to send a public
     # certificate to Telegram
-    await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
+    await bot.set_webhook(
+        f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}"
+    )
+
 
 async def main():
     token: str = config.get('bot.token')
@@ -99,7 +104,9 @@ async def main():
     scheduler.start()
 
     dp = Dispatcher(
-        storage=RedisStorage.from_url('redis://localhost:6379'),
+        storage=RedisStorage.from_url(
+            'redis://localhost:6379'
+        ),
         database=database,
         keyboards=KeyboardManager(database),
         scheduler=scheduler

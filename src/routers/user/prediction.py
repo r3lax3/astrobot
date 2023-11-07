@@ -24,6 +24,7 @@ from src.models import DateModifier
 from src.routers import messages
 from src.routers.states import MainMenu, Subscription
 from src.database import Database
+from src.filters import HasPredictionAccess
 from src.keyboard_manager import KeyboardManager, bt
 from src.prediction_analys import (
     get_astro_events_from_period,
@@ -301,7 +302,10 @@ def filtered_and_formatted_prediction(
 
     return formatted_text
 
-
+@r.callback_query(
+    MainMenu.prediction_choose_date,
+    F.data == bt.decline
+)
 @r.callback_query(MainMenu.prediction_end, F.data == bt.back)
 @r.callback_query(Subscription.payment_ended, F.data == bt.try_in_deal)
 async def get_prediction_callback_redirect(
@@ -323,6 +327,7 @@ async def get_prediction_callback_redirect(
 
 
 @r.message(F.text, F.text == bt.prediction)
+@r.message(F.text, F.text == bt.prediction_no_access)
 async def get_prediction(
     message: Message,
     state: FSMContext,
@@ -332,15 +337,8 @@ async def get_prediction(
     event_from_user: User
 ):
     user = database.get_user(user_id = event_from_user.id)
-    user_current_location = database.get_location(
-        user.current_location_id
-    )
-
-    time_offset: int = get_timezone_offset(
-        user_current_location.latitude, 
-        user_current_location.longitude
-    )
-    now = datetime.utcnow() + timedelta(hours=time_offset)
+    
+    now = datetime.utcnow()
     current_user_subscription_end_date = datetime.strptime(
         user.subscription_end_date, 
         database_datetime_format
@@ -352,16 +350,51 @@ async def get_prediction(
             reply_markup=keyboards.predict_choose_action
         )
         await state.set_state(MainMenu.prediction_choose_action)
-    else:
-        bot_message = await message.answer(
-            messages.predictin_access_denied,
-            reply_markup=keyboards.prediction_access_denied
+        await state.update_data(
+            prediction_access=True,
+            subscription_end_date=user.subscription_end_date,
+            del_messages=[bot_message.message_id]
         )
-        await state.set_state(MainMenu.prediction_access_denied)
+    else:
+        await prediction_access_denied(message, state, keyboards)
+
+
+@r.callback_query(
+    MainMenu.prediction_end, 
+    F.data == bt.check_another_date,
+    ~HasPredictionAccess()
+)
+@r.callback_query(
+    MainMenu.prediction_choose_date,
+    ~HasPredictionAccess()
+)
+async def prediction_access_denied_callback_handler(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    await prediction_access_denied(callback.message, state, keyboards)
+
+@r.message(
+    MainMenu.prediction_choose_action,
+    ~HasPredictionAccess()
+)
+async def prediction_access_denied(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    bot_message = await message.answer(
+        messages.predictin_access_denied,
+        reply_markup=keyboards.prediction_access_denied
+    )
+    await state.set_state(MainMenu.prediction_access_denied)
+    await state.update_data(
+        prediction_access=False
+    )
 
     await state.update_data(
-        del_messages=[bot_message.message_id],
-        time_offset=time_offset
+        del_messages=[bot_message.message_id]
     )
 
 
@@ -433,28 +466,6 @@ async def prediction_for_today(
         database,
         event_from_user,
         bot
-    )
-
-
-@r.callback_query(
-    MainMenu.prediction_choose_date,
-    F.data == bt.decline
-)
-async def prediction_on_date_back(
-    callback: CallbackQuery,
-    state: FSMContext,
-    keyboards: KeyboardManager,
-    database: Database,
-    bot: Bot,
-    event_from_user: User
-):
-    await get_prediction(
-        callback.message, 
-        state, 
-        keyboards, 
-        bot, 
-        database, 
-        event_from_user
     )
 
 

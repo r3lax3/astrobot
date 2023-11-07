@@ -15,111 +15,79 @@ from src.models import DateModifier, SubscriptionPeriod
 
 
 buttons_text = {
-    'enter_birth_data':              
-        'Ввести данные рождения',
-    'night':                         
-        'Ночь',
-    'morning':                       
-        'Утро',
-    'day':                           
-        'День',
-    'evening':                       
-        'Вечер',
-    'back':                          
-        '🔙 Назад',
-    'subscription':                  
-        '🌟Подписка',
-    'prediction':                    
-        '🔮Прогноз',
-    'dreams':                        
-        '💫 Сны',
-    'card_of_day':               
-        '🃏Карта Дня',
-    'general_predictions':           
-        '🌒 Общие прогнозы',
-    'moon_in_sign':                  
-        '🌗 Луна в знаке',
-    'about_bot':                     
-        '🤔 О боте',
-    'change_timezone':               
-        '✈️Смена часового пояса',
-    'tech_support':                  
-        '🔧 Техническая поддержка',
-    'prediction_for_date':           
-        '🕓 Прогноз на дату',
-    'prediction_for_today':          
-        'Прогноз на сегодня',
-    'daily_prediction':              
-        '⌚️ Ежедневный прогноз',
-    'main_menu':                     
-        'В главное меню',
-    'check_another_date':            
-        'Проверить другую дату',
-    'change_prediction_time':        
-        '⌛Изменить время прогноза',
-    'confirm':                       
-        'Подтверждаю ☑',
-    'decline':                       
-        'Нет, вернуться назад ❎',
-    'one_month':                     
-        '1 месяц | 400 рублей',
-    'two_month':                     
-        '2 месяца | 750 рублей',
-    'three_month':                   
-        '3 месяца | 1050 рублей',
-    'six_month':                     
-        '6 месяцев | 2000 рублей',
-    'twelve_month':                  
-        '12 месяцев | 3800 рублей',
-    'yookassa':                      
-        'YooKassa',
-    'offer':                         
-        'Оффер',
-    'redirect_button_text':          
-        'Оплатить подписку',
-    'check_payment_status':          
-        'Проверить статус платежа',
-    'try_again':                     
-        'Попробовать ещё раз',
-    'back_to_menu':                  
-        'Вернуться в меню',
-    'try_in_deal':                   
-        'Испытать в деле',
-    'compatibility':                 
-        'Совместимость',
-    'male':                          
-        'Мужчина',
-    'female':                        
-        'Женщина',
-    'profile_settings':              
-        'Настройки Профиля',
-    'gender':                        
-        'Пол',
-    'general_predictions_add':       
-        'Добавление Общих Прогнозов',
-    'user_settings':                 
-        'Настройки пользователя',
-    'back_to_adminpanel':            
-        'Назад в админ-панель',
-    'prediction_on_day':             
-        'На день',
-    'prediction_on_week':            
-        'На неделю',
-    'prediction_on_month':           
-        'На месяц',
-    'change_user_subscription_end':  
-        'Изменить дату окончания подписки',
-    'delete_user_subscription':      
-        'Выключить подписку пользователя',
-    'name':                          
-        'Имя',
-    'theme':
-        'Тема',
-    'add_card_of_day':
-        'Добавить карту дня'
-}
+    # Navigation
+    'enter_birth_data': 'Ввести данные рождения',
+    'back': '🔙 Назад',
+    'main_menu': 'В главное меню',
+    'back_to_menu': 'Вернуться в меню',
+    'back_to_adminpanel': 'Назад в админ-панель',
 
+    # Time of day
+    'night': 'Ночь',
+    'morning': 'Утро',
+    'day': 'День',
+    'evening': 'Вечер',
+
+    # Predictions
+    'prediction': '🔮Прогноз',
+    'prediction_no_access': '🔓Прогноз',
+    'prediction_for_date': '🕓 Прогноз на дату',
+    'prediction_for_today': 'Прогноз на сегодня',
+    'daily_prediction': '⌚️ Ежедневный прогноз',
+
+    # Subscription
+    'subscription': '🌟Подписка',
+    'one_month': '1 месяц | 400 рублей',
+    'two_month': '2 месяца | 750 рублей',
+    'three_month': '3 месяца | 1050 рублей',
+    'six_month': '6 месяцев | 2000 рублей',
+    'twelve_month': '12 месяцев | 3800 рублей',
+    'yookassa': 'YooKassa',
+    'offer': 'Оффер',
+    'redirect_button_text': 'Оплатить подписку',
+    'check_payment_status': 'Проверить статус платежа',
+    'try_in_deal': 'Испытать в деле',
+    
+    # Profile settings
+    'profile_settings': 'Настройки Профиля',
+    'change_timezone': '✈️Смена часового пояса',
+    'name': 'Имя',
+    'theme': 'Тема',
+    'gender': 'Пол',
+    'male': 'Мужчина',
+    'female': 'Женщина',
+
+    # Card of day
+    'card_of_day': '🃏Карта Дня',
+
+    # Moon in sign
+    'moon_in_sign': '🌗 Луна в знаке',
+    'favorable': 'Благоприятно',
+    'unfavorable': 'Неблагоприятно',
+
+    # General predictions
+    'general_predictions': '🌒 Общие прогнозы',
+    'prediction_on_day': 'На день',
+    'prediction_on_week': 'На неделю',
+    'prediction_on_month': 'На месяц',
+
+    # Admin
+    'add_card_of_day': 'Добавить карту дня',
+    'user_settings': 'Настройки пользователя',
+    'delete_user_subscription': 'Выключить подписку пользователя',
+    'general_predictions_add': 'Добавление Общих Прогнозов',
+    'change_user_subscription_end': 'Изменить дату окончания подписки',
+    'statistics': "Статистика",
+
+    # Misc
+    'dreams': '💫 Сны',
+    'about_bot': '🤔 О боте',
+    'tech_support': '🔧 Техническая поддержка',
+    'try_again': 'Попробовать ещё раз',
+    'compatibility': 'Совместимость'
+}
 bt = SimpleNamespace(**buttons_text) 
+from_text_to_bt = {v: k for k, v in buttons_text}
 
 
 class KeyboardManager:
@@ -166,11 +134,21 @@ class KeyboardManager:
         self.main_menu = self.build_keyboard_from_structure(
             [
                 [bt.subscription, bt.prediction],
-                [bt.dreams, bt.card_of_day],
+                [bt.card_of_day], # + bt.dreams
                 [bt.general_predictions, bt.moon_in_sign],
                 [bt.compatibility, bt.about_bot],
                 [bt.profile_settings, bt.tech_support]
             ]
+        )
+        self.main_menu_prediction_no_access = self.build_keyboard_from_structure(
+            [
+                [bt.subscription, bt.prediction_no_access],
+                [bt.card_of_day], # + bt.dreams
+                [bt.general_predictions, bt.moon_in_sign],
+                [bt.compatibility, bt.about_bot],
+                [bt.profile_settings, bt.tech_support]
+            ]
+
         )
 
 
@@ -294,6 +272,16 @@ class KeyboardManager:
             is_inline=True
         )
 
+        # Moon in sign
+
+        self.moon_in_sign_menu = self.build_keyboard_from_structure(
+            [
+                [bt.favorable],
+                [bt.unfavorable],
+                [bt.main_menu]
+            ]
+        )
+
         # No category
 
 
@@ -332,7 +320,8 @@ class KeyboardManager:
             [
                 [bt.general_predictions_add],
                 [bt.user_settings],
-                [bt.add_card_of_day]
+                [bt.add_card_of_day],
+                [bt.statistics]
             ],
             is_inline=True
         )

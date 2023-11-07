@@ -152,7 +152,6 @@ async def get_current_location_confirmed(
         test_period_end = now + timedelta(
             days=subscription_test_period_in_days
         )
-
         database.add_user(
             DBUser(
                 user_id=event_from_user.id,
@@ -182,13 +181,18 @@ async def get_current_location_confirmed(
             database=database,
             bot=bot
         )
+        await state.update_data(
+            prediction_access=True,
+            subscription_end_date=test_period_end.strftime(
+                database_datetime_format
+            )
+        )
         await main_menu(
             callback.message, 
             state,
             keyboards,
             bot
         )
-
     else:
         database.update_user_current_location(
             event_from_user.id, 
@@ -227,7 +231,7 @@ async def main_menu_command(
         bot_message = await message.answer(
             'Вы ещё не ввели данные рождения.'
         )
-        await user_command_start_handler(bot_message, state)
+        await user_command_start_handler(bot_message, state, bot)
     else:
         await main_menu(message, state, keyboards, bot)
 
@@ -262,17 +266,22 @@ async def main_menu(
         except TelegramBadRequest:
             pass
 
+    if data['prediction_access']:
+        keyboard = keyboards.main_menu
+    else:
+        keyboard = keyboards.main_menu_prediction_no_access
+
     if data['first_time']:
         main_menu_message = await message.answer(
             messages.main_menu_first_time,
-            reply_markup=keyboards.main_menu
+            reply_markup=keyboard
         )
         await state.update_data(first_time=False)
 
     else:
         main_menu_message = await message.answer(
             messages.main_menu,
-            reply_markup=keyboards.main_menu
+            reply_markup=keyboard
         )
 
     await state.update_data(

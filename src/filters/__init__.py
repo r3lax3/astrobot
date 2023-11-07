@@ -1,5 +1,32 @@
-from aiogram import F
+from datetime import datetime
 
+from aiogram.filters import Filter
+from aiogram.fsm.context import FSMContext
+
+from src import config
 from src.filters.is_date import IsDate, IsDatetime
-# from .role import RoleFilter, AdminFilter, MasterFilter
-# from .check_sub import IsNotSub
+from src.filters.state_flag_filters import FSMFlagChecker
+
+
+database_datetime_format: str = config.get(
+    'database.datetime_format'
+)
+
+class HasPredictionAccess(Filter):
+    async def __call__(
+        self, 
+        obj: Message | CallbackQuery, 
+        state: FSMContext,
+        event_from_user: User
+    ):
+        data = await state.get_data()
+
+        now = datetime.utcnow()
+        subscription_end_date_str = data['subscription_end_date']
+        subscription_end_date = datetime.strptime(
+            subscription_end_date_str,
+            database_datetime_format
+        )
+
+        return now > subscription_end_date
+
