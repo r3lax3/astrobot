@@ -5,6 +5,7 @@ from typing import Optional, List
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import IntegrityError
 
 from src import config
 from src.utils import get_timezone_offset
@@ -315,12 +316,16 @@ class Database:
         user_id: int, 
         prediction_date: str
     ):
-        viewed_prediction = ViewedPrediction(
-            user_id=user_id,
-            prediction_date=prediction_date
-        )
-        self.session.add(viewed_prediction)
-        self.session.commit()
+        try:
+            viewed_prediction = ViewedPrediction(
+                user_id=user_id,
+                prediction_date=prediction_date,
+                view_timestamp=datetime.utcnow().strftime(database_datetime_format)
+            )
+            self.session.add(viewed_prediction)
+            self.session.commit()
+        except IntegrityError:
+            pass
 
 
     # Read
@@ -368,7 +373,7 @@ class Database:
 
         # Проверяем, не истекла ли подписка.
         subscription_end_date = datetime.strptime(
-            user.subscription_end_date, 
+            user.subscription_end_date,  # str
             database_datetime_format
         )
         if subscription_end_date < now:

@@ -445,7 +445,7 @@ async def add_card_of_day(
 @r.message(
     AdminStates.get_card_of_day,
     F.photo,
-    F.media_group_id is None
+    F.media_group_id.is_(None)
 )
 async def get_card_of_day(
     message: Message,

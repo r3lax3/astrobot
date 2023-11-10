@@ -14,13 +14,15 @@ from src.database import Database
 from src.models import DateModifier, SubscriptionPeriod
 
 
-buttons_text = {
+buttons_text: dict = {
     # Navigation
     'enter_birth_data': 'Ввести данные рождения',
     'back': '🔙 Назад',
     'main_menu': 'В главное меню',
     'back_to_menu': 'Вернуться в меню',
     'back_to_adminpanel': 'Назад в админ-панель',
+    'decline': 'Нет, вернуться назад ❎',
+    'confirm': 'Подтверждаю ☑',
 
     # Time of day
     'night': 'Ночь',
@@ -34,6 +36,8 @@ buttons_text = {
     'prediction_for_date': '🕓 Прогноз на дату',
     'prediction_for_today': 'Прогноз на сегодня',
     'daily_prediction': '⌚️ Ежедневный прогноз',
+    'check_another_date': 'Проверить другую дату',
+    'change_prediction_time': '⌛Изменить время прогноза',
 
     # Subscription
     'subscription': '🌟Подписка',
@@ -54,8 +58,8 @@ buttons_text = {
     'name': 'Имя',
     'theme': 'Тема',
     'gender': 'Пол',
-    'male': 'Мужчина',
-    'female': 'Женщина',
+    'male': '🙋‍♂️Мужчина',
+    'female': '🙋‍♀️Женщина',
 
     # Card of day
     'card_of_day': '🃏Карта Дня',
@@ -86,8 +90,12 @@ buttons_text = {
     'try_again': 'Попробовать ещё раз',
     'compatibility': 'Совместимость'
 }
-bt = SimpleNamespace(**buttons_text) 
-from_text_to_bt = {v: k for k, v in buttons_text}
+bt = SimpleNamespace(**buttons_text)
+
+from_text_to_bt: dict = {
+    v: k 
+    for k, v in buttons_text.items()
+}
 
 
 class KeyboardManager:

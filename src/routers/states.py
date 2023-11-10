@@ -1,7 +1,4 @@
 from aiogram.fsm.state import State, StatesGroup
-from src.routers.user import moon_in_sign
-
-from src.routers.user.profile_settings import change_name
 
 
 class GetBirthData(StatesGroup):

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from aiogram.filters import Filter
 from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, Message
 
 from src import config
 from src.filters.is_date import IsDate, IsDatetime
@@ -16,8 +17,7 @@ class HasPredictionAccess(Filter):
     async def __call__(
         self, 
         obj: Message | CallbackQuery, 
-        state: FSMContext,
-        event_from_user: User
+        state: FSMContext
     ):
         data = await state.get_data()
 

@@ -85,9 +85,7 @@ class ViewedPrediction(Base):
     )
     view_timestamp = Column(String)  # "%d.%m.%Y" as default
     
-    user = relationship("User", back_populates="viewed_predictions")
 
-    
 class CardOfDay(Base):
     __tablename__ = 'cards_of_day'
     
@@ -97,7 +95,7 @@ class CardOfDay(Base):
 class Payment(Base):
     __tablename__ = 'payments'
 
-    payment_id = Column(String)
+    payment_id = Column(String, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'))
     status = Column(String)  # 'success' | 'failed' | 'pending'
     period = Column(Integer)

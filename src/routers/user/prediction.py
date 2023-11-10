@@ -375,6 +375,7 @@ async def prediction_access_denied_callback_handler(
 ):
     await prediction_access_denied(callback.message, state, keyboards)
 
+
 @r.message(
     MainMenu.prediction_choose_action,
     ~HasPredictionAccess()
@@ -385,15 +386,12 @@ async def prediction_access_denied(
     keyboards: KeyboardManager
 ):
     bot_message = await message.answer(
-        messages.predictin_access_denied,
+        messages.prediction_access_denied,
         reply_markup=keyboards.prediction_access_denied
     )
     await state.set_state(MainMenu.prediction_access_denied)
     await state.update_data(
-        prediction_access=False
-    )
-
-    await state.update_data(
+        prediction_access=False,
         del_messages=[bot_message.message_id]
     )
 

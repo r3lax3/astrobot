@@ -55,7 +55,7 @@ not_implemented_list = [
     bt.theme
 ]
 subscription_test_period_in_days: int = config.get(
-    'subsription.test_period_in_days'
+    'subscription.test_period_in_days'
 )
 
 

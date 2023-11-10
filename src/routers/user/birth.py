@@ -32,7 +32,7 @@ guide_send_geopos_images_file_id = config.get(
 @r.message(
     MainMenu.get_name, 
     F.text,
-    len(F.text) <= 20
+    F.text.len() <= 20
 )
 async def get_name_success(
     message: Message,
@@ -42,9 +42,7 @@ async def get_name_success(
     name = message.text
 
     bot_message = await message.answer(
-        messages.hello.format(
-            name=name
-        ),
+        messages.hello,
         reply_markup=keyboards.enter_birth_data
     )
     await state.update_data(
@@ -57,7 +55,7 @@ async def get_name_success(
 @r.message(
     MainMenu.get_name,
     F.text, 
-    len(F.text) > 20
+    F.text.len() > 20
 )
 async def get_name_max_length_error(
     message: Message,

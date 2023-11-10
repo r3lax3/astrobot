@@ -70,7 +70,7 @@ async def check_users_and_schedule(
     bot: Bot
 ):
     rows = database.session.query(
-        User.id
+        User.user_id
     ).all()
     for row in rows:
         user_id = row[0]
@@ -81,20 +81,17 @@ async def check_users_and_schedule(
         )
 
 
-async def on_startup(bot: Bot) -> None:
-    # If you have a self-signed SSL certificate, then you will need to send a public
-    # certificate to Telegram
-    await bot.set_webhook(
-        f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}"
-    )
+# async def on_startup(bot: Bot) -> None:
+#     # If you have a self-signed SSL certificate, then you will need to send a public
+#     # certificate to Telegram
+#     await bot.set_webhook(
+#         f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}"
+#     )
 
 
 async def main():
     token: str = config.get('bot.token')
     bot = Bot(token, parse_mode='html')
-    bot_instance = await bot.me()
-    config.set('bot.username', bot_instance.username)
-
     database = Database()
 
     scheduler = EveryDayPredictionScheduler()
@@ -116,12 +113,13 @@ async def main():
     # 6 * 60 * 60 = 21600 секунд
 
     # asyncio.create_task(schedule_backup(db, bot, 21600))
-    await bot.get_updates(
-        allowed_updates=[
-            'message', 
-            'callback_query'
-        ]
-    )
+    #
+    # await bot.get_updates(
+    #     allowed_updates=[
+    #         'message', 
+    #         'callback_query'
+    #     ]
+    # )
 
     # Message
 
@@ -153,22 +151,22 @@ async def main():
         user_router,
         admin_router
     )
-
-    # Create aiohttp.web.Application instance
-    app = web.Application()
-    
-    # Create an instance of request handler,
-    webhook_requests_handler = SimpleRequestHandler(
-        dispatcher=dp,
-        bot=bot
-    )
-
-    # Register webhook handler on application
-    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
-
-    # Mount dispatcher startup and shutdown hooks to aiohttp application
-    setup_application(app, dp, bot=bot)
-
-    # And finally start webserver
-    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
-
+    #
+    # # Create aiohttp.web.Application instance
+    # app = web.Application()
+    # 
+    # # Create an instance of request handler,
+    # webhook_requests_handler = SimpleRequestHandler(
+    #     dispatcher=dp,
+    #     bot=bot
+    # )
+    #
+    # # Register webhook handler on application
+    # webhook_requests_handler.register(app, path=WEBHOOK_PATH)
+    #
+    # # Mount dispatcher startup and shutdown hooks to aiohttp application
+    # setup_application(app, dp, bot=bot)
+    #
+    # # And finally start webserver
+    # web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+    await dp.start_polling(bot)

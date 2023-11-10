@@ -41,9 +41,21 @@ async def profile_settings_menu(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
+    data = await state.get_data()
+
+    name = data['name']
+
+    current_location_title = data['current_location_title']
+
+    birth_datetime = data['birth_datetime']
+    birth_location_title = data['birth_location_title']
+
     bot_message = await message.answer(
         messages.profile_settings.format(
-
+            name=name,
+            current_location_title=current_location_title,
+            birth_datetime=birth_datetime,
+            birth_location_title=birth_location_title
         ),
         reply_markup=keyboards.profile_settings
     )
@@ -94,7 +106,8 @@ async def choose_gender(
     database: Database
 ):
     user = database.get_user(user_id=callback.from_user.id)
-    if user.gender is not None: # Если пол не указан
+
+    if user.gender is not None: 
         bot_message = await callback.message.answer(
             messages.choose_gender.format(
                 gender=from_text_to_bt[user.gender]
@@ -106,7 +119,10 @@ async def choose_gender(
             messages.gender_not_choosen,
             reply_markup=keyboards.choose_gender
         )
-    await state.update_data(del_messages=[bot_message.message_id])
+
+    await state.update_data(
+        del_messages=[bot_message.message_id]
+    )
     await state.set_state(ProfileSettings.choose_gender)
 
 
@@ -167,7 +183,9 @@ async def enter_current_location(
     keyboards: KeyboardManager
 ):
     data = await state.get_data()
+    
     first_time = data['first_time']
+
     if not first_time:
         bot_message = await callback.message.answer(
             messages.enter_current_location,
@@ -177,6 +195,7 @@ async def enter_current_location(
         bot_message = await callback.message.answer(
             messages.enter_current_location
         )
+    
     await state.update_data(
         del_messages=[bot_message.message_id]
     )
