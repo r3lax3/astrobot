@@ -9,6 +9,8 @@ from sqlalchemy.orm import sessionmaker
 from src import config
 from src.utils import get_timezone_offset
 from src.database.models import (
+    Base,
+
     User,
     Location, 
     Interpretation,
@@ -28,7 +30,13 @@ date_format: str = config.get(
 
 class Database:
     def __init__(self):
+        # Initialize the engine
         self.engine = create_engine('sqlite:///database.db')
+
+        # Create tables in the database
+        Base.metadata.create_all(self.engine)
+
+        # Create a session
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
