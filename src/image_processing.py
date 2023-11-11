@@ -1,4 +1,3 @@
-import datetime
 import io
 
 from PIL import Image, ImageDraw, ImageFont
@@ -11,9 +10,7 @@ DATE_FORMAT: str = config.get(
 )
 
 
-def generate_image_with_date_for_prediction(
-    date_input=None
-) -> bytes:
+def generate_image_with_date_for_prediction(date: str) -> bytes:
     """
     Generates an image with the given date or the current 
     date if none is provided.
@@ -36,20 +33,16 @@ def generate_image_with_date_for_prediction(
     font_size = 80
     font = ImageFont.truetype(font_path, font_size)
     
-    # Check if a date is provided or use the current date
-    if date_input is None:
-        date_text = datetime.datetime.now().strftime(DATE_FORMAT)
-    else:
-        date_text = date_input
 
     # Draw the date on the image
-    text_position = (370, 450)
+    text_position = (404, 450)  # Подганял чётко под изображение методом тыка
     text_color = '#ffffff'
     text_drawer.text(
         text_position, 
-        date_text, 
+        date, 
         fill=text_color, 
-        font=font
+        font=font,
+        align='center'
     )
     
     # Save the image to a BytesIO object

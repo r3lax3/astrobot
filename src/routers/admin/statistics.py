@@ -75,7 +75,7 @@ async def statistics(
             database_datetime_format
         )
         ages.append((now - birth_datetime).days / 365)
-    average_age = sum(ages) / len(ages) if ages else 0
+    average_age = int(sum(ages) / len(ages)) if ages else 0
 
     subscriptions = count_subscriptions(database)
     total_revenue_val = total_revenue(database)

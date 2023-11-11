@@ -58,7 +58,7 @@ async def card_of_day_menu(
                 from_chat_id=admin_chat_id,   # Откуда
                 message_id=card_message_id,   # Что
                 caption=messages.card_of_day, # Текст к изображению
-                reply_markup=keyboards.back   # Клавиатура
+                reply_markup=keyboards.to_main_menu   # Клавиатура
             )
             break
         except TelegramBadRequest:

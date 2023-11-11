@@ -1,4 +1,5 @@
 from datetime import datetime
+from re import A
 from typing import List
 
 from aiogram import F, Bot, Router
@@ -13,6 +14,7 @@ from src.routers import messages
 from src.routers.states import AdminStates
 from src.filters import IsDatetime
 
+from src.routers.admin.statistics import r as statistics_router
 
 r = Router()
 
@@ -34,6 +36,10 @@ pred_type_to_date_fmt = {
     bt.prediction_on_month: month_format
 }
 
+r.include_routers(
+    statistics_router
+)
+
 
 @r.message(
     Command(commands=['admin']),
@@ -50,6 +56,7 @@ async def adminpanel(
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.choose_action)
+
 
 @r.callback_query(
     AdminStates.get_general_prediction_date,
@@ -101,6 +108,22 @@ async def get_general_prediction_date_menu(
     keyboards: KeyboardManager
 ):
     await state.update_data(general_predictions_type=callback.data)
+    await enter_general_prediction_date(
+        callback.message, 
+        state, 
+        keyboards
+    )
+
+
+@r.callback_query(
+    AdminStates.get_general_prediction_text, 
+    F.data == bt.back
+)
+async def enter_general_prediction_date_callback_handler(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
     await enter_general_prediction_date(
         callback.message, 
         state, 
@@ -279,7 +302,12 @@ async def get_user_info_menu_callback_handler(
     keyboards: KeyboardManager,
     database: Database
 ):  
-    await get_user_info_menu(callback.message, state, keyboards, database)
+    await get_user_info_menu(
+        callback.message, 
+        state, 
+        keyboards, 
+        database
+    )
 
 
 async def get_user_info_menu(

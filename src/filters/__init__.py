@@ -22,11 +22,15 @@ class HasPredictionAccess(Filter):
         data = await state.get_data()
 
         now = datetime.utcnow()
+
         subscription_end_date_str = data['subscription_end_date']
         subscription_end_date = datetime.strptime(
             subscription_end_date_str,
             database_datetime_format
         )
+            
+        print(now)
+        print(subscription_end_date)
 
-        return now > subscription_end_date
+        return now < subscription_end_date
 

@@ -17,7 +17,8 @@ from src.database.models import (
     Interpretation,
     CardOfDay,
     Payment,
-    ViewedPrediction
+    ViewedPrediction,
+    GeneralPrediction
 )
 
 
@@ -300,12 +301,13 @@ class Database:
         prediction = self.session.query(GeneralPrediction).filter_by(date=date).first()
         return prediction.prediction if prediction else None
 
-    def delete_general_prediction(self, date: str):
+    def delete_general_prediction(self, date: str) -> Optional[str]:
         prediction = self.session.query(GeneralPrediction).filter_by(date=date).first()
         if prediction:
             self.session.delete(prediction)
             self.session.commit()
-
+        else:
+            raise Exception(f"Нет прогноза для указанной даты: {date}")
 
 
     # Viewed Predictions

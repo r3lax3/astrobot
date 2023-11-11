@@ -88,17 +88,8 @@ async def get_name_no_text_error(
 )
 async def enter_birth_date_handler(
     callback: CallbackQuery,
-    state: FSMContext,
-    bot: Bot
+    state: FSMContext
 ):
-    data = await state.get_data()
-
-    await bot.edit_message_reply_markup(
-        chat_id=callback.from_user.id, 
-        message_id=data['start_message_id'],
-        reply_markup=None
-    )
-
     bot_message = await callback.message.answer(
         messages.enter_birth_date
     )

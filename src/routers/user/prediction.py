@@ -101,13 +101,13 @@ with open(
 interpretations_dict = {}
 for interpretation in interpretations:
     # key is tuple(transit_planet, natal_planet, event_aspect)
-    interpretations_dict[
-        (
-            interpretation[0], 
-            interpretation[1], 
-            interpretation[2]
-        )
-    ] = Interpretation(*interpretation)  
+    key = (
+        interpretation[0], 
+        interpretation[1], 
+        int(interpretation[2])
+    )
+
+    interpretations_dict[key] = Interpretation(*interpretation)
 
 PLANET_ID_TO_NAME_RU = {
     0: "Солнце",
@@ -132,8 +132,16 @@ def formatted_general_events(events: List[AstroEvent]) -> str:
         natal_planet = PLANET_ID_TO_NAME_RU[event.natal_planet]
         aspect=event.aspect
 
-        key = (transit_planet, natal_planet, event.aspect)
-        interpretation = interpretations_dict.get(key)
+        interpretation = interpretations_dict.get(
+            (transit_planet, natal_planet, event.aspect),
+            None
+        )
+
+        if interpretation is None:
+            interpretation = interpretations_dict.get(
+                (natal_planet, transit_planet, event.aspect),
+                None
+            )
 
         if not interpretation:
             logging.info(
@@ -159,8 +167,16 @@ def formatted_moon_events(events: List[AstroEvent]):
         natal_planet = PLANET_ID_TO_NAME_RU[event.natal_planet]
         aspect=event.aspect
 
-        key = (transit_planet, natal_planet, event.aspect)
-        interpretation = interpretations_dict.get(key)
+        interpretation = interpretations_dict.get(
+            (transit_planet, natal_planet, event.aspect),
+            None
+        )
+
+        if interpretation is None:
+            interpretation = interpretations_dict.get(
+                (natal_planet, transit_planet, event.aspect),
+                None
+            )
 
         if not interpretation:
             logging.info(
@@ -358,6 +374,9 @@ async def get_prediction(
     else:
         await prediction_access_denied(message, state, keyboards)
 
+    print(now)
+    print(current_user_subscription_end_date)
+
 
 @r.callback_query(
     MainMenu.prediction_end, 
@@ -546,7 +565,8 @@ async def prediction_on_date_get_prediction(
         user.subscription_end_date, 
         database_datetime_format
     )
-    target_date = datetime.strptime(data['date'], date_format)
+    target_date_str: str = data['date']
+    target_date = datetime.strptime(target_date_str, date_format)
     timezone_offset = timedelta(hours=data['time_offset'])
 
     if subscription_end_date + timezone_offset > target_date:
@@ -561,7 +581,7 @@ async def prediction_on_date_get_prediction(
         
         photo = BufferedInputFile(
             generate_image_with_date_for_prediction(
-                target_date
+                target_date_str
             ),
             filename='prediction_date.jpeg'
         )
@@ -577,12 +597,10 @@ async def prediction_on_date_get_prediction(
 
         prediction_message = await message.answer_photo(
             photo=photo,
-            text=text,
+            caption=text,
             reply_markup=keyboards.predict_completed
         )
-        
-
-
+       
         await state.update_data(
             prediction_message_id=prediction_message.message_id
         )

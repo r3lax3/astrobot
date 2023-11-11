@@ -30,29 +30,29 @@ time_format: str = config.get(
 )
 zodiac_translation = {
     "Aries": 
-        "Овна",
+        "Овне",
     "Taurus": 
-        "Тельца",
+        "Тельце",
     "Gemini": 
-        "Близнецов",
+        "Близнецах",
     "Cancer": 
-        "Рака",
+        "Раке",
     "Leo":
-        "Льва",
+        "Льве",
     "Virgo": 
-        "Девы",
+        "Деве",
     "Libra": 
-        "Весов",
+        "Весах",
     "Scorpio":  
-        "Скорпиона",
+        "Скорпионе",
     "Sagittarius": 
-        "Стрельца",
+        "Стрельце",
     "Capricorn": 
-        "Козерога",
+        "Козероге",
     "Aquarius": 
-        "Водолея",
+        "Водолее",
     "Pisces": 
-        "Рыб"
+        "Рыбах"
 }
 
 # Путь к вашему CSV файлу
@@ -200,7 +200,7 @@ def get_formatted_moon_sign_text(
                 )
 
         text = messages.moon_sign_not_changed.format(
-            start_sign=sign,
+            start_sign=translate_to_russian(sign),
             text=interpretation_str
         )
 
