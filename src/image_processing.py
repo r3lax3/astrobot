@@ -8,6 +8,7 @@ from src import config
 DATE_FORMAT: str = config.get(
     'database.date_format'
 )
+background_image_path = 'images/prediction_forecast.jpg'
 
 
 def generate_image_with_date_for_prediction(date: str) -> bytes:
@@ -24,7 +25,6 @@ def generate_image_with_date_for_prediction(date: str) -> bytes:
     - bytes: The image data in bytes.
     """
     # Open the background image
-    background_image_path = 'images/фон для прогнозов.jpg'
     background_image = Image.open(background_image_path)
     text_drawer = ImageDraw.Draw(background_image)
     
