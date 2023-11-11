@@ -77,9 +77,13 @@ choose_gender = '''
 '''
 profile_settings = '''
 ▫️ Имя: <b>{name}</b>
-▫️ Текущее местоположение: <b>{current_location_title}</b>
-▫️ Дата и время рождения: <b>{birth_datetime}</b>
-▫️ Место рождения: <b>{birth_location_title}</b>
+▫️ Текущее местоположение: 
+<b>{current_location_title}</b>
+
+▫️ Дата и время рождения: 
+<b>{birth_datetime}</b>
+▫️ Место рождения: 
+<b>{birth_location_title}</b>
 '''
 
 
@@ -448,13 +452,13 @@ moon_sign_changed = '''
 
 {second_part}
 '''
-moon_sign_favourable = '''
-Благоприятно:
+moon_sign_favourable = '''\
+🟢Благоприятно:
 
 {text}
 '''
-moon_sign_unfavourable = '''
-Неблагоприятно:
+moon_sign_unfavourable = '''\
+🔴Неблагоприятно:
 
 {text}
 '''

@@ -18,6 +18,7 @@ from src.keyboard_manager import KeyboardManager, bt
 
 r = Router()
 
+
 regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"
 database_datetime_format = config.get(
     'database.datetime_format'
@@ -55,7 +56,8 @@ async def get_name_success(
 @r.message(
     MainMenu.get_name,
     F.text, 
-    F.text.len() > 20
+    F.text.len() > 20,
+    ~F.text.startswith('/')
 )
 async def get_name_max_length_error(
     message: Message,

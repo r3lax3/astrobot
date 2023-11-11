@@ -10,7 +10,11 @@ from src.utils import get_location_by_coords
 from src.routers import messages
 from src.routers.states import ProfileSettings, GetBirthData
 from src.database import Database
-from src.keyboard_manager import KeyboardManager, bt, from_text_to_bt
+from src.keyboard_manager import (
+    KeyboardManager, 
+    bt, 
+    from_text_to_bt
+)
 
 
 r = Router()
@@ -110,7 +114,7 @@ async def choose_gender(
     if user.gender is not None: 
         bot_message = await callback.message.answer(
             messages.choose_gender.format(
-                gender=from_text_to_bt[user.gender]
+                gender=buttons_text[user.gender]
             ),
             reply_markup=keyboards.choose_gender
         )

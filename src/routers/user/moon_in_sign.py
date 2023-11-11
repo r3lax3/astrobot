@@ -144,10 +144,10 @@ def get_formatted_moon_sign_text(
                 second_sign = moon_signs['end_sign']
 
                 first_part = messages.moon_sign_favourable.format(
-                    text = moon_in_signs_interpretation[first_sign]['favoable']
+                    text = moon_in_signs_interpretation[first_sign]['favorable']
                 )
                 second_part = messages.moon_sign_favourable.format(
-                    text = moon_in_signs_interpretation[second_sign]['favoable']
+                    text = moon_in_signs_interpretation[second_sign]['favorable']
                 )
             case 'unfavorable':
                 first_sign = moon_signs['start_sign']
@@ -189,7 +189,7 @@ def get_formatted_moon_sign_text(
                 sign = moon_signs['start_sign']
 
                 interpretation_str = messages.moon_sign_favourable.format(
-                    text = moon_in_signs_interpretation[sign]['favoable']
+                    text = moon_in_signs_interpretation[sign]['favorable']
                 )
 
             case 'unfavorable':
@@ -207,8 +207,9 @@ def get_formatted_moon_sign_text(
     return text
 
 
+
+
 @r.message(F.text, F.text == bt.moon_in_sign)
-@r.callback_query(F.data == bt.moon_in_sign)
 async def general_moon_sign_menu(
     message: Message,
     state: FSMContext,
@@ -241,6 +242,9 @@ async def general_moon_sign_menu(
     await state.set_state(MainMenu.moon_in_sign_general)
 
 
+@r.callback_query(
+    F.data == bt.moon_in_sign
+)
 @r.callback_query(
     MainMenu.moon_in_sign_description, 
     F.data == bt.back
@@ -288,6 +292,10 @@ async def moon_in_sign_description(
         text,
         reply_markup=keyboards.back
     )
-    await state.update_data(del_messages=[bot_message.message_id])
-    await state.set_state(MainMenu.moon_in_sign_description)
+    await state.update_data(
+        del_messages=[bot_message.message_id]
+    )
+    await state.set_state(
+        MainMenu.moon_in_sign_description
+    )
 

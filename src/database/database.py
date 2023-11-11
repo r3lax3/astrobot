@@ -43,8 +43,11 @@ class Database:
         self.session = Session()
 
     def add_user(self, user: User):
-        self.session.add(user)
-        self.session.commit()
+        try:
+            self.session.add(user)
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
 
     def get_user(self, user_id: int) -> User:
         return self.session.query(User).filter_by(user_id=user_id).first()
@@ -68,7 +71,11 @@ class Database:
             self.session.commit()
 
 
-    def update_user_current_location(self, user_id: int, new_location: Location):
+    def update_user_current_location(
+        self, 
+        user_id: int, 
+        new_location: Location
+    ):
         user = self.session.query(
             User
         ).filter_by(
@@ -245,7 +252,11 @@ class Database:
             self.session.commit()
 
     def delete_location(self, location_id: int):
-        location = self.session.query(Location).filter_by(id=location_id).first()
+        location = self.session.query(
+            Location
+        ).filter_by(
+            id=location_id
+        ).first()
         if location:
             self.session.delete(location)
             self.session.commit()
@@ -293,21 +304,36 @@ class Database:
     # General Predictions
 
     def add_general_prediction(self, date: str, prediction: str):
-        general_prediction = GeneralPrediction(date=date, prediction=prediction)
-        self.session.add(general_prediction)
-        self.session.commit()
+        try:
+            general_prediction = GeneralPrediction(
+                date=date,
+                prediction=prediction)
+            self.session.add(general_prediction)
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
 
     def get_general_prediction(self, date: str) -> Optional[str]:
-        prediction = self.session.query(GeneralPrediction).filter_by(date=date).first()
+        prediction = self.session.query(
+            GeneralPrediction
+        ).filter_by(
+            date=date
+        ).first()
         return prediction.prediction if prediction else None
 
     def delete_general_prediction(self, date: str) -> Optional[str]:
-        prediction = self.session.query(GeneralPrediction).filter_by(date=date).first()
+        prediction = self.session.query(
+            GeneralPrediction
+        ).filter_by(
+            date=date
+        ).first()
         if prediction:
             self.session.delete(prediction)
             self.session.commit()
         else:
-            raise Exception(f"Нет прогноза для указанной даты: {date}")
+            raise Exception(
+                f"Нет прогноза для указанной даты: {date}"
+            )
 
 
     # Viewed Predictions
@@ -322,12 +348,14 @@ class Database:
             viewed_prediction = ViewedPrediction(
                 user_id=user_id,
                 prediction_date=prediction_date,
-                view_timestamp=datetime.utcnow().strftime(database_datetime_format)
+                view_timestamp=datetime.utcnow().strftime(
+                    database_datetime_format
+                )
             )
             self.session.add(viewed_prediction)
             self.session.commit()
         except IntegrityError:
-            pass
+            self.session.rollback()
 
 
     # Read
@@ -348,7 +376,10 @@ class Database:
             for p in predictions
         ]
 
-    def get_unviewed_predictions_count(self, user_id: int) -> int:
+    def get_unviewed_predictions_count(
+        self, 
+        user_id: int
+    ) -> int:
         # Получаем пользователя и его детали.
         user = self.session.query(
             User
@@ -472,5 +503,9 @@ class Database:
         self.session.commit()
 
     def get_payments(self, **filters) -> List[Payment]:
-        return self.session.query(Payment).filter_by(**filters).all()
+        return self.session.query(
+            Payment
+        ).filter_by(
+            **filters
+        ).all()
 

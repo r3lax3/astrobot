@@ -144,8 +144,8 @@ class KeyboardManager:
                 [bt.subscription, bt.prediction],
                 [bt.card_of_day], # + bt.dreams
                 [bt.general_predictions, bt.moon_in_sign],
-                [bt.compatibility, bt.about_bot],
-                [bt.profile_settings, bt.tech_support]
+                [bt.compatibility, bt.profile_settings],
+                [bt.about_bot, bt.tech_support]
             ]
         )
         self.main_menu_prediction_no_access = self.build_keyboard_from_structure(
@@ -153,10 +153,9 @@ class KeyboardManager:
                 [bt.subscription, bt.prediction_no_access],
                 [bt.card_of_day], # + bt.dreams
                 [bt.general_predictions, bt.moon_in_sign],
-                [bt.compatibility, bt.about_bot],
-                [bt.profile_settings, bt.tech_support]
+                [bt.compatibility, bt.profile_settings],
+                [bt.about_bot, bt.tech_support]
             ]
-
         )
 
 
@@ -287,7 +286,8 @@ class KeyboardManager:
                 [bt.favorable],
                 [bt.unfavorable],
                 [bt.main_menu]
-            ]
+            ],
+            is_inline=True
         )
 
         # No category
