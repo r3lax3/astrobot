@@ -8,7 +8,7 @@ from src import config
 DATE_FORMAT: str = config.get(
     'database.date_format'
 )
-background_image_path = 'images/prediction_forecast.jpg'
+background_image_path = 'images/prediction_background.jpg'
 
 
 def generate_image_with_date_for_prediction(date: str) -> bytes:
