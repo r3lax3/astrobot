@@ -109,6 +109,7 @@ def find_moon_sign_change(
         # Бинарный поиск времени смены знака
         left_time = start_of_day
         right_time = end_of_day
+
         while (right_time - left_time).total_seconds() > 60:  # пока разница во времени больше минуты
             middle_time = left_time + (right_time - left_time) / 2
             if get_moon_sign(middle_time) == start_sign:
@@ -207,8 +208,6 @@ def get_formatted_moon_sign_text(
     return text
 
 
-
-
 @r.message(F.text, F.text == bt.moon_in_sign)
 async def general_moon_sign_menu(
     message: Message,
@@ -242,9 +241,7 @@ async def general_moon_sign_menu(
     await state.set_state(MainMenu.moon_in_sign_general)
 
 
-@r.callback_query(
-    F.data == bt.moon_in_sign
-)
+@r.callback_query(F.data == bt.moon_in_sign)
 @r.callback_query(
     MainMenu.moon_in_sign_description, 
     F.data == bt.back

@@ -438,7 +438,7 @@ async def prediction_on_date(
     keyboards: KeyboardManager
 ):
     data = await state.get_data()
-    today = dt.datetime.utcnow().date() + timedelta(hours=data['time_offset'])
+    today = dt.datetime.utcnow().date() + timedelta(hours=data['timezone_offset'])
     await state.update_data(
         date=today.strftime(date_format), 
         today=today.strftime(date_format)

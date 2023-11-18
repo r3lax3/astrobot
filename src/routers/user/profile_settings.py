@@ -6,7 +6,7 @@ from aiogram.types import (
     User
 )
 
-from src.utils import get_location_by_coords
+from src.utils import get_location_by_coords, get_timezone_offset
 from src.routers import messages
 from src.routers.states import ProfileSettings, GetBirthData
 from src.database import Database
@@ -277,6 +277,7 @@ async def get_birth_data_confirm(
     callback: CallbackQuery,
     state: FSMContext,
 ):
+
     bot_message = await callback.message.answer(
         messages.birth_data_confirmed
     )

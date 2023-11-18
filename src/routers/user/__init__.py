@@ -187,7 +187,8 @@ async def get_current_location_confirmed(
             prediction_access=True,
             subscription_end_date=test_period_end.strftime(
                 database_datetime_format
-            )
+            ),
+            timezone_offset=get_timezone_offset(**current_location)
         )
         await main_menu(
             callback.message, 
