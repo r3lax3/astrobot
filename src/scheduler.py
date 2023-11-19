@@ -1,17 +1,17 @@
 import datetime as dt
+
 from typing import Union
 
+from aiogram import Bot
+from timezonefinder import TimezoneFinder
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from timezonefinder import TimezoneFinder
-from aiogram import Bot
-
 from src import config
-from src.utils import get_timezone_offset
 from src.database import Database
 from src.routers import messages
 from src.routers.user.prediction import get_prediction_text
+
 
 datetime_format: str = config.get('database.datetime_format')
 date_format: str = config.get('database.date_format')
@@ -19,6 +19,7 @@ time_format: str = config.get('database.time_format')
 
 TaskID = Union[str, tuple]
 reminder_times = [36, 12]
+
 
 class EveryDayPredictionScheduler(AsyncIOScheduler):
     """
@@ -66,7 +67,12 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
     def remove_task(self, task_id: TaskID):
         """Remove an existing task using its ID."""
-        self.remove_job(job_id=self._task_id_str(task_id))
+        try:
+            self.remove_job(job_id=self._task_id_str(task_id))
+        except JobLookupError:
+            # Если задача не найдена, не делать ничего
+            pass
+
 
     async def _send_message(
         self, 
@@ -107,6 +113,11 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         Add daily prediction and renewal reminder tasks for a user.
         """
         user = database.get_user(user_id=user_id)
+
+        self.remove_task(str(user_id))
+        for hours_before_end in reminder_times:
+            self.remove_task(("reminder", user_id, hours_before_end))
+
 
         subscription_end_datetime = dt.datetime.strptime(
             user.subscription_end_date, 
@@ -166,4 +177,3 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             pass
 
         await self.add_send_message_job(user_id, database, bot)
-
