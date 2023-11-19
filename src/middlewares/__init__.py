@@ -3,4 +3,5 @@ from src.middlewares.album import MediaGroupMiddleware
 from src.middlewares.skip_updates_from_groups import SkipGroupsUpdates
 from src.middlewares.null import NullMiddleware
 from src.middlewares.prediction_message_del_keyboard import PredictionMessageDeleteKeyboardMiddleware
+from src.middlewares.data_in_redis import AddDataInRedis
 

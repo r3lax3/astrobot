@@ -33,7 +33,6 @@ class User(Base):
     timezone_offset = Column(Integer)
     last_card_update = Column(String)
     card_message_id = Column(Integer)
-
     birth_location = relationship(
         "Location", 
         foreign_keys=[birth_location_id]
