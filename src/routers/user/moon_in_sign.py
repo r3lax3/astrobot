@@ -47,7 +47,7 @@ zodiac_translation = {
         "Скорпионе",
     "Sagittarius": 
         "Стрельце",
-    "Capricorn": 
+    "Capricornus": 
         "Козероге",
     "Aquarius": 
         "Водолее",
