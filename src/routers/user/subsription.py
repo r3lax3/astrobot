@@ -100,23 +100,18 @@ async def subscription_menu(
     database: Database,
     event_from_user: User
 ):
+    data = await state.get_data()
+
+    timezone_offset = timedelta(days=data['timezone_offset'])
+
     user = database.get_user(
         user_id=event_from_user.id
     )
-    current_location = database.get_location(
-        location_id=user.current_location_id
-    )
-
-    time_offset: int = get_timezone_offset(
-        current_location.latitude,
-        current_location.longitude
-    )
-    offset = timedelta(hours=time_offset)
 
     user_subscription_end_datetime = datetime.strptime(
         user.subscription_end_date, 
         database_datetime_format
-    ) + offset 
+    ) + timezone_offset 
     now = datetime.utcnow()
 
     if now > user_subscription_end_datetime:
@@ -127,7 +122,7 @@ async def subscription_menu(
     else:
         subscription_end_datetime = (
             (
-                user_subscription_end_datetime + offset
+                user_subscription_end_datetime + timezone_offset
             ).strftime(
                 database_datetime_format
             )

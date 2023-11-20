@@ -567,7 +567,7 @@ async def prediction_on_date_get_prediction(
     )
     target_date_str: str = data['date']
     target_date = datetime.strptime(target_date_str, date_format)
-    timezone_offset = timedelta(hours=data['time_offset'])
+    timezone_offset = timedelta(hours=data['timezone_offset'])
 
     if subscription_end_date + timezone_offset > target_date:
         wait_message = await message.answer(messages.wait)
