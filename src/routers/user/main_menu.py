@@ -10,6 +10,7 @@ from src.keyboard_manager import KeyboardManager, bt
 from src.filters import AdminFilter, UserFilter
 from src.database import Database
 from src.routers.states import MainMenu, Subscription
+from src.routers.user.start import start
 
 
 r = Router()
@@ -64,39 +65,6 @@ async def main_menu_command(
         await user_command_start_handler(bot_message, state, bot)
     else:
         await main_menu(message, state, keyboards, bot)
-
-
-# Function to initiate the bot interaction, sending welcome video and message
-async def start(
-    message: Message,
-    state: FSMContext,
-    bot: Bot
-):
-    data = await state.get_data()
-
-    start_message_id = data.get('start_message_id', None)
-    if start_message_id is not None:
-        try:
-            await bot.delete_message(
-                chat_id=message.chat.id,
-                message_id=start_message_id
-            )
-        except TelegramBadRequest:
-            pass
-    
-    start_message = await message.answer_video(
-        video=start_video,
-        caption=messages.start
-    )
-    bot_message = await message.answer(
-        messages.enter_your_name
-    )
-    await state.update_data(
-        main_menu_message_id=start_message.message_id, 
-        start_message_id=start_message.message_id,
-        del_messages=[bot_message.message_id]
-    )
-    await state.set_state(MainMenu.get_name)
 
 
 @r.message(

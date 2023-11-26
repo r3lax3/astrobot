@@ -14,7 +14,6 @@ from src.filters import IsDate
 from src.keyboard_manager import KeyboardManager, bt
 from src.routers import messages
 from src.routers.states import GetBirthData, MainMenu, ProfileSettings
-from src.routers.user.main_menu import main_menu
 
 
 r = Router()
