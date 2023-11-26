@@ -7,6 +7,7 @@ from aiogram.types import CallbackQuery, Message
 from src import config
 from src.filters.is_date import IsDate, IsDatetime
 from src.filters.state_flag_filters import FSMFlagChecker
+from src.filters.role import AdminFilter, UserFilter
 
 
 database_datetime_format: str = config.get(
@@ -29,8 +30,5 @@ class HasPredictionAccess(Filter):
             database_datetime_format
         )
             
-        print(now)
-        print(subscription_end_date)
-
         return now < subscription_end_date
 

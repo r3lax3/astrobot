@@ -17,7 +17,6 @@ class User(Base):
 
     user_id = Column(Integer, primary_key=True)
     name = Column(String)
-    role = Column(String)
     birth_datetime = Column(String)  # "%d.%m.%Y %H:%M" as default
     birth_location_id = Column(
         Integer, 
@@ -46,58 +45,58 @@ class User(Base):
 class Location(Base):
     __tablename__ = 'locations'
 
-    id: int = Column(Integer, primary_key=True)
-    type: str = Column(String)
-    longitude: float = Column(Float)
-    latitude: float = Column(Float)
-    title: str = Column(String)
+    id = Column(Integer, primary_key=True)
+    type = Column(String)
+    longitude = Column(Float)
+    latitude = Column(Float)
+    title = Column(String)
 
 
 class Interpretation(Base):
     __tablename__ = 'interpretations'
 
-    id: int = Column(Integer, primary_key=True)
-    natal_planet: str = Column(String)
-    transit_planet: str = Column(String)
-    aspect: str = Column(String)
-    interpretation: str = Column(String)
+    id = Column(Integer, primary_key=True)
+    natal_planet = Column(String)
+    transit_planet = Column(String)
+    aspect = Column(String)
+    interpretation = Column(String)
 
 
 class GeneralPrediction(Base):
     __tablename__ = 'general_predictions'
     
-    date: str = Column(String, primary_key=True)
-    prediction: str = Column(String)
+    date = Column(String, primary_key=True)
+    prediction = Column(String)
 
 
 class ViewedPrediction(Base):
     __tablename__ = 'viewed_predictions'
     
-    user_id: int = Column(
+    user_id = Column(
         Integer, 
         ForeignKey('users.user_id'),
         primary_key=True
     )
-    prediction_date: str = Column(
+    prediction_date = Column(
         String, 
         primary_key=True
     )
-    view_timestamp: str = Column(String)  # "%d.%m.%Y" as default
+    view_timestamp = Column(String)  # "%d.%m.%Y" as default
     
 
 class CardOfDay(Base):
     __tablename__ = 'cards_of_day'
     
-    message_id: str = Column(Integer, primary_key=True)
+    message_id = Column(Integer, primary_key=True)
 
 
 class Payment(Base):
     __tablename__ = 'payments'
 
-    payment_id: str = Column(String, primary_key=True)
-    user_id: int = Column(Integer, ForeignKey('users.user_id'))
-    status: str = Column(String)  # 'success' | 'failed' | 'pending'
-    period: int = Column(Integer)
-    created_at: str = Column(String)  # "%d.%m.%Y %H:%M" as default
-    ended_at: str = Column(String)  # "%d.%m.%Y %H:%M" as default
+    payment_id = Column(String, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.user_id'))
+    status = Column(String)  # 'success' | 'failed' | 'pending'
+    period = Column(Integer)
+    created_at = Column(String)  # "%d.%m.%Y %H:%M" as default
+    ended_at = Column(String)  # "%d.%m.%Y %H:%M" as default
 

@@ -1,4 +1,6 @@
-from aiogram import Router, F
+from datetime import datetime, timedelta
+
+from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     Message,
@@ -6,18 +8,34 @@ from aiogram.types import (
     User
 )
 
+from src import config
+from src.enums import Gender, LocationType
+from src.scheduler import EveryDayPredictionScheduler
 from src.utils import get_location_by_coords, get_timezone_offset
-from src.routers import messages
-from src.routers.states import ProfileSettings, GetBirthData
-from src.database import Database
 from src.keyboard_manager import (
     KeyboardManager, 
-    bt, 
-    from_text_to_bt
+    bt,
+    buttons_text
 )
+from src.database import Database
+from src.database.models import (
+    User as DBUser,
+    Location
+)
+from src.routers import messages
+from src.routers.states import ProfileSettings
+from src.routers.user.main_menu import main_menu
+
 
 
 r = Router()
+database_datetime_format: str = config.get(
+    'database.datetime_format'
+)
+
+subscription_test_period_in_days: int = config.get(
+    'subscription.test_period_in_days'
+)
 
 @r.callback_query(
     ProfileSettings.choose_gender,
@@ -70,8 +88,6 @@ async def profile_settings_menu(
 
 
 # Name
-
-
 @r.callback_query(
     ProfileSettings.choose_option, 
     F.data == bt.name
@@ -97,8 +113,6 @@ async def change_name(
 
 
 # Gender
-
-
 @r.callback_query(
     ProfileSettings.choose_option, 
     F.data == bt.gender
@@ -141,7 +155,7 @@ async def gender_is_male(
     database: Database
 ):
     database.change_user_gender(
-        gender='male', 
+        gender=Gender.male.value, 
         user_id=callback.from_user.id
     )
     await choose_gender(
@@ -163,7 +177,7 @@ async def gender_is_female(
     database: Database
 ):
     database.change_user_gender(
-        gender='female', 
+        gender=Gender.male.value, 
         user_id=callback.from_user.id
     )
     await choose_gender(
@@ -175,8 +189,6 @@ async def gender_is_female(
 
 
 # Current Location 
-
-
 @r.callback_query(
     ProfileSettings.choose_option,
     F.data == bt.change_timezone
@@ -206,6 +218,16 @@ async def enter_current_location(
     await state.set_state(
         ProfileSettings.get_current_location
     )
+
+
+@r.message(ProfileSettings.get_current_location)
+async def get_current_location_error(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    bot_message = await message.answer(messages.not_location)
+    await enter_current_location(bot_message, state, keyboards)
 
 
 @r.message(
@@ -242,16 +264,6 @@ async def get_current_location(
     await state.set_state(ProfileSettings.location_confirm)
 
 
-@r.message(ProfileSettings.get_current_location)
-async def get_current_location_error(
-    message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager
-):
-    bot_message = await message.answer(messages.not_location)
-    await enter_current_location(bot_message, state, keyboards)
-
-
 @r.callback_query(
     ProfileSettings.location_confirm,
     F.data == bt.decline
@@ -266,24 +278,95 @@ async def get_current_location_not_confirmed(
     )
 
 
-# Redirection from ./birth.py
-
-
 @r.callback_query(
-    GetBirthData.confirm, 
+    ProfileSettings.location_confirm, 
     F.data == bt.confirm
 )
-async def get_birth_data_confirm(
+async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User,
+    bot: Bot,
+    scheduler: EveryDayPredictionScheduler
 ):
+    data = await state.get_data()
+    
+    name = data['name']
+    current_location = data['current_location']
+    current_location_title = data['current_location_title']
 
-    bot_message = await callback.message.answer(
-        messages.birth_data_confirmed
-    )
-    await state.update_data(
-        del_messages=[bot_message.message_id],
-        first_time=True
-    )
-    await state.set_state(ProfileSettings.get_current_location)
+    if data['first_time']:
+        birth_datetime = data['birth_datetime']
+        birth_location = data['birth_location']
+        birth_location_title = data['birth_location_title']
+        
+        now = datetime.utcnow()
+        test_period_end = now + timedelta(
+            days=subscription_test_period_in_days
+        )
+        database.add_user(
+            DBUser(
+                user_id=event_from_user.id,
+                name=name,
+                birth_datetime=birth_datetime,
+                birth_location=Location(
+                    type=LocationType.birth.value, 
+                    **birth_location,
+                    title=current_location_title
+                ),
+                current_location=Location(
+                    type=LocationType.current.value,
+                    **current_location,
+                    title=birth_location_title
+                ),
+                subscription_end_date=test_period_end.strftime(
+                    database_datetime_format
+                ),
+                timezone_offset=get_timezone_offset(
+                    **current_location
+                ),
+                every_day_prediction_time='7:30'
+            )
+        )
+        await scheduler.add_send_message_job(
+            user_id=event_from_user.id, 
+            database=database,
+            bot=bot
+        )
+        await state.update_data(
+            prediction_access=True,
+            subscription_end_date=test_period_end.strftime(
+                database_datetime_format
+            ),
+            timezone_offset=get_timezone_offset(**current_location)
+        )
+        await main_menu(
+            callback.message, 
+            state,
+            keyboards,
+            bot
+        )
+    else:
+        database.update_user_current_location(
+            event_from_user.id, 
+            Location(
+                id=0,
+                type='current', 
+                **current_location,
+                title=get_location_by_coords(**current_location)
+            )
+        )
+        await scheduler.edit_send_message_job(
+            user_id=event_from_user.id, 
+            database=database,
+            bot=bot
+        )
+        await main_menu(
+            callback.message, 
+            state,
+            keyboards,
+            bot
+        )
 

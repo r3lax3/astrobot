@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
 import uuid
+
+from datetime import datetime, timedelta
 
 from yookassa import Configuration, Payment
 
@@ -8,7 +9,6 @@ from aiogram.types import Message, CallbackQuery, User
 from aiogram.fsm.context import FSMContext
 
 from src import config
-from src.utils import get_timezone_offset
 from src.models import SubscriptionPeriod
 from src.routers import messages
 from src.routers.states import Subscription, MainMenu

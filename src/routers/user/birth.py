@@ -10,10 +10,11 @@ from aiogram.types import (
 
 from src import config
 from src.utils import get_location_by_coords
-from src.routers import messages
-from src.routers.states import GetBirthData, MainMenu
 from src.filters import IsDate
 from src.keyboard_manager import KeyboardManager, bt
+from src.routers import messages
+from src.routers.states import GetBirthData, MainMenu, ProfileSettings
+from src.routers.user.main_menu import main_menu
 
 
 r = Router()
@@ -378,4 +379,24 @@ async def enter_birth_data_confirm(
     await state.set_state(GetBirthData.confirm)
     # Подтверждение перекидывает в логику, 
     # которая прописана в src/routers/now_location. Смотри начало файла
+
+
+# Redirection from ./birth.py
+@r.callback_query(
+    GetBirthData.confirm, 
+    F.data == bt.confirm
+)
+async def get_birth_data_confirm(
+    callback: CallbackQuery,
+    state: FSMContext,
+):
+
+    bot_message = await callback.message.answer(
+        messages.birth_data_confirmed
+    )
+    await state.update_data(
+        del_messages=[bot_message.message_id],
+        first_time=True
+    )
+    await state.set_state(ProfileSettings.get_current_location)
 
