@@ -28,6 +28,12 @@ date_format: str = config.get(
 time_format: str = config.get(
     'database.time_format'
 )
+
+zodiac_signs = [
+    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+]
+
 zodiac_translation = {
     "Aries": 
         "Овне",
@@ -47,7 +53,7 @@ zodiac_translation = {
         "Скорпионе",
     "Sagittarius": 
         "Стрельце",
-    "Capricornus": 
+    "Capricorn": 
         "Козероге",
     "Aquarius": 
         "Водолее",
@@ -84,10 +90,16 @@ def translate_to_russian(english_name: str):
     )
 
 
-def get_moon_sign(date_time: datetime):
-    moon = ephem.Moon(date_time)
-    return ephem.constellation(moon)[1]
+def get_moon_sign(date: datetime):
+    # Определение положения Луны
+    moon = ephem.Moon(date)
+    ecliptic_long = ephem.Ecliptic(moon).lon
 
+    # Определение зодиакального созвездия для Луны
+    ecliptic_long_deg = ecliptic_long * 180 / ephem.pi  # Перевод в градусы
+    for i, bound in enumerate(zodiac_bounds):
+        if ecliptic_long_deg < bound:
+            return zodiac_signs[i - 1] if i > 0 else zodiac_signs[-1]
 
 def find_moon_sign_change(
     date: datetime, 
@@ -164,7 +176,7 @@ def get_formatted_moon_sign_text(
         # Преобразование строки в объект datetime
         time_obj = datetime.strptime(
             sign_changed_time,
-            "%H:%M"
+            time_format
         )
 
         # Добавление одной минуты
@@ -184,18 +196,15 @@ def get_formatted_moon_sign_text(
         match type:
             case 'general':
                 sign = moon_signs['start_sign']
-
                 interpretation_str = moon_in_signs_interpretation[sign]['general']
             case 'favorable':
                 sign = moon_signs['start_sign']
-
                 interpretation_str = messages.moon_sign_favourable.format(
                     text = moon_in_signs_interpretation[sign]['favorable']
                 )
 
             case 'unfavorable':
                 sign = moon_signs['start_sign']
-
                 interpretation_str = messages.moon_sign_unfavourable.format(
                     text = moon_in_signs_interpretation[sign]['unfavorable']
                 )

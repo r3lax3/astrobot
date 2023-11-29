@@ -1,11 +1,12 @@
 import asyncio
+import sqlite3
 
-from aiohttp import web
+# from aiohttp import web
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import BufferedInputFile
 from aiogram.fsm.storage.redis import RedisStorage
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+# from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from src import config
 from src.routers import user_router, admin_router
@@ -47,16 +48,19 @@ BASE_WEBHOOK_URL = "https://vm4720745.25ssd.had.wf"
 
 # Database backup
 async def backup_db(db: Database, bot: Bot):
-    db_str = '\n'.join(list(db.connection.iterdump()))
+    with sqlite3.connect(db.engine.url.database) as con:
 
-    await bot.send_document(
-        chat_id=admin_chat_id,
-        document=BufferedInputFile(
-            filename='backup_database.sql_dump',
-            file=db_str.encode('utf-8')
-        ),
-        reply_to_message_id=backup_thread_id
-    )
+        # Получаем дамп базы данных в виде строки
+        db_str = '\n'.join(con.iterdump())
+
+        await bot.send_document(
+            chat_id=admin_chat_id,
+            document=BufferedInputFile(
+                filename='backup_database.sql_dump',
+                file=db_str.encode('utf-8')
+            ),
+            reply_to_message_id=backup_thread_id
+        )
 
 
 async def schedule_backup(db, bot, interval_seconds):

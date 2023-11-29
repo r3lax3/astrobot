@@ -53,11 +53,11 @@ buttons_text: dict = {
     'try_in_deal': 'Испытать в деле',
     
     # Profile settings
-    'profile_settings': 'Настройки Профиля',
+    'profile_settings': 'Настройки профиля',
     'change_timezone': '✈️Смена часового пояса',
-    'name': 'Имя',
-    'theme': 'Тема',
-    'gender': 'Пол',
+    'name': '✍️ Имя',
+    'theme': '🌃 Тема',
+    'gender': '👤 Пол',
     'male': '🙋‍♂️Мужчина',
     'female': '🙋‍♀️Женщина',
 
@@ -66,8 +66,8 @@ buttons_text: dict = {
 
     # Moon in sign
     'moon_in_sign': '🌗 Луна в знаке',
-    'favorable': 'Благоприятно',
-    'unfavorable': 'Неблагоприятно',
+    'favorable': '🟢 Благоприятно',
+    'unfavorable': '🔴 Неблагоприятно',
 
     # General predictions
     'general_predictions': '🌒 Общие прогнозы',
@@ -144,7 +144,8 @@ class KeyboardManager:
                 [bt.subscription, bt.prediction],
                 [bt.card_of_day], # + bt.dreams
                 [bt.general_predictions, bt.moon_in_sign],
-                [bt.compatibility, bt.profile_settings],
+                [bt.compatibility, bt.dreams], 
+                [bt.profile_settings],
                 [bt.about_bot, bt.tech_support]
             ]
         )
@@ -153,7 +154,8 @@ class KeyboardManager:
                 [bt.subscription, bt.prediction_no_access],
                 [bt.card_of_day], # + bt.dreams
                 [bt.general_predictions, bt.moon_in_sign],
-                [bt.compatibility, bt.profile_settings],
+                [bt.compatibility, bt.dreams],
+                [bt.profile_settings],
                 [bt.about_bot, bt.tech_support]
             ]
         )
@@ -283,8 +285,7 @@ class KeyboardManager:
 
         self.moon_in_sign_menu = self.build_keyboard_from_structure(
             [
-                [bt.favorable],
-                [bt.unfavorable],
+                [bt.favorable, bt.unfavorable],
                 [bt.main_menu]
             ],
             is_inline=True
