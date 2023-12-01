@@ -4,8 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.filters import CommandStart, Command
 from aiogram.exceptions import TelegramBadRequest
 
-from src import config
-from src.routers import messages
+from src import config, messages
 from src.keyboard_manager import KeyboardManager, bt
 from src.filters import AdminFilter, UserFilter
 from src.database import Database

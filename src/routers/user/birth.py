@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     Message,
@@ -8,11 +8,10 @@ from aiogram.types import (
     InputMediaPhoto
 )
 
-from src import config
+from src import config, messages
 from src.utils import get_location_by_coords
 from src.filters import IsDate
 from src.keyboard_manager import KeyboardManager, bt
-from src.routers import messages
 from src.routers.states import GetBirthData, MainMenu, ProfileSettings
 
 

@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from src.routers import messages
+from src import messages
 from src.routers.states import MainMenu
 from src.keyboard_manager import KeyboardManager, bt
 

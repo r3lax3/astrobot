@@ -1,3 +1,4 @@
+import yaml
 import pytz
 import os
 import ephem
@@ -11,6 +12,11 @@ from src.exceptions import PathDoesNotExistError
 
 
 geolocator = Nominatim(user_agent="AstroBot")
+
+
+def load_yaml(file_path: str) -> dict:
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return yaml.safe_load(file)
 
 
 def get_timezone_offset(latitude, longitude) -> int:

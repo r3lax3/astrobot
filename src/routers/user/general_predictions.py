@@ -4,8 +4,7 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from src import config
-from src.routers import messages
+from src import config, messages
 from src.routers.states import MainMenu
 from src.keyboard_manager import KeyboardManager, bt
 from src.database import Database

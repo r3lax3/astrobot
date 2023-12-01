@@ -10,9 +10,8 @@ from timezonefinder import TimezoneFinder
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from src import config
+from src import config, messages
 from src.database import Database
-from src.routers import messages
 from src.routers.user.prediction import get_prediction_text
 
 

@@ -5,8 +5,7 @@ from aiogram.types import (
     User
 )
 
-from src import config
-from src.routers import messages
+from src import config, messages
 from src.routers.states import MainMenu
 from src.filters import IsTime
 from src.database import Database

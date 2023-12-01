@@ -5,10 +5,9 @@ from aiogram import F, Bot, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from src import config
+from src import config, messages
 from src.database import Database
 from src.keyboard_manager import KeyboardManager, bt
-from src.routers import messages
 from src.routers.states import AdminStates
 from src.filters import IsDatetime
 

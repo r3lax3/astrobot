@@ -3,7 +3,7 @@ from aiogram import Router, F
 from aiogram.types import Message, User
 from aiogram.fsm.context import FSMContext
 
-from src.routers import messages
+from src import messages
 from src.keyboard_manager import KeyboardManager, bt
 from src.database.database import Database, User as DBUser
 

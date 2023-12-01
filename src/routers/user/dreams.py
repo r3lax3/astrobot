@@ -1,14 +1,10 @@
 from datetime import datetime, timedelta
-from typing import List
 
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.types import User
-from sqlalchemy.orm import keyfunc_mapping
 
-from src import config
-from src.routers import messages
 from src.routers.states import MainMenu
 from src.keyboard_manager import KeyboardManager, bt
 from src.database import Database

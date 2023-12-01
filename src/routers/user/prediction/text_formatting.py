@@ -8,9 +8,8 @@ from datetime import datetime, timedelta
 from typing import List
 from dataclasses import dataclass
 
-from src import config
+from src import config, messages
 from src.database import Database
-from src.routers import messages
 from src.prediction_analys import (
     get_astro_events_from_period,
     User as PredictionUser,

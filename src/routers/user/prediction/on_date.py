@@ -11,10 +11,9 @@ from aiogram.types import (
     BufferedInputFile
 )
 
-from src import config
+from src import config, messages
 from src.utils import get_timezone_offset
 from src.models import DateModifier
-from src.routers import messages
 from src.routers.states import MainMenu, Subscription
 from src.database import Database
 from src.filters import HasPredictionAccess

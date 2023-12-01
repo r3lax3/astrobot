@@ -9,8 +9,7 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 from aiogram.types import User
 
-from src import config
-from src.routers import messages
+from src import config, messages
 from src.routers.states import MainMenu
 from src.keyboard_manager import (
     KeyboardManager, 

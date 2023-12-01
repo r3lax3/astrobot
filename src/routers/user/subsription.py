@@ -5,15 +5,13 @@ from datetime import datetime, timedelta
 from yookassa import Configuration, Payment
 
 from aiogram import F, Router
-from aiogram.types import Message, CallbackQuery, User, callback_query
+from aiogram.types import Message, CallbackQuery, User
 from aiogram.fsm.context import FSMContext
 
-from src import config
+from src import config, messages
 from src.enums import PromocodeStatus
 from src.models import SubscriptionPeriod
-from src.routers import messages
 from src.routers.states import Subscription, MainMenu
-from src.filters import IsPromocode
 from src.database import Database
 from src.database.models import Payment as DBPayment, Promocode
 from src.keyboard_manager import KeyboardManager, bt

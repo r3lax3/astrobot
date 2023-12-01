@@ -5,22 +5,19 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from src import config
+from src import config, messages
 from src.database import Database
 from src.keyboard_manager import KeyboardManager, bt
-from src.routers import messages
 from src.routers.states import AdminStates
 
 
 r = Router()
 
 admins: List[int] = config.get('admins.ids')
-admin_chat_id: int = config.get(
-    'admin_chat.id'
-)
-admin_chat_thread_cards_of_day = config.get(
-    'admin_chat.threads.cards_of_day'
-)
+
+admin_chat_id: int = config.get('admin_chat.id')
+admin_chat_thread_cards_of_day = config.get('admin_chat.threads.cards_of_day')
+
 datetime_format: str = config.get('database.datetime_format')
 date_format: str = config.get('database.date_format')
 week_format: str = config.get('database.week_format')

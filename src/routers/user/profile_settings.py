@@ -8,7 +8,7 @@ from aiogram.types import (
     User
 )
 
-from src import config
+from src import config, messages
 from src.enums import Gender, LocationType
 from src.scheduler import EveryDayPredictionScheduler
 from src.utils import get_location_by_coords, get_timezone_offset
@@ -22,7 +22,6 @@ from src.database.models import (
     User as DBUser,
     Location
 )
-from src.routers import messages
 from src.routers.states import ProfileSettings
 from src.routers.user.main_menu import main_menu
 

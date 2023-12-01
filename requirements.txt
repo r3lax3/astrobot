@@ -10,3 +10,4 @@ apscheduler
 tomli_w
 yookassa
 ephem
+yaml
