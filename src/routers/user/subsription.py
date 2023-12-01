@@ -5,38 +5,28 @@ from datetime import datetime, timedelta
 from yookassa import Configuration, Payment
 
 from aiogram import F, Router
-from aiogram.types import Message, CallbackQuery, User
+from aiogram.types import Message, CallbackQuery, User, callback_query
 from aiogram.fsm.context import FSMContext
 
 from src import config
+from src.enums import PromocodeStatus
 from src.models import SubscriptionPeriod
 from src.routers import messages
 from src.routers.states import Subscription, MainMenu
+from src.filters import IsPromocode
 from src.database import Database
-from src.database.models import Payment as DBPayment
+from src.database.models import Payment as DBPayment, Promocode
 from src.keyboard_manager import KeyboardManager, bt
 
 
-yookassa_token: str = config.get(
-    'payments.yookassa_token'
-)
-yookassa_shop_id: int = config.get(
-    'payments.yookassa_shop_id'
-)
+yookassa_token: str = config.get('payments.yookassa_token')
+yookassa_shop_id: int = config.get('payments.yookassa_shop_id')
 
-database_datetime_format: str = config.get(
-    'database.datetime_format'
-)
-database_date_format: str = config.get(
-    'database.date_format'
-)
+database_datetime_format: str = config.get('database.datetime_format')
+database_date_format: str = config.get('database.date_format')
 
-bot_username: str = config.get(
-    'bot.username'
-)
-offer_url: str = config.get(
-    'payments.offer_url'
-)
+bot_username: str = config.get('bot.username')
+offer_url: str = config.get('payments.offer_url')
 
 return_url = f'https://t.me/{bot_username}'
 
@@ -62,16 +52,14 @@ r = Router()
 
 
 @r.callback_query(
-    MainMenu.prediction_access_denied,
-    F.data == bt.subscription
+    MainMenu.prediction_access_denied, F.data == bt.subscription
 )
 @r.callback_query(
-    Subscription.payment_ended, 
-    F.data == bt.back_to_menu
+    Subscription.period, F.data == bt.main_menu
 )
 @r.callback_query(
-    Subscription.payment_method, 
-    F.data == bt.back
+    Subscription.get_promocode, F.data == bt.back
+
 )
 async def subscription_menu_callback_query_handler(
     callback: CallbackQuery,
@@ -97,6 +85,29 @@ async def subscription_menu(
     message: Message, 
     state: FSMContext,
     keyboards: KeyboardManager,
+):
+    bot_message = await message.answer(
+        messages.subscrition_menu,
+        reply_markup=keyboards.subscription
+    )
+    await state.update_data(del_messages=[bot_message.message_id])
+    await state.set_state(Subscription.chooose_action)
+
+# BUY SUBSCRIPTION
+
+@r.callback_query(
+    Subscription.payment_method, F.data == bt.back
+)
+@r.callback_query(
+    Subscription.payment_ended, F.data == bt.back_to_menu
+)
+@r.callback_query(
+    Subscription.chooose_action, F.data == bt.buy_subscription
+)
+async def buy_subscription_menu(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
     database: Database,
     event_from_user: User
 ):
@@ -115,9 +126,9 @@ async def subscription_menu(
     now = datetime.utcnow()
 
     if now > user_subscription_end_datetime:
-        bot_message = await message.answer(
+        bot_message = await callback.message.answer(
             messages.subscription_buy,
-            reply_markup=keyboards.subscription
+            reply_markup=keyboards.buy_subscription
         )
     else:
         subscription_end_datetime = (
@@ -127,12 +138,11 @@ async def subscription_menu(
                 database_datetime_format
             )
         )
-
-        bot_message = await message.answer(
+        bot_message = await callback.message.answer(
             messages.subscription_check_and_buy.format(
                 subscription_end_datetime=subscription_end_datetime
             ),
-            reply_markup=keyboards.subscription
+            reply_markup=keyboards.buy_subscription
         )
     
     await state.update_data(
@@ -153,8 +163,7 @@ async def get_choosed_period(
 
 
 @r.callback_query(
-    Subscription.check_payment_status,
-    F.data == bt.back
+    Subscription.check_payment_status, F.data == bt.back
 )
 async def choose_payment_method(
     callback: CallbackQuery,
@@ -170,12 +179,10 @@ async def choose_payment_method(
 
 
 @r.callback_query(
-    Subscription.payment_ended, 
-    F.data == bt.try_again
+    Subscription.payment_ended, F.data == bt.try_again
 )
 @r.callback_query(
-    Subscription.payment_method,
-    F.data == bt.yookassa
+    Subscription.payment_method, F.data == bt.yookassa
 )
 async def yookassa_payment(
     callback: CallbackQuery,
@@ -262,17 +269,15 @@ async def get_payment_menu(
     )
     await state.set_state(Subscription.check_payment_status)
 
-
+# CHECK PAYMENT STATUS
 @r.callback_query(
-    Subscription.check_payment_status, 
-    F.data == bt.check_payment_status
+    Subscription.check_payment_status, F.data == bt.check_payment_status
 )
 async def check_payment_status(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
     database: Database,
-    event_from_user: User
 ):
     data = await state.get_data()
     payment_id = data['payment_id']
@@ -289,25 +294,34 @@ async def check_payment_status(
             )
             return
         case 'waiting_for_capture' | 'paid':
-            database.add_period_to_subscription_end_date(
-                user_id=event_from_user.id, 
-                period=timedelta(
-                    days=data['months'] * 30
-                )
-            )
             Payment.capture(payment_id)
             database.update_payment(
                 payment_id=payment_id, 
                 status='success',
                 ended_at=datetime.utcnow().strftime(database_datetime_format)
             )
+            database.add_promocode(
+                Promocode(
+                    promocode=payment_id,
+                    activated_by=None,
+                    is_activated=False,
+                    period=data['months']
+                )
+            )
+            await callback.message.answer(
+                messages.your_promocode_is.format(
+                    promocode=payment_id
+                )
+            )
             payment_end_message = await callback.message.answer(
                 messages.payment_succeess,
                 reply_markup=keyboards.payment_succeess
             )
             await state.update_data(
-                prediction_access=True,
-                subscription_end_date=True
+                del_messages=[
+                    payment_end_message.message_id
+                ],
+                promocode_str=payment_id
             )
         case _:  # 'canceled' or 'failed'. Or something else
             database.update_payment(
@@ -319,8 +333,162 @@ async def check_payment_status(
                 messages.payment_check_error,
                 reply_markup=keyboards.payment_canceled
             )
-    await state.update_data(
-        del_messages=[payment_end_message.message_id]
-    )
+            await state.update_data(
+                del_messages=[payment_end_message.message_id]
+            )
     await state.set_state(Subscription.payment_ended)
+
+
+# PROMOCODE
+
+
+# "ENTER PROMOCODE" MENU
+@r.callback_query(
+    Subscription.get_activate_promocode_confirm, F.data == bt.back
+)
+@r.callback_query(
+    Subscription.chooose_action, F.data == bt.enter_promocode
+)
+async def enter_promocode_menu_callback_handler(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    await enter_promocode_menu(callback.message, state, keyboards)
+    
+
+async def enter_promocode_menu(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    bot_message = await message.answer(
+        messages.enter_promocode,
+        reply_markup=keyboards.back
+    )
+    await state.update_data(
+        del_messages=[
+            bot_message.message_id,
+            message.message_id
+        ]
+    )
+    await state.set_state(Subscription.get_promocode)
+
+
+# GET PROMOCODE
+@r.message(
+    Subscription.get_promocode,
+    F.text
+)
+async def get_promocode(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database
+):
+    await state.update_data(promocode_str = message.text)
+    await enter_activate_promocode_confirm(message, state, keyboards, database)
+
+
+async def enter_activate_promocode_confirm_callback_handler(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database
+):
+    await enter_activate_promocode_confirm(callback.message, state, keyboards, database)
+
+async def enter_activate_promocode_confirm(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database
+):
+    data = await state.get_data()
+
+    promocode_str = data.get('promocode_str', None)
+    promocode = database.get_promocode(promocode_str)
+
+    if promocode is not None:
+        bot_message = await message.answer(
+            messages.get_activate_promocode_confirm.format(
+                promocode=message.text,
+                period=months_to_str_months.get(promocode.period, 'Ошибка'),
+                status=(
+                    PromocodeStatus.activated.value if promocode.is_activated 
+                    else PromocodeStatus.not_activated.value
+                )
+            ),
+            reply_markup=keyboards.get_activate_promocode_confirm
+        )
+        await state.update_data(
+            del_messages=[bot_message.message_id],
+            is_activated=promocode.is_activated,
+            period=promocode.period
+        )
+        await state.set_state(Subscription.get_activate_promocode_confirm)
+    else:
+        bot_message = await message.answer(
+            messages.promocode_not_found
+        )
+        await enter_promocode_menu(bot_message, state, keyboards)
+
+
+@r.message(
+    Subscription.get_promocode
+)
+async def get_promocode_error(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    bot_message = await message.answer(
+        messages.not_promocode
+    )
+    await enter_promocode_menu(bot_message, state, keyboards)
+
+
+# GET PROMOCODE ACTIVATION CONFIRM
+@r.callback_query(
+    Subscription.get_activate_promocode_confirm, F.data == bt.activate_promocode
+)
+async def activate_promocode(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User
+):
+    data = await state.get_data()
+
+    promocode_str = data['promocode_str']
+    is_promocode_activated: bool = data["is_activated"]
+    period = data['period']
+
+    if not is_promocode_activated:
+        database.add_period_to_subscription_end_date(
+            user_id=event_from_user.id, 
+            period=timedelta(
+                days=period * 30
+            )
+        )
+        database.update_promocode(
+            promocode_str=promocode_str,
+            is_activated=True,
+            activated_by=event_from_user.id
+        )
+        bot_message = await callback.message.answer(
+            messages.promocode_activated,
+            reply_markup=keyboards.promocode_activated
+        )
+        await state.update_data(
+            del_messages=[bot_message.message_id],
+            prediction_access=True
+        )
+    else:
+        bot_message = await callback.message.answer(
+            messages.promocode_already_activated,
+            reply_markup=keyboards.back
+        )
+        await state.update_data(del_messages=[bot_message.message_id])
 

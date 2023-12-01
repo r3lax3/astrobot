@@ -290,7 +290,7 @@ async def enter_birth_geopos(
     await state.set_state(GetBirthData.location)
 
 
-@r.callback_query(GetBirthData.location, F.data == '🔙 Назад')
+@r.callback_query(GetBirthData.location, F.data == bt.back)
 async def get_birth_geopos_back(
     callback: CallbackQuery,
     state: FSMContext,
@@ -330,7 +330,7 @@ async def get_birth_geopos_error(
 
 # Confirm
 
-@r.callback_query(GetBirthData.confirm, F.data == 'Нет, вернуться назад ❎')
+@r.callback_query(GetBirthData.confirm, F.data == bt.decline)
 async def birth_data_not_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
@@ -356,8 +356,8 @@ async def enter_birth_data_confirm(
     birth_location_title = get_location_by_coords(longitude, latitude)
     birth_data_confirm_message = await message.answer(
         messages.birth_data_confirm.format(
-            date=date_str,
-            time=time_str,
+            name=data['name'],
+            birth_datetime=f'{date_str} {time_str}',
             birth_location=birth_location_title
         ),
         reply_markup=keyboards.confirm

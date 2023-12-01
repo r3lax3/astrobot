@@ -31,8 +31,7 @@ class MainMenu(StatesGroup):
     prediction_choose_action = State()
     prediction_choose_date = State()
 
-    predictin_every_day_choose_action = State()
-    predictin_every_day_enter_time = State()
+    prediction_every_day_enter_time = State()
 
     prediction_end = State()
 
@@ -45,10 +44,15 @@ class MainMenu(StatesGroup):
 
 
 class Subscription(StatesGroup):
+    chooose_action = State()
+
     period = State()
     payment_method = State()
     check_payment_status = State()
     payment_ended = State()
+
+    get_promocode = State()
+    get_activate_promocode_confirm = State()
 
 
 class AdminStates(StatesGroup):
@@ -63,6 +67,9 @@ class AdminStates(StatesGroup):
     user_get_subscription_end_date = State()
 
     get_card_of_day = State()
+
+    broadcast_get_message = State()
+    broadcast_get_confirm = State()
 
     action_ended = State()
 

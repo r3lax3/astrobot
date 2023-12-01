@@ -68,7 +68,7 @@ async def main_menu_command(
 
 
 @r.message(
-    MainMenu.predictin_every_day_choose_action, 
+    MainMenu.prediction_every_day_choose_action, 
     F.text,
     F.text == bt.back
 )

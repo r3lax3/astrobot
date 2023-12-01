@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from src import config
-from src.filters.is_date import IsDate, IsDatetime
+from src.filters.is_date import IsDate, IsDatetime, IsTime
 from src.filters.state_flag_filters import FSMFlagChecker
 from src.filters.role import AdminFilter, UserFilter
 

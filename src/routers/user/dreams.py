@@ -1,0 +1,56 @@
+from datetime import datetime, timedelta
+from typing import List
+
+from aiogram import Router, F, Bot
+from aiogram.types import Message
+from aiogram.fsm.context import FSMContext
+from aiogram.types import User
+from sqlalchemy.orm import keyfunc_mapping
+
+from src import config
+from src.routers import messages
+from src.routers.states import MainMenu
+from src.keyboard_manager import KeyboardManager, bt
+from src.database import Database
+from src.utils import path_validation, get_lunar_day
+
+
+r = Router()
+
+dreams_interpretations_filepath = "./dreams.csv"
+path_validation(dreams_interpretations_filepath)
+
+with open(dreams_interpretations_filepath, "r", encoding="utf-8") as f:
+    readlines = f.readlines()
+    dreams_interpretations = list(
+        map(
+            lambda s: s.strip(), 
+            readlines
+        )
+    )
+
+
+@r.message(F.text, F.text == bt.dreams)
+async def dreams_menu(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User
+):
+    user = database.get_user(event_from_user.id)
+
+    latitude = user.current_location.latitude
+    longtitude = user.current_location.longtitude
+
+    now = datetime.utcnow() + timedelta(hours=user.timezone_offset) 
+
+    lunar_day = await get_lunar_day(now, latitude, longtitude)
+    
+    bot_message = await message.answer(
+        text=dreams_interpretations[lunar_day - 1],
+        reply_markup=keyboards.to_main_menu
+    )
+    await state.update_data(del_messages=bot_message.message_id)
+    await state.set_state(MainMenu.end_action)
+

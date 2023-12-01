@@ -41,6 +41,7 @@ buttons_text: dict = {
 
     # Subscription
     'subscription': '🌟Подписка',
+    'buy_subscription': 'Купить подписку',
     'one_month': '1 месяц | 400 рублей',
     'two_month': '2 месяца | 750 рублей',
     'three_month': '3 месяца | 1050 рублей',
@@ -50,6 +51,10 @@ buttons_text: dict = {
     'offer': 'Оффер',
     'redirect_button_text': 'Оплатить подписку',
     'check_payment_status': 'Проверить статус платежа',
+    
+    'use_this_promocode': 'Использовать этот промокод',
+    'enter_promocode': 'Ввести промокод',
+    'activate_promocode': 'Активировать промокод',
     'try_in_deal': 'Испытать в деле',
     
     # Profile settings
@@ -102,9 +107,7 @@ class KeyboardManager:
     def __init__(self, database: Database):
         self.database = database
         
-     
         # Birth data
-        
 
         self.enter_birth_data = self.build_keyboard_from_structure(
             [
@@ -123,9 +126,7 @@ class KeyboardManager:
             is_inline=True
         )
 
-
         # User info
-
 
         self.get_gender = self.build_keyboard_from_structure(
             [
@@ -135,9 +136,7 @@ class KeyboardManager:
             is_inline=True
         )
 
-
         # Main Menu
-
 
         self.main_menu = self.build_keyboard_from_structure(
             [
@@ -160,9 +159,7 @@ class KeyboardManager:
             ]
         )
 
-
         # Prediction
-        
 
         self.prediction_access_denied = self.build_keyboard_from_structure(
             [
@@ -193,11 +190,9 @@ class KeyboardManager:
             ]
         )
 
-
         # Subscription
-
-
-        self.subscription = self.build_keyboard_from_structure(
+        
+        self.buy_subscription = self.build_keyboard_from_structure(
             [
                 [
                     (bt.one_month, SubscriptionPeriod(months=1)),
@@ -210,7 +205,7 @@ class KeyboardManager:
                 [
                     (bt.twelve_month, SubscriptionPeriod(months=12))
                 ],
-                [bt.main_menu]
+                [bt.back_to_menu]
             ],
             is_inline=True
         )
@@ -223,7 +218,7 @@ class KeyboardManager:
         )
         self.payment_succeess = self.build_keyboard_from_structure(
             [
-                [bt.try_in_deal],
+                [bt.use_this_promocode],
                 [bt.back_to_menu]
             ],
             is_inline=True
@@ -235,10 +230,29 @@ class KeyboardManager:
             ],
             is_inline=True
         )
+        self.subscription = self.build_keyboard_from_structure(
+            [
+                [bt.buy_subscription],
+                [bt.enter_promocode]
+            ],
+            is_inline=True
+        )
+        self.get_activate_promocode_confirm = self.build_keyboard_from_structure(
+            [
+                [bt.activate_promocode],
+                [bt.back]
+            ],
+            is_inline=True
+        )
+        self.promocode_activated = self.build_keyboard_from_structure(
+            [
+                [bt.try_in_deal],
+                [bt.back_to_menu]
+            ]
+        )
 
 
         # Compatibility
-
 
         self.gender_not_choosen = self.build_keyboard_from_structure(
             [
@@ -248,9 +262,7 @@ class KeyboardManager:
             is_inline=True
         )
 
-
         # Profile Settings
-
 
         self.profile_settings = self.build_keyboard_from_structure(
             [
@@ -293,7 +305,6 @@ class KeyboardManager:
 
         # No category
 
-
         self.confirm = self.build_keyboard_from_structure(
             [
                 [bt.confirm],
@@ -320,10 +331,7 @@ class KeyboardManager:
             ]
         )
 
-
         # ADMIN
-
-
         
         self.adminpanel = self.build_keyboard_from_structure(
             [
@@ -363,7 +371,6 @@ class KeyboardManager:
             ],
             is_inline=True
         )
-
 
     def predict_choose_date(self, date: str) -> InlineKeyboardMarkup:
         markup = self.build_keyboard_from_structure(

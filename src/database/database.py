@@ -1,6 +1,7 @@
 import logging
 
 from datetime import timedelta, datetime
+from os import walk
 from typing import Optional, List
 
 from sqlalchemy import create_engine
@@ -11,7 +12,7 @@ from src import config
 from src.utils import get_timezone_offset
 from src.database.models import (
     Base,
-
+    Promocode,
     User,
     Location, 
     Interpretation,
@@ -508,4 +509,41 @@ class Database:
         ).filter_by(
             **filters
         ).all()
+
+    def get_promocode(self, promocode_str: str) -> Promocode:
+        return self.session.query(Promocode).filter_by(promocode=promocode_str).first()
+    
+    def add_promocode(self, promocode_obj: Promocode):
+        try:
+            # Добавить объект Promocode в сессию
+            self.session.add(promocode_obj)
+            # Сохранить изменения
+            self.session.commit()
+        except IntegrityError:
+            # Если произошла ошибка, откатить изменения
+            self.session.rollback()
+            raise
+
+    def update_promocode(self, promocode_str: str, **kwargs):
+        try:
+            # Найти промокод в базе данных
+            promocode = self.session.query(Promocode).filter_by(promocode=promocode_str).first()
+
+            # Проверить, найден ли промокод
+            if not promocode:
+                raise ValueError("Промокод не найден")
+
+            # Обновить поля промокода
+            for key, value in kwargs.items():
+                if hasattr(promocode, key):
+                    setattr(promocode, key, value)
+                else:
+                    raise AttributeError(f"Атрибут '{key}' не существует в объекте Promocode")
+
+            # Сохранить изменения
+            self.session.commit()
+        except Exception as e:
+            # Если произошла ошибка, откатить изменения
+            self.session.rollback()
+            raise e
 

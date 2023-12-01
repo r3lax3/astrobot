@@ -1,10 +1,13 @@
-from threading import ExceptHookArgs
 import pytz
+import os
+import ephem
 
 from datetime import datetime, timedelta
 
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
+
+from src.exceptions import PathDoesNotExistError
 
 
 geolocator = Nominatim(user_agent="AstroBot")
@@ -87,4 +90,38 @@ def get_location_by_coords(longitude: float, latitude: float) -> str:
 
     return "Ошибка. Напишите @mrAx3 насчет этого если увидите этот текст и ничего не трогайте. Что-то сломалось."
 
+
+def path_validation(path: str) -> None:
+    if not os.path.exists(path):
+        raise PathDoesNotExistError(f"Путь не существует: {path}")
+
+
+async def get_lunar_day(date: datetime, latitude: float, longitude: float):
+    """
+    Calculate the lunar day for a given date and location.
+    
+    Parameters:
+    date (str): The date for which to calculate the lunar day, formatted as 'YYYY/MM/DD'.
+    latitude (str): The latitude of the location, formatted as a string (e.g., '48.8566').
+    longitude (str): The longitude of the location, formatted as a string (e.g., '2.3522').
+    
+    Returns:
+    int: The lunar day number.
+    """
+    # Set up an observer at the given latitude and longitude
+    observer = ephem.Observer()
+    observer.lat, observer.lon = str(latitude), str(longitude)
+    
+    # Calculate the next and previous new moons relative to the given date
+    next_new_moon = ephem.next_new_moon(date)
+    last_new_moon = ephem.previous_new_moon(date)
+    
+    # Calculate the lunation as a fraction of the lunar month
+    lunation = (observer.date - last_new_moon) / (next_new_moon - last_new_moon)
+    
+    # Calculate the lunar day, noting there are approximately 29.53 days in a lunar month
+    lunar_day = lunation * 29.53
+    
+    # Return the lunar day as an integer, adding 1 since lunar days start at 1
+    return int(lunar_day) + 1
 

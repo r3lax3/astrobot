@@ -7,6 +7,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import Boolean
 
 
 Base = declarative_base()
@@ -99,4 +100,13 @@ class Payment(Base):
     period = Column(Integer)
     created_at = Column(String)  # "%d.%m.%Y %H:%M" as default
     ended_at = Column(String)  # "%d.%m.%Y %H:%M" as default
+
+
+class Promocode(Base):
+    __tablename__ = 'promocodes'
+
+    promocode = Column(String, primary_key=True)
+    activated_by = Column(Integer, ForeignKey('users.user_id'))
+    is_activated = Column(Boolean)
+    period = Column(Integer)
 
