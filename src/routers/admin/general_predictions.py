@@ -28,6 +28,11 @@ pred_type_to_date_fmt = {
     bt.prediction_on_week: week_format,
     bt.prediction_on_month: month_format
 }
+pred_type_to_example = {
+    bt.prediction_on_day: "19.10.2023",
+    bt.prediction_on_week: "2023-W45",
+    bt.prediction_on_month: "2023-03 или 2023-3"
+}
 
 
 @r.callback_query(
@@ -94,9 +99,13 @@ async def enter_general_prediction_date(
 ):
     data = await state.get_data()
     
+    type = data['general_predictions_type']
+
     bot_message = await message.answer(
         messages.enter_general_prediction_date.format(
-            type=data['general_predictions_type']
+            type=type,
+            format=pred_type_to_date_fmt[type],
+            example=pred_type_to_example[type]
         ),
         reply_markup=keyboards.back
     )
@@ -116,14 +125,14 @@ async def get_general_prediction_date(
     keyboards: KeyboardManager,
     database: Database
 ):
-    try:
-        data = await state.get_data()
+    data = await state.get_data()
+    type = data['general_predictions_type']
 
+    try:
         datetime.strptime(
             message.text,
-            pred_type_to_date_fmt[data['general_predictions_type']]
+            pred_type_to_date_fmt[type]
         )
-
         await state.update_data(
             general_prediction_date=message.text
         )
@@ -134,30 +143,24 @@ async def get_general_prediction_date(
             database
         )
     except ValueError:
-        await get_general_prediction_date_error_hendler(
-            message, 
-            state, 
-            keyboards
+
+        bot_message1 = await message.answer(
+            messages.get_general_prediction_date_error
         )
-
-
-@r.message(AdminStates.get_general_prediction_date)
-async def get_general_prediction_date_error_hendler(
-    message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager
-):
-    data = await state.get_data()
-
-    bot_message = await message.answer(
-        messages.enter_general_prediction_text.format(
-            type=data['general_predictions_type']
-        ),
-        reply_markup=keyboards.back
-    )
-    await state.update_data(
-        del_messages=[bot_message.message_id],
-    )
+        bot_message2 = await message.answer(
+            messages.enter_general_prediction_date.format(
+                type=type,
+                format=pred_type_to_date_fmt[type],
+                example=pred_type_to_example[type]
+            ),
+            reply_markup=keyboards.back
+        )
+        await state.update_data(
+            del_messages=[
+                bot_message1.message_id,
+                bot_message2.message_id
+            ]
+        )
 
 
 async def enter_general_prediction_text(

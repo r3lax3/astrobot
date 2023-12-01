@@ -36,14 +36,8 @@ subscription_test_period_in_days: int = config.get(
     'subscription.test_period_in_days'
 )
 
-@r.callback_query(
-    ProfileSettings.choose_gender,
-    F.data == bt.back
-)
-@r.callback_query(
-    ProfileSettings.get_new_name,
-    F.data == bt.back
-)
+@r.callback_query(ProfileSettings.choose_gender, F.data == bt.back)
+@r.callback_query(ProfileSettings.get_new_name, F.data == bt.back)
 @r.callback_query(F.data == bt.profile_settings)
 async def profile_settings_menu_callback_handler(
     callback: CallbackQuery,
@@ -53,10 +47,7 @@ async def profile_settings_menu_callback_handler(
     await profile_settings_menu(callback.message, state, keyboards)
 
 
-@r.message(
-    F.text,
-    F.text == bt.profile_settings
-)
+@r.message(F.text, F.text == bt.profile_settings)
 async def profile_settings_menu(
     message: Message,
     state: FSMContext,
@@ -203,7 +194,7 @@ async def enter_current_location(
 
     if not first_time:
         bot_message = await callback.message.answer(
-            messages.enter_current_location,
+            messages.enter_new_current_location,
             reply_markup=keyboards.to_main_menu
         )
     else:
@@ -211,12 +202,8 @@ async def enter_current_location(
             messages.enter_current_location
         )
     
-    await state.update_data(
-        del_messages=[bot_message.message_id]
-    )
-    await state.set_state(
-        ProfileSettings.get_current_location
-    )
+    await state.update_data(del_messages=[bot_message.message_id])
+    await state.set_state(ProfileSettings.get_current_location)
 
 
 @r.message(ProfileSettings.get_current_location)
@@ -229,10 +216,7 @@ async def get_current_location_error(
     await enter_current_location(bot_message, state, keyboards)
 
 
-@r.message(
-    ProfileSettings.get_current_location, 
-    F.location
-)
+@r.message(ProfileSettings.get_current_location, F.location)
 async def get_current_location(
     message: Message,
     state: FSMContext,
@@ -241,7 +225,8 @@ async def get_current_location(
     longitude = message.location.longitude
     latitude = message.location.latitude
     current_location_title = get_location_by_coords(
-        longitude=longitude, latitude=latitude
+        longitude=longitude, 
+        latitude=latitude
     )
     bot_message = await message.answer(
         messages.get_current_location_confirm.format(
@@ -263,10 +248,7 @@ async def get_current_location(
     await state.set_state(ProfileSettings.location_confirm)
 
 
-@r.callback_query(
-    ProfileSettings.location_confirm,
-    F.data == bt.decline
-)
+@r.callback_query(ProfileSettings.location_confirm, F.data == bt.decline)
 async def get_current_location_not_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
@@ -277,10 +259,7 @@ async def get_current_location_not_confirmed(
     )
 
 
-@r.callback_query(
-    ProfileSettings.location_confirm, 
-    F.data == bt.confirm
-)
+@r.callback_query(ProfileSettings.location_confirm, F.data == bt.confirm)
 async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,

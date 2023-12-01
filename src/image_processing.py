@@ -52,3 +52,4 @@ def generate_image_with_date_for_prediction(date: str) -> bytes:
     # Return the image data in bytes
     return byte_array.getvalue()
 
+
