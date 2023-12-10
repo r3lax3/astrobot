@@ -110,7 +110,7 @@ async def statistics(
     await state.update_data(
         del_messages=[bot_message.message_id]
     )
-    await state.set_state(AdminStates.action_ended)
+    await state.set_state(AdminStates.action_end)
 
 
 def count_all_users(database: Database) -> int:

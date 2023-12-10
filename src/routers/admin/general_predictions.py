@@ -220,5 +220,5 @@ async def get_general_prediction_text(
         reply_markup=keyboards.back_to_adminpanel
     )
     await state.update_data(del_messages=[bot_message.message_id])
-    await state.set_state(AdminStates.action_ended)
+    await state.set_state(AdminStates.action_end)
 

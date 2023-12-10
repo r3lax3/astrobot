@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import BufferedInputFile, CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 from aiogram.types import User
 
 from src import config
+from src.enums import MoonSignInterpretationType, FileName
 from src.routers.states import MainMenu
 from src.keyboard_manager import (
     KeyboardManager, 
@@ -13,10 +14,9 @@ from src.keyboard_manager import (
     from_text_to_bt
 )
 from src.database import Database
-from src.routers.user.moon_in_sign.utils import (
-    get_formatted_moon_sign_text,
-    find_moon_sign_change
-)
+from src.routers.user.moon_in_sign.utils import get_formatted_moon_sign_text
+from src.astro_engine.moon import get_moon_signs_at_date
+from src.image_processing import generate_image_for_moon_signs
 
 
 r = Router()
@@ -33,36 +33,47 @@ async def general_moon_sign_menu(
     database: Database,
     event_from_user: User
 ):
+    data = await state.get_data()
+    moon_sign_message_id = data.get('moon_sign_message_id', 0)
+
     user = database.get_user(event_from_user.id)
     
     timezone_offset: int = user.timezone_offset
-
     date: datetime = datetime.utcnow() + timedelta(hours=timezone_offset)
-    moon_signs = find_moon_sign_change(
+    
+    moon_signs = get_moon_signs_at_date(
         date,
         timezone_offset
     )
     text = get_formatted_moon_sign_text(
-        moon_signs, 
-        type='general'
+        moon_signs,
+        MoonSignInterpretationType.GENERAL
     )
 
-    bot_message = await message.answer(
-        text,
-        reply_markup=keyboards.moon_in_sign_menu
-    )
-    await state.update_data(
-        del_messages=[bot_message.message_id],
-        timezone_offset=timezone_offset
-    )
+    if message.message_id == moon_sign_message_id:
+        await message.edit_text(text)
+        await message.edit_reply_markup(reply_markup=keyboards.moon_in_sign_menu)
+    else:
+        bot_message = await message.answer_photo(
+            photo=BufferedInputFile(
+                file=generate_image_for_moon_signs(
+                    date=date.strftime(date_format),
+                    moon_phase=...,
+                    **moon_signs
+                ),
+                filename=FileName.moon_sign.value
+            ),
+            caption=text,
+            reply_markup=keyboards.moon_in_sign_menu
+        )
+        await state.update_data(
+            del_messages=[bot_message.message_id]
+        )
     await state.set_state(MainMenu.moon_in_sign_general)
 
 
 @r.callback_query(F.data == bt.moon_in_sign)
-@r.callback_query(
-    MainMenu.moon_in_sign_description, 
-    F.data == bt.back
-)
+@r.callback_query(MainMenu.moon_in_sign_description, F.data == bt.back)
 async def general_moon_sign_menu_callback_handler(
     callback: CallbackQuery,
     state: FSMContext,
@@ -97,19 +108,14 @@ async def moon_in_sign_description(
     timezone_offset: int = data['timezone_offset']
 
     date: datetime = datetime.utcnow() + timedelta(hours=timezone_offset)
-    moon_signs = find_moon_sign_change(date, timezone_offset)
+    moon_signs = get_moon_signs_at_date(date, timezone_offset)
     text = get_formatted_moon_sign_text(
         moon_signs,
-        type=from_text_to_bt[callback.data]
+        MoonSignInterpretationType(from_text_to_bt[callback.data])
     )
-    bot_message = await callback.message.answer(
-        text,
-        reply_markup=keyboards.back
-    )
-    await state.update_data(
-        del_messages=[bot_message.message_id]
-    )
-    await state.set_state(
-        MainMenu.moon_in_sign_description
-    )
+
+    await callback.message.edit_text(text)
+    await callback.message.edit_reply_markup(reply_markup=keyboards.back)
+    
+    await state.set_state(MainMenu.moon_in_sign_description)
 

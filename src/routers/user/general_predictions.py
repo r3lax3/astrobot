@@ -25,7 +25,7 @@ pred_type_to_date_fmt = {
 @r.callback_query(
     F.data == bt.general_predictions
 )
-async def general_predictions_menu(
+async def general_predictions_menu_callback_handler(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager

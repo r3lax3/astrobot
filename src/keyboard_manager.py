@@ -87,6 +87,7 @@ buttons_text: dict = {
     'general_predictions_add': 'Добавление Общих Прогнозов',
     'change_user_subscription_end': 'Изменить дату окончания подписки',
     'statistics': "Статистика",
+    'broadcast': "Рассылка",
 
     # Misc
     'dreams': '💫 Сны',
@@ -250,7 +251,6 @@ class KeyboardManager:
                 [bt.back_to_menu]
             ]
         )
-
 
         # Compatibility
 

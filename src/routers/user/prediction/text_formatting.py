@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 from src import config, messages
 from src.database import Database
-from src.prediction_analys import (
+from src.astro_engine import (
     get_astro_events_from_period,
     User as PredictionUser,
     Location as PredictionLocation,

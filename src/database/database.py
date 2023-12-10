@@ -49,6 +49,8 @@ class Database:
             self.session.commit()
         except IntegrityError:
             self.session.rollback()
+    def get_users(self):
+        return self.session.query(User).all()
 
     def get_user(self, user_id: int) -> User:
         return self.session.query(User).filter_by(user_id=user_id).first()

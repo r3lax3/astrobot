@@ -10,8 +10,8 @@ from aiogram.types import CallbackQuery, Message
 
 from src import config, messages
 from src.database import Database
-from src.keyboards import KeyboardManager, bt
-from src.states import AdminStates
+from src.keyboard_manager import KeyboardManager, bt
+from src.routers.states import AdminStates
 
 
 class NoBroadcastDataError(Exception):
@@ -23,7 +23,7 @@ datetime_format = config.get('database.datetime_format')
 
 
 @r.callback_query(AdminStates.choose_action, F.data == bt.broadcast)
-@r.callback_query(AdminStates.broadcast_get_confirm, F.data == bt.no_back)
+@r.callback_query(AdminStates.broadcast_get_confirm, F.data == bt.decline)
 async def create_distribution(
     callback: CallbackQuery, 
     state: FSMContext, 
@@ -70,7 +70,7 @@ async def get_distribution_message(
 
     del_message2 = await message.answer(
         messages.broadcast_msg_confirm,
-        reply_markup=keyboards.yes_or_no
+        reply_markup=keyboards.confirm
     )
 
     await state.update_data(
@@ -85,7 +85,7 @@ async def get_distribution_message(
     await state.set_state(AdminStates.broadcast_get_confirm)
 
 
-@r.callback_query(AdminStates.broadcast_get_confirm, F.data == bt.answer_yes)
+@r.callback_query(AdminStates.broadcast_get_confirm, F.data == bt.confirm)
 async def sending_distribution_confirmed(
     callback: CallbackQuery,
     state: FSMContext,

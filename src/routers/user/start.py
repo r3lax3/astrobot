@@ -9,7 +9,7 @@ from src.keyboard_manager import KeyboardManager
 from src.filters import AdminFilter, UserFilter
 from src.database import Database
 from src.routers.states import MainMenu
-from src.routers.user.main_menu import main_menu
+from .main_menu import main_menu
 
 
 r = Router()

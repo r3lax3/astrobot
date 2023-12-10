@@ -1,80 +1,23 @@
 from aiogram import Router, Bot, F
-from aiogram.types import Message, User, CallbackQuery
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
-from aiogram.filters import CommandStart, Command
 from aiogram.exceptions import TelegramBadRequest
 
 from src import config, messages
 from src.keyboard_manager import KeyboardManager, bt
-from src.filters import AdminFilter, UserFilter
-from src.database import Database
 from src.routers.states import MainMenu, Subscription
-from src.routers.user.start import start
 
 
 r = Router()
-start_video: str = config.get(
-    'files.start_video'
-)
-
-
-# Handler for '/start' command for admin user
-@r.message(CommandStart(), AdminFilter())
-async def user_command_start_handler(
-    message: Message,
-    state: FSMContext,
-    bot: Bot
-):
-    await start(message, state, bot)
-
-
-# Handler for '/start' command for regular users
-@r.message(CommandStart(), UserFilter())
-async def admin_command_start_handler(
-    message: Message,
-    state: FSMContext,
-    bot: Bot,
-    database: Database,
-    event_from_user: User,
-    keyboards: KeyboardManager
-):
-    user = database.get_user(user_id=event_from_user.id)
-    if user is None:
-        await start(message, state, bot)
-    else:
-        await main_menu(message, state, keyboards)
-
-
-# Handler for '/menu' command to display the main menu
-@r.message(Command(commands=['menu']), AdminFilter())
-async def main_menu_command(
-    message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager,
-    database: Database,
-    event_from_user: User,
-    bot: Bot
-):
-    user = database.get_user(user_id=event_from_user.id)
-
-    if user is None:
-        bot_message = await message.answer(
-            'Вы ещё не ввели данные рождения.'
-        )
-        await user_command_start_handler(bot_message, state, bot)
-    else:
-        await main_menu(message, state, keyboards, bot)
+start_video: str = config.get('files.start_video')
 
 
 @r.message(
-    MainMenu.prediction_every_day_choose_action, 
+    MainMenu.prediction_choose_action, 
     F.text,
     F.text == bt.back
 )
-@r.message(
-    F.text, 
-    F.text == bt.main_menu
-)
+@r.message(F.text, F.text == bt.main_menu)
 async def main_menu(
     message: Message,
     state: FSMContext,
@@ -121,13 +64,8 @@ async def main_menu(
     await state.set_state(MainMenu.choose_action)
 
 
-@r.callback_query(
-    F.data == bt.main_menu
-)
-@r.callback_query(
-    Subscription.period,
-    F.data == bt.back
-)
+@r.callback_query(F.data == bt.main_menu)
+@r.callback_query(Subscription.period, F.data == bt.back)
 async def to_main_menu_button_handler(
     callback: CallbackQuery,
     state: FSMContext,

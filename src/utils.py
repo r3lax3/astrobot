@@ -4,6 +4,7 @@ import os
 import ephem
 
 from datetime import datetime, timedelta
+from typing import Any
 
 from timezonefinder import TimezoneFinder
 from geopy.geocoders import Nominatim
@@ -130,4 +131,8 @@ async def get_lunar_day(date: datetime, latitude: float, longitude: float):
     
     # Return the lunar day as an integer, adding 1 since lunar days start at 1
     return int(lunar_day) + 1
+
+
+def in_range(value: Any, start: Any, end: Any) -> bool:
+    return start <= value < end
 

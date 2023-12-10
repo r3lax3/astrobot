@@ -71,6 +71,6 @@ class AdminStates(StatesGroup):
     broadcast_get_message = State()
     broadcast_get_confirm = State()
 
-    action_ended = State()
+    action_end = State()
 
     

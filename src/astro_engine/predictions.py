@@ -1,33 +1,10 @@
 import swisseph as swe
 
 from typing import List, Optional
-from dataclasses import dataclass
-
 from datetime import datetime, timedelta
 
 from src.utils import get_timezone_offset, convert_to_utc, convert_from_utc
-
-
-@dataclass
-class Location:
-    longitude: float
-    latitude: float
-
-
-@dataclass
-class User:
-    birth_datetime: datetime
-    birth_location: Location
-    current_location: Location
-
-
-# Модель для представления астрологического события
-@dataclass
-class AstroEvent:
-    natal_planet: int  # Planet ID
-    transit_planet: int  # Planet ID
-    aspect: int
-    peak_at: datetime | None
+from src.astro_engine.models import User, AstroEvent
 
 
 # 10 планет для натальной карты
@@ -54,9 +31,14 @@ TRANSIT_PLANETS = [
 
 ASPECTS = [0, 60, 90, 120, 180]
 ORBIS = 0.1
+ZODIAC_BOUNDS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360]
 
-
-def find_peak_time(time: datetime, natal_position: float, transit_planet: int, aspect_value: int) -> datetime:
+def find_peak_time(
+    time: datetime,
+    natal_position: float,
+    transit_planet: int,
+    aspect_value: int
+) -> datetime:
     julian_day_time = swe.julday(
         time.year,
         time.month,
@@ -75,9 +57,11 @@ def find_peak_time(time: datetime, natal_position: float, transit_planet: int, a
     return peak_time
 
 
-
-# Движок
-def calculate_aspect(transit_position: float, natal_position: float, orbis: float) -> Optional[int]:
+def calculate_aspect(
+    transit_position: float,
+    natal_position: float,
+    orbis: float
+) -> Optional[int]:
     """
     Вычислить аспект между двумя планетами на основе их текущих позиций.
 
@@ -146,7 +130,11 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
     return events
 
 
-def get_astro_events_from_period(start: datetime, finish: datetime, user: User) -> List[AstroEvent]:
+def get_astro_events_from_period(
+    start: datetime, 
+    finish: datetime,
+    user: User
+) -> List[AstroEvent]:
     timezone = int(
         get_timezone_offset(
             latitude=user.current_location.latitude,
@@ -189,50 +177,3 @@ def get_astro_events_from_period(start: datetime, finish: datetime, user: User) 
 
     return unique_events
 
-
-# if __name__ == '__main__':
-#     # Тестовые данные
-#     user_birth_datetime = datetime(2005, 10, 19, 9, 32)  # Дата и время рождения: 15 июня 1995 года в 12:00
-#     user_birth_location = Location(32.08452998284642, 49.42092491956057)  # Место рождения: Черкассы, Украина
-#     user_current_location = Location(30.772546984752733, 50.12033469399557)  # Текущее местоположение: Киев, Украина
-#
-#     test_user = User(
-#         birth_datetime=user_birth_datetime,
-#         birth_location=user_birth_location,
-#         current_location=user_current_location
-#     )
-#
-#     start_date = datetime(2023, 8, 3, 3)
-#     end_date = datetime(2023, 8, 4, 3)
-#
-#     # Получение астрологических событий и вывод результатов
-#
-#     time_list = []
-#     for x in range(100):
-#         print(x+1)
-#         start = time.time()
-#
-#         astro_events = get_astro_events_from_period(start_date, end_date, test_user)
-#
-#         time_list.append(time.time() - start)
-#     print(f'В среднем - {sum(time_list) / len(time_list)}')
-
-    #
-    # start = time.time()
-    #
-    # astro_events = get_astro_events_from_period(start_date, end_date, test_user)
-    #
-    # delta = time.time() - start
-    # print(f'Заняло времени - {delta} секунд\n')
-    #
-    # for astro_event in astro_events:
-    #
-    #     peak = ""
-    #     if astro_event.peak_at:
-    #         peak = f"Peak at: {astro_event.peak_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
-    #
-    #     print(
-    #         f"Natal: {swe.get_planet_name(astro_event.natal_planet)}\n"
-    #         f"Transit: {swe.get_planet_name(astro_event.transit_planet)}\n"
-    #         f"Aspect: {astro_event.aspect}\n" + peak
-    #     )
