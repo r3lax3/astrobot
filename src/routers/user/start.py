@@ -31,7 +31,6 @@ async def user_command_start_handler(
 
 # Handler for '/start' command for regular users
 @r.message(CommandStart(), UserFilter())
-@r.message(Command(commands=['menu']), ~UserInDatabase(), UserFilter())
 async def admin_command_start_handler(
     message: Message,
     state: FSMContext,

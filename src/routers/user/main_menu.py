@@ -5,6 +5,7 @@ from aiogram.filters import Command
 from aiogram.exceptions import TelegramBadRequest
 
 from src import config, messages
+from src.filters.role import AdminFilter
 from src.keyboard_manager import KeyboardManager, bt
 from src.routers.states import MainMenu, Subscription
 from src.filters import UserInDatabase
@@ -21,7 +22,7 @@ print(f'{MAIN_MENU_IMAGE = }')
     F.text == bt.back
 )
 @r.message(F.text, F.text == bt.main_menu)
-@r.message(Command(commands=['menu']), UserInDatabase())
+@r.message(Command(commands=['menu']), UserInDatabase(), AdminFilter())
 async def main_menu(
     message: Message,
     state: FSMContext,
