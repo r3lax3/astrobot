@@ -54,6 +54,8 @@ class Subscription(StatesGroup):
     get_promocode = State()
     get_activate_promocode_confirm = State()
 
+    action_end = State()
+
 
 class AdminStates(StatesGroup):
     choose_action = State()

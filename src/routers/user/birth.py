@@ -10,7 +10,7 @@ from aiogram.types import (
 
 from src import config, messages
 from src.utils import get_location_by_coords
-from src.filters import IsDate
+from src.filters import IsDate, IsTime
 from src.keyboard_manager import KeyboardManager, bt
 from src.routers.states import GetBirthData, MainMenu, ProfileSettings
 
@@ -18,16 +18,11 @@ from src.routers.states import GetBirthData, MainMenu, ProfileSettings
 r = Router()
 
 
-regexp_time = r"^\s*(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s*$"
-database_datetime_format = config.get(
-    'database.datetime_format'
-)
-date_format = config.get(
-    'database.date_format'
-)
-guide_send_geopos_images_file_id = config.get(
-    'files.how_to_send_geopos_screenshots'
-)
+DATE_FORMAT = config.get('database.date_format')
+TIME_FORMAT = config.get('database.time_format')
+GUIDE_SEND_GEOPOS_IMAGES = config.get('files.how_to_send_geopos_screenshots')
+BIRTH_DATA_CONFIRMED_IMAGE = config.get('files.birth_data_confirmed')
+
 
 @r.message(
     MainMenu.get_name, 
@@ -65,9 +60,7 @@ async def get_name_max_length_error(
     bot_message = await message.answer(
         messages.get_name_max_length_error
     )
-    await state.update_data(
-        del_messages=[bot_message.message_id]
-    )
+    await state.update_data(del_messages=[bot_message.message_id])
 
 
 @r.message(MainMenu.get_name)
@@ -78,9 +71,7 @@ async def get_name_no_text_error(
     bot_message = await message.answer(
         messages.get_name_no_text_error
     )
-    await state.update_data(
-        del_messages=[bot_message.message_id]
-    )
+    await state.update_data(del_messages=[bot_message.message_id])
 
 
 @r.callback_query(
@@ -94,11 +85,7 @@ async def enter_birth_date_handler(
     bot_message = await callback.message.answer(
         messages.enter_birth_date
     )
-    await state.update_data(
-        del_messages=[
-            bot_message.message_id
-        ]
-    )
+    await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(GetBirthData.date)
 
 
@@ -136,7 +123,7 @@ async def get_birth_date(
     data = await state.get_data()
     date_str = data['date']
 
-    birth_date = datetime.strptime(date_str, date_format)
+    birth_date = datetime.strptime(date_str, DATE_FORMAT)
     now = datetime.now()
 
     delta = now - birth_date
@@ -168,33 +155,33 @@ async def get_birth_time_back(
     await enter_birth_date(callback.message, state)
 
 
-@r.message(GetBirthData.time, F.text, F.text.regexp(regexp_time))
+@r.message(GetBirthData.time, F.text, IsTime())
 async def get_birth_time(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
     # из "09:23" в (9, 23), а дальше просто распаковка
-    hour, minute = map(int, message.text.split(':'))  
+    time = datetime.strptime(message.text, TIME_FORMAT)
     await state.update_data(
-        hour=hour, 
-        minute=minute, 
+        hour=time.hour, 
+        minute=time.minute, 
         time=message.text
     )
     await enter_birth_geopos(message, state, keyboards)
 
 
-@r.callback_query(GetBirthData.time, F.data.regexp(regexp_time))
+@r.callback_query(GetBirthData.time, IsTime())
 async def get_birth_time_from_button(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    hour, minute = map(int, callback.data.split(':')) 
+    time = datetime.strptime(callback.data, TIME_FORMAT)
 
     await state.update_data(
-        hour=hour, 
-        minute=minute, 
+        hour=time.hour, 
+        minute=time.minute, 
         time=callback.data
     )
     await enter_birth_geopos(callback.message, state, keyboards)
@@ -263,14 +250,9 @@ async def enter_birth_geopos(
     images = await message.answer_media_group(
         [
             InputMediaPhoto(
-                media=guide_send_geopos_images_file_id[0]
-            ),
-            InputMediaPhoto(
-                media=guide_send_geopos_images_file_id[1]
-            ),
-            InputMediaPhoto(
-                media=guide_send_geopos_images_file_id[2]
+                media=file_id
             )
+            for file_id in GUIDE_SEND_GEOPOS_IMAGES
         ]
     )
     bot_message = await message.answer(
@@ -357,7 +339,7 @@ async def enter_birth_data_confirm(
         messages.birth_data_confirm.format(
             name=data['name'],
             birth_datetime=f'{date_str} {time_str}',
-            birth_location=birth_location_title
+            birth_location_title=birth_location_title
         ),
         reply_markup=keyboards.confirm
     )
@@ -375,11 +357,8 @@ async def enter_birth_data_confirm(
         birth_location_title=birth_location_title
     )
     await state.set_state(GetBirthData.confirm)
-    # Подтверждение перекидывает в логику, 
-    # которая прописана в src/routers/now_location. Смотри начало файла
 
 
-# Redirection from ./birth.py
 @r.callback_query(
     GetBirthData.confirm, 
     F.data == bt.confirm
@@ -388,9 +367,9 @@ async def get_birth_data_confirm(
     callback: CallbackQuery,
     state: FSMContext,
 ):
-
-    bot_message = await callback.message.answer(
-        messages.birth_data_confirmed
+    bot_message = await callback.message.answer_photo(
+        photo=BIRTH_DATA_CONFIRMED_IMAGE,
+        caption=messages.birth_data_confirmed
     )
     await state.update_data(
         del_messages=[bot_message.message_id],

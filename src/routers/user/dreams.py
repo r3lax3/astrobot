@@ -5,18 +5,20 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.types import User
 
+
+from src.utils import path_validation
 from src.routers.states import MainMenu
-from src.keyboard_manager import KeyboardManager, bt
 from src.database import Database
-from src.utils import path_validation, get_lunar_day
+from src.astro_engine.moon import get_main_lunar_day_at_date
+from src.keyboard_manager import KeyboardManager, bt
 
 
 r = Router()
 
-dreams_interpretations_filepath = "./dreams.csv"
-path_validation(dreams_interpretations_filepath)
+DREAMS_INTERPRETATIONS_FILEPATH = "./dreams.csv"
+path_validation(DREAMS_INTERPRETATIONS_FILEPATH)
 
-with open(dreams_interpretations_filepath, "r", encoding="utf-8") as f:
+with open(DREAMS_INTERPRETATIONS_FILEPATH, "r", encoding="utf-8") as f:
     readlines = f.readlines()
     dreams_interpretations = list(
         map(
@@ -37,16 +39,16 @@ async def dreams_menu(
     user = database.get_user(event_from_user.id)
 
     latitude = user.current_location.latitude
-    longtitude = user.current_location.longtitude
+    longtitude = user.current_location.longitude
 
-    now = datetime.utcnow() + timedelta(hours=user.timezone_offset) 
+    now = datetime.utcnow() 
 
-    lunar_day = await get_lunar_day(now, latitude, longtitude)
+    lunar_day = get_main_lunar_day_at_date(now, latitude, longtitude)
     
     bot_message = await message.answer(
-        text=dreams_interpretations[lunar_day - 1],
+        text=dreams_interpretations[lunar_day.number - 1],
         reply_markup=keyboards.to_main_menu
     )
-    await state.update_data(del_messages=bot_message.message_id)
+    await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(MainMenu.end_action)
 

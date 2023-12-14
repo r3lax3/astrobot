@@ -104,8 +104,7 @@ async def enter_general_prediction_date(
     bot_message = await message.answer(
         messages.enter_general_prediction_date.format(
             type=type,
-            format=pred_type_to_date_fmt[type],
-            example=pred_type_to_example[type]
+            format=pred_type_to_example[type]
         ),
         reply_markup=keyboards.back
     )
@@ -150,8 +149,7 @@ async def get_general_prediction_date(
         bot_message2 = await message.answer(
             messages.enter_general_prediction_date.format(
                 type=type,
-                format=pred_type_to_date_fmt[type],
-                example=pred_type_to_example[type]
+                format=pred_type_to_example[type],
             ),
             reply_markup=keyboards.back
         )

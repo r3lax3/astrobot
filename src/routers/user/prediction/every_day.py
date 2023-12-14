@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from aiogram import Router, Bot, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
@@ -14,7 +16,7 @@ from src.keyboard_manager import KeyboardManager, bt
 
 database_datetime_format: str = config.get('database.datetime_format')
 date_format: str = config.get('database.date_format')
-time_format: str = config.get('database.time_format')
+TIME_FORMAT: str = config.get('database.time_format')
 
 r = Router()
 
@@ -42,7 +44,7 @@ async def every_day_prediction(
         messages.every_day_prediction_activated.format(
             send_time=user.every_day_prediction_time
         ),
-        reply_markup=keyboards.every_day_prediction_activated
+        reply_markup=keyboards.back
     )
 
     await state.update_data(
@@ -54,11 +56,7 @@ async def every_day_prediction(
     await state.set_state(MainMenu.prediction_every_day_enter_time)
 
 
-@r.message(
-    MainMenu.prediction_every_day_enter_time, 
-    F.text, 
-    IsTime()
-)
+@r.message(MainMenu.prediction_every_day_enter_time, F.text, IsTime())
 async def enter_prediction_time(
     message: Message,
     database: Database,
@@ -68,31 +66,25 @@ async def enter_prediction_time(
     event_from_user: User,
     bot: Bot
 ):
-    hour, minute = map(int, message.text.split(':'))
+    time = datetime.strptime(message.text, TIME_FORMAT)
+
     database.update_user_every_day_prediction_time(
         event_from_user.id,
-        hour=hour, 
-        minute=minute
-    )
-    bot_message = await message.answer(
-        messages.prediction_time_changed_successful.format(
-            time=f"{hour:02}:{minute:02}"
-        ),
-        reply_markup=keyboards.every_day_prediction_activated
-    )
-
-    await state.update_data(
-        del_messages=[
-            bot_message.message_id,
-            message.message_id
-        ]
-    )
-    await state.set_state(
-        MainMenu.prediction_every_day_choose_action
+        hour=time.hour, 
+        minute=time.minute
     )
     await scheduler.edit_send_message_job(
-        event_from_user.id, 
-        database,
-        bot
+        user_id=event_from_user.id,
+        database=database,
+        bot=bot
     )
+
+    await every_day_prediction(
+        message,
+        state,
+        keyboards,
+        database,
+        event_from_user
+    )
+
 

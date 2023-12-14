@@ -165,11 +165,11 @@ def count_subscriptions(database: Database) -> dict:
     }
 
     for period in subscription_counts.keys():
-        payments = database.get_payments(period=period)
+        payments = database.session.query(Payment).filter_by(status='success')
 
         for payment in payments:
             end_date = datetime.strptime(
-                payment.ended_at, 
+                payment.status_change_timestamp, 
                 database_datetime_format
             )
             if now < end_date:

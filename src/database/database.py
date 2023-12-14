@@ -1,7 +1,6 @@
 import logging
 
 from datetime import timedelta, datetime
-from os import walk
 from typing import Optional, List
 
 from sqlalchemy import create_engine
@@ -23,12 +22,8 @@ from src.database.models import (
 )
 
 
-database_datetime_format: str = config.get(
-    'database.datetime_format'
-)
-date_format: str = config.get(
-    'database.date_format'
-)
+DATETIME_FORMAT: str = config.get('database.datetime_format')
+DATE_FORMAT: str = config.get('database.date_format')
 
 
 class Database:
@@ -49,6 +44,7 @@ class Database:
             self.session.commit()
         except IntegrityError:
             self.session.rollback()
+
     def get_users(self):
         return self.session.query(User).all()
 
@@ -157,7 +153,7 @@ class Database:
                 now = datetime.utcnow() + timedelta(hours=time_offset)
                 current_user_subscription_end_date = datetime.strptime(
                     user.subscription_end_date,
-                    database_datetime_format
+                    DATETIME_FORMAT
                 )
                 start = max(
                     [
@@ -166,7 +162,7 @@ class Database:
                     ]
                 )
                 user.subscription_end_date = (start + period).strftime(
-                    database_datetime_format
+                    DATETIME_FORMAT
                 )
                 self.session.commit()
 
@@ -195,7 +191,7 @@ class Database:
                     hours=time_offset
                 )
             user.subscription_end_date = new_subscription_end_date.strftime(
-                    database_datetime_format
+                    DATETIME_FORMAT
                 )
             self.session.commit()
 
@@ -352,7 +348,7 @@ class Database:
                 user_id=user_id,
                 prediction_date=prediction_date,
                 view_timestamp=datetime.utcnow().strftime(
-                    database_datetime_format
+                    DATETIME_FORMAT
                 )
             )
             self.session.add(viewed_prediction)
@@ -410,7 +406,7 @@ class Database:
         # Проверяем, не истекла ли подписка.
         subscription_end_date = datetime.strptime(
             user.subscription_end_date,  # str
-            database_datetime_format
+            DATETIME_FORMAT
         )
         if subscription_end_date < now:
             return 0  # Подписка истекла.

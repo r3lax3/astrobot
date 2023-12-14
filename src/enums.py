@@ -21,8 +21,8 @@ class PILPositions(Enum):
     FIRST_MOON_SIGN_CAPTION = (175, 240)
     END_MOON_SIGN_IMAGE = (175, 400)
     SECOND_MOON_SIGN_CAPTION = (175, 515)
-    MOON_PHASE = (990, 175)
-    MOON_PHASE_CAPTION = (990, 375)
+    MOON_PHASE = (990, 140)
+    MOON_PHASE_CAPTION = (990, 290)
 
 
 class Align(Enum):
@@ -51,5 +51,20 @@ class MoonPhase(Enum):
 
     
 class FileName(Enum):
-    moon_sign = 'moon_sign.jpeg'
+    MOON_SIGN = 'moon_sign.jpeg'
+
+
+class ZodiacSign(Enum):
+    ARIES = "Aries"
+    TAURUS = "Taurus"
+    GEMINI = "Gemini"
+    CANCER = "Cancer"
+    LEO = "Leo"
+    VIRGO = "Virgo"
+    LIBRA = "Libra"
+    SCORPIO = "Scorpio"
+    SAGITTARIUS = "Sagittarius"
+    CAPRICORN = "Capricorn"
+    AQUARIUS = "Aquarius"
+    PISCES = "Pisces"
 

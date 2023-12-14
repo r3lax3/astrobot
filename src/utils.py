@@ -31,6 +31,30 @@ def get_timezone_offset(latitude, longitude) -> int:
         raise Exception(f"Can't get timezone name. {latitude = }, {longitude = }")
 
 
+def get_timezone_str_from_coords(longitude, latitude) -> str:
+    """
+    Get the timezone for given latitude and longitude coordinates.
+
+    Args:
+    latitude (float): Latitude of the location.
+    longitude (float): Longitude of the location.
+
+    Returns:
+    str: Timezone for the given coordinates.
+    """
+    tf = TimezoneFinder()
+    timezone_str = tf.timezone_at(lat=latitude, lng=longitude)
+
+    if timezone_str:
+        return timezone_str
+    else:
+        raise ValueError(
+            (
+                "Timezone could not be determined for the coordinates: "
+                f"Latitude {latitude}, Longitude {longitude}"
+            )
+        )
+
 def convert_to_utc(dt: datetime, offset: int) -> datetime:
     return dt - timedelta(hours=offset)
 
@@ -95,7 +119,7 @@ def get_location_by_coords(longitude: float, latitude: float) -> str:
         else:
             return country
 
-    return "Ошибка. Напишите @mrAx3 насчет этого если увидите этот текст и ничего не трогайте. Что-то сломалось."
+    return "Ошибка. Напишите @mrAx3 насчет этого если увидите этот текст. Что-то сломалось."
 
 
 def path_validation(path: str) -> None:

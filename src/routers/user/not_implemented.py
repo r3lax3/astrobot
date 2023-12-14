@@ -5,11 +5,11 @@ from aiogram.fsm.context import FSMContext
 
 from src import messages
 from src.keyboard_manager import KeyboardManager, bt
+from src.routers.user.main_menu import main_menu
 
 
 r = Router()
 not_implemented_list = [
-    bt.dreams, 
     bt.theme
 ]
 
@@ -41,3 +41,4 @@ async def not_implemented_error(
         messages.not_implemented
     )
     await main_menu(bot_message, state, keyboards, bot)
+

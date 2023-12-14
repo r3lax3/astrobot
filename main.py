@@ -108,9 +108,7 @@ async def main():
     scheduler.start()
 
     dp = Dispatcher(
-        storage=RedisStorage.from_url(
-            'redis://localhost:6379'
-        ),
+        storage=RedisStorage.from_url('redis://localhost:6379'),
         database=database,
         keyboards=KeyboardManager(database),
         scheduler=scheduler
@@ -121,12 +119,12 @@ async def main():
 
     # asyncio.create_task(schedule_backup(db, bot, 21600))
     #
-    # await bot.get_updates(
-    #     allowed_updates=[
-    #         'message', 
-    #         'callback_query'
-    #     ]
-    # )
+    await bot.get_updates(
+        allowed_updates=[
+            'message', 
+            'callback_query'
+        ]
+    )
 
     # Message
 

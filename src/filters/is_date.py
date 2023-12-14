@@ -1,41 +1,41 @@
 from datetime import datetime
 
-from aiogram import Router
 from aiogram.filters import Filter
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
 from src import config
 
 
-router = Router()
-date_format: str = config.get('database.date_format')
-datetime_format: str = config.get('database.datetime_format')
-time_format: str = config.get('database.time_format')
+DATE_FORMAT: str = config.get('database.date_format')
+DATETIME_FORMAT: str = config.get('database.datetime_format')
+TIME_FORMAT: str = config.get('database.time_format')
 
 
 class DatetimeStringValidator(Filter):
     _format = None
-    async def __call__(self, message: Message) -> bool:
+    async def __call__(self, event: Message | CallbackQuery) -> bool:
         if self._format is None:
             raise NotImplementedError()
-
-        parse_string: str = message.text
+        if isinstance(event, Message):
+            parse_string: str = event.text
+        elif isinstance(event, CallbackQuery):
+           parse_string: str = event.data 
 
         try:
             datetime.strptime(parse_string, self._format)
-        except ValueError:
+        except:
             return False
         else:
             return True
 
 
 class IsDate(DatetimeStringValidator):
-    _format = date_format
+    _format = DATE_FORMAT
 
 
 class IsDatetime(DatetimeStringValidator):
-    _format = datetime_format
+    _format = DATETIME_FORMAT
 
 class IsTime(DatetimeStringValidator):
-    _format = time_format
+    _format = TIME_FORMAT
 

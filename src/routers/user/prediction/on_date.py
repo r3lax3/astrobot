@@ -23,8 +23,8 @@ from src.image_processing import generate_image_with_date_for_prediction
 from src.routers.user.prediction.text_formatting import get_prediction_text
 
 
-database_datetime_format: str = config.get('database.datetime_format')
-date_format: str = config.get('database.date_format')
+DATETIME_FORMAT: str = config.get('database.datetime_format')
+DATE_FORMAT: str = config.get('database.date_format')
 
 wait_sticker = config.get('files.wait_sticker')
 
@@ -33,12 +33,12 @@ r = Router()
 
 @r.callback_query(MainMenu.prediction_choose_date, F.data == bt.decline)
 @r.callback_query(MainMenu.prediction_end, F.data == bt.back)
-@r.callback_query(Subscription.payment_ended, F.data == bt.try_in_deal)
+@r.callback_query(Subscription.action_end, F.data == bt.try_in_deal)
+@r.callback_query(MainMenu.prediction_every_day_enter_time, F.data == bt.back)
 async def get_prediction_callback_redirect(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    bot: Bot,
     database: Database,
     event_from_user: User
 ):
@@ -46,7 +46,6 @@ async def get_prediction_callback_redirect(
         callback.message,
         state,
         keyboards,
-        bot,
         database,
         event_from_user
     )
@@ -66,7 +65,7 @@ async def get_prediction(
     now = datetime.utcnow()
     current_user_subscription_end_date = datetime.strptime(
         user.subscription_end_date, 
-        database_datetime_format
+        DATETIME_FORMAT
     )
 
     if now < current_user_subscription_end_date: 
@@ -140,8 +139,8 @@ async def prediction_on_date(
     data = await state.get_data()
     today = dt.datetime.utcnow().date() + timedelta(hours=data['timezone_offset'])
     await state.update_data(
-        date=today.strftime(date_format), 
-        today=today.strftime(date_format)
+        date=today.strftime(DATE_FORMAT), 
+        today=today.strftime(DATE_FORMAT)
     )
     await update_prediction_date(message, state, keyboards)
 
@@ -172,7 +171,7 @@ async def prediction_for_today(
     await state.update_data(
         date=today_date.strptime(
             today_date, 
-            date_format
+            DATE_FORMAT
         )
     )
     
@@ -223,10 +222,10 @@ async def prediction_on_date_get_prediction(
     
     subscription_end_date = datetime.strptime(
         user.subscription_end_date, 
-        database_datetime_format
+        DATETIME_FORMAT
     )
     target_date_str: str = data['date']
-    target_date = datetime.strptime(target_date_str, date_format)
+    target_date = datetime.strptime(target_date_str, DATE_FORMAT)
     timezone_offset = timedelta(hours=data['timezone_offset'])
 
     if subscription_end_date + timezone_offset > target_date:
@@ -286,13 +285,13 @@ async def prediction_update_date_callback_handler(
     data = await state.get_data()
 
     date = data['date']
-    date = datetime.strptime(date, date_format)
+    date = datetime.strptime(date, DATE_FORMAT)
     modified_date = date + timedelta(
         days=DateModifier.unpack(callback.data).modifier
     )
 
     await state.update_data(
-        date=modified_date.strftime(date_format)
+        date=modified_date.strftime(DATE_FORMAT)
     )
     await update_prediction_date(
         callback.message, 

@@ -4,12 +4,12 @@ from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 from src import config
-from src.enums import MoonPhase, PILPositions, Align, FileFormat
+from src.enums import MoonPhase, PILPositions, Align, FileFormat, ZodiacSign
 
 
 # Get the date format from the configuration
 DATE_FORMAT: str = config.get('database.date_format')
-BACKGROUND_IMAGE_PATH = 'images/purple_background.jpg'
+BACKGROUND_IMAGE_PATH = 'images/backgrounds/purple_background.jpg'
 DATE_TEXT_POSITION = (404, 450)  # Подганял чётко под изображение методом тыка
 COLOR_WHITE = '#ffffff'
 FONT_PATH = "fonts/Comic Sans MS.ttf"
@@ -57,18 +57,20 @@ def generate_image_with_date_for_prediction(date: str) -> bytes:
     """
     # Open the background image
     background_image = Image.open(BACKGROUND_IMAGE_PATH)
-    text_drawer = ImageDraw.Draw(background_image)
+    drawer = ImageDraw.Draw(background_image)
     
-    # Draw the date on the image
-    text_position = PILPositions.DATE_TEXT.value 
-    text_color = COLOR_WHITE
-    text_drawer.text(
-        text_position, 
-        date, 
-        fill=text_color, 
-        font=date_font,
-        align=Align.CENTER.value
-    )
+    if date is not None: 
+        drawer.text(
+            calculate_adjust_for_centering(
+                PILPositions.DATE_TEXT.value, 
+                date, 
+                date_font
+            ),  # text size-adjusted position
+            date, 
+            fill=COLOR_WHITE, 
+            font=date_font,
+            align=Align.CENTER.value
+        )
     
     # Save the image to a BytesIO object
     byte_array = io.BytesIO()
@@ -122,23 +124,27 @@ def calculate_adjust_for_centering(
 
 def generate_image_for_moon_signs(
     date: Optional[str] = None, 
-    start_sign: Optional[str] = None,
+    start_sign: Optional[ZodiacSign] = None,
     change_time: Optional[str] = None,
-    end_sign: Optional[str] = None,
-    moon_phase: Optional[MoonPhase] = None
+    end_sign: Optional[ZodiacSign] = None,
+    moon_phase: Optional[MoonPhase] = None,
+    moon_phase_caption: Optional[str] = None
 ) -> bytes:
     """
-    Generates an image with astrological signs and transition time.
+    Generates an image representing the transition of the Moon through astrological signs along with associated captions.
+
+    This function creates a composite image based on the provided astrological information. The resulting image includes visual representations of the starting and ending Moon signs, the transition time, the Moon's phase, and associated captions.
 
     Parameters:
-    - date (str): The date string to be added to the image.
-    - start_sign (str): File path for the starting astrological sign image.
-    - change_time (str, optional): The time when the transition starts.
-    - end_sign (str, optional): File path for the ending astrological sign image.
-    - transition_time (str, optional): The transition time between signs.
+    - date (Optional[str]): The date to be displayed on the image. This should be a string in any preferred format.
+    - start_sign (Optional[ZodiacSign]): The astrological sign where the Moon starts. This should be an instance of the `ZodiacSign` enum representing the sign.
+    - change_time (Optional[str]): The time when the Moon transitions from the starting sign to the ending sign. Should be a string representing time.
+    - end_sign (Optional[ZodiacSign]): The astrological sign where the Moon ends. This should be an instance of the `ZodiacSign` enum representing the sign.
+    - moon_phase (Optional[MoonPhase]): The phase of the Moon. This should be an instance of the `MoonPhase` enum representing the lunar phase.
+    - moon_phase_caption (Optional[str]): A caption describing the Moon phase. This should be a string.
 
     Returns:
-    - bytes: The image data in bytes.
+    - bytes: The image data in bytes format. This can be directly used to write to a file or stream over a network.
     """
     # Open the background image
     background_image = Image.open(BACKGROUND_IMAGE_PATH)
@@ -159,7 +165,7 @@ def generate_image_for_moon_signs(
 
     if start_sign is not None:
         
-        first_sign_image = Image.open(f'images/moon_signs/{start_sign}.png')
+        first_sign_image = Image.open(f'images/moon_signs/{start_sign.value}.png')
         first_sign_position = calculate_adjust_for_centering(
             PILPositions.START_MOON_SIGN_IMAGE.value, 
             first_sign_image
@@ -171,7 +177,7 @@ def generate_image_for_moon_signs(
             first_sign_image
         )
 
-        first_sign_caption = f'Луна в {zodiac_sign_translate_to_russian(start_sign)}'
+        first_sign_caption = f'Луна в {zodiac_sign_translate_to_russian(start_sign.value)}'
         
         drawer.text(
             calculate_adjust_for_centering(
@@ -187,7 +193,7 @@ def generate_image_for_moon_signs(
 
     # If an end sign is given, load and paste 
     if change_time is not None and end_sign is not None:
-        end_sign_image = Image.open(f'images/moon_signs/{end_sign}.png')
+        end_sign_image = Image.open(f'images/moon_signs/{end_sign.value}.png')
         end_sign_position = calculate_adjust_for_centering(
             PILPositions.END_MOON_SIGN_IMAGE.value,
             end_sign_image
@@ -199,7 +205,7 @@ def generate_image_for_moon_signs(
             end_sign_image
         )
 
-        second_sign_caption = f'c {change_time} Луна\nв {zodiac_sign_translate_to_russian(end_sign)}'
+        second_sign_caption = f'c {change_time} Луна\nв {zodiac_sign_translate_to_russian(end_sign.value)}'
 
         drawer.text(
             calculate_adjust_for_centering(
@@ -224,6 +230,19 @@ def generate_image_for_moon_signs(
             moon_phase_image, 
             moon_phase_position,
             moon_phase_image
+        )
+
+    if moon_phase_caption is not None:
+        drawer.text(
+            calculate_adjust_for_centering(
+                PILPositions.MOON_PHASE_CAPTION.value,
+                moon_phase_caption,
+                text_font
+            ),  # text size-adjusted position
+            moon_phase_caption,
+            fill=COLOR_WHITE, 
+            font=text_font,
+            align=Align.CENTER.value
         )
 
     # Save or return the image

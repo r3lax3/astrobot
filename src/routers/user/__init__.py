@@ -4,6 +4,7 @@ from src.routers.user.about import r as about_router
 from src.routers.user.birth import r as birth_router
 from src.routers.user.card_of_day import r as card_of_day_router
 from src.routers.user.compatibility import r as compatibility_router
+from src.routers.user.dreams import r as dreams_router
 from src.routers.user.general_predictions import r as general_predictions_router
 from src.routers.user.main_menu import r as main_menu_router
 from src.routers.user.moon_in_sign import r as moon_in_sign_router
@@ -24,6 +25,7 @@ all_routers = [
     birth_router,
     card_of_day_router,
     compatibility_router,
+    dreams_router,
     general_predictions_router,
     main_menu_router,
     moon_in_sign_router,

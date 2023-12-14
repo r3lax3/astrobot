@@ -1,4 +1,4 @@
-import datetime as dt
+from datetime import datetime, timedelta
 
 from typing import Union
 
@@ -12,12 +12,13 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src import config, messages
 from src.database import Database
-from src.routers.user.prediction import get_prediction_text
+from src.routers.user.prediction.text_formatting import get_prediction_text
+from src.image_processing import generate_image_with_date_for_prediction
 
 
-datetime_format: str = config.get('database.datetime_format')
-date_format: str = config.get('database.date_format')
-time_format: str = config.get('database.time_format')
+DATETIME_FORMAT: str = config.get('database.datetime_format')
+DATE_FORMAT: str = config.get('database.date_format')
+TIME_FORMAT: str = config.get('database.time_format')
 
 TaskID = Union[str, tuple]
 reminder_times = [36, 12]
@@ -85,9 +86,9 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         """Send the daily prediction message to a user."""
         user = database.get_user(user_id=user_id)
 
-        utc_target_date = dt.datetime.utcnow()
+        utc_target_date = datetime.utcnow()
         target_date = utc_target_date + timedelta(hours=user.timezone_offset)
-        target_date_str = target_date.strftime(date_format)
+        target_date_str = target_date.strftime(DATE_FORMAT)
 
         photo = BufferedInputFile(
             generate_image_with_date_for_prediction(
@@ -136,11 +137,11 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         for hours_before_end in reminder_times:
             self.remove_task(("reminder", user_id, hours_before_end))
 
-        subscription_end_datetime = dt.datetime.strptime(
+        subscription_end_datetime = datetime.strptime(
             user.subscription_end_date, 
-            datetime_format
+            DATETIME_FORMAT
         )
-        if not subscription_end_datetime > dt.datetime.utcnow():
+        if not subscription_end_datetime > datetime.utcnow():
             return
 
         current_location = database.get_location(
@@ -151,9 +152,9 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             longitude=current_location.longitude, 
             latitude=current_location.latitude
         )
-        time = dt.datetime.strptime(
+        time = datetime.strptime(
             user.every_day_prediction_time, 
-            time_format
+            TIME_FORMAT
         )
         hour, minute = time.hour, time.minute
         self.add_task(
@@ -165,7 +166,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         )
 
         for hours_before_end in reminder_times:
-            reminder_time = subscription_end_datetime - dt.timedelta(
+            reminder_time = subscription_end_datetime - timedelta(
                 hours=hours_before_end
             )
             self.add_task(

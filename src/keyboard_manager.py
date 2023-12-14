@@ -37,7 +37,6 @@ buttons_text: dict = {
     'prediction_for_today': 'Прогноз на сегодня',
     'daily_prediction': '⌚️ Ежедневный прогноз',
     'check_another_date': 'Проверить другую дату',
-    'change_prediction_time': '⌛Изменить время прогноза',
 
     # Subscription
     'subscription': '🌟Подписка',
@@ -58,7 +57,7 @@ buttons_text: dict = {
     'try_in_deal': 'Испытать в деле',
     
     # Profile settings
-    'profile_settings': 'Настройки профиля',
+    'profile_settings': '⚙️Настройки профиля',
     'change_timezone': '✈️Смена часового пояса',
     'name': '✍️ Имя',
     'theme': '🌃 Тема',
@@ -94,7 +93,7 @@ buttons_text: dict = {
     'about_bot': '🤔 О боте',
     'tech_support': '🔧 Техническая поддержка',
     'try_again': 'Попробовать ещё раз',
-    'compatibility': 'Совместимость'
+    'compatibility': '💞Совместимость'
 }
 bt = SimpleNamespace(**buttons_text)
 
@@ -118,10 +117,8 @@ class KeyboardManager:
         )
         self.choose_time = self.build_keyboard_from_structure(
             [
-                [(bt.night, '1:00')],
-                [(bt.morning, '7:00')],
-                [(bt.day, '13:00')],
-                [(bt.evening, '19:00')],
+                [(bt.night, '1:00'), (bt.morning, '7:00')],
+                [(bt.day, '13:00'), (bt.evening, '19:00')],
                 [bt.back]
             ],
             is_inline=True
@@ -184,12 +181,6 @@ class KeyboardManager:
             ],
             is_inline=True
         )
-        self.every_day_prediction_activated = self.build_keyboard_from_structure(
-            [
-                [bt.change_prediction_time],
-                [bt.back]
-            ]
-        )
 
         # Subscription
         
@@ -233,8 +224,8 @@ class KeyboardManager:
         )
         self.subscription = self.build_keyboard_from_structure(
             [
-                [bt.buy_subscription],
-                [bt.enter_promocode]
+                [bt.buy_subscription, bt.enter_promocode],
+                [bt.main_menu]
             ],
             is_inline=True
         )
@@ -249,7 +240,8 @@ class KeyboardManager:
             [
                 [bt.try_in_deal],
                 [bt.back_to_menu]
-            ]
+            ],
+            is_inline=True
         )
 
         # Compatibility
@@ -338,7 +330,8 @@ class KeyboardManager:
                 [bt.general_predictions_add],
                 [bt.user_settings],
                 [bt.add_card_of_day],
-                [bt.statistics]
+                [bt.statistics],
+                [bt.broadcast]
             ],
             is_inline=True
         )

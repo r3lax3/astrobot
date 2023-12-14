@@ -1,6 +1,7 @@
 from aiogram import Router, Bot, F
-from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, CallbackQuery
+from aiogram.filters import Command
 from aiogram.exceptions import TelegramBadRequest
 
 from src import config, messages
@@ -9,7 +10,8 @@ from src.routers.states import MainMenu, Subscription
 
 
 r = Router()
-start_video: str = config.get('files.start_video')
+MAIN_MENU_IMAGE: str = config.get('files.main_menu')
+print(f'{MAIN_MENU_IMAGE = }')
 
 
 @r.message(
@@ -18,6 +20,7 @@ start_video: str = config.get('files.start_video')
     F.text == bt.back
 )
 @r.message(F.text, F.text == bt.main_menu)
+@r.message(Command(commands=['menu']))
 async def main_menu(
     message: Message,
     state: FSMContext,
@@ -25,10 +28,8 @@ async def main_menu(
     bot: Bot
 ):
     data = await state.get_data()
-    main_menu_message_id = data.get(
-        'main_menu_message_id',
-        None
-    )
+
+    main_menu_message_id = data.get('main_menu_message_id', None)
 
     if main_menu_message_id is not None:
         try:
@@ -45,18 +46,18 @@ async def main_menu(
         keyboard = keyboards.main_menu_prediction_no_access
 
     if data['first_time']:
-        main_menu_message = await message.answer(
-            messages.main_menu_first_time,
-            reply_markup=keyboard
-        )
+        text = messages.main_menu_first_time
         await state.update_data(first_time=False)
 
     else:
-        main_menu_message = await message.answer(
-            messages.main_menu,
-            reply_markup=keyboard
-        )
+        text = messages.main_menu
+    print(f'{text = }')
 
+    main_menu_message = await message.answer_photo(
+        photo=MAIN_MENU_IMAGE,
+        caption=text,
+        reply_markup=keyboard
+    )
     await state.update_data(
         del_messages=[message.message_id], 
         main_menu_message_id=main_menu_message.message_id

@@ -106,7 +106,7 @@ async def sending_distribution_confirmed(
 
     users_ids: list = [
         user.user_id 
-        for user in await database.get_all_users()
+        for user in database.get_users()
     ]
     
     now = datetime.utcnow()
@@ -123,24 +123,17 @@ async def sending_distribution_confirmed(
     dead_users = len(users_ids) - count
     active_users = max(len(users_ids) - dead_users, 0)
 
-
     now = datetime.utcnow()
     now_in_Moskow = now + timedelta(hours=3)
     broadcast_end_date_Moskow = str(now_in_Moskow.strftime(datetime_format))
 
-    bot_message = await callback.message.answer(
+    await callback.message.answer(
         text=messages.broadcast_statistic.format(
             dead_users=dead_users,
             active_users=active_users,
             broadcast_start_date_Moskow=broadcast_start_date_Moskow,
             broadcast_end_date_Moskow=broadcast_end_date_Moskow
         )
-    )
-    data = await state.get_data()
-    del_messages: list = data.get('del_messages', [])
-
-    await state.update_data(
-        del_messages=del_messages + [bot_message.message_id]
     )
 
 

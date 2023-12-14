@@ -6,26 +6,15 @@ import csv
 
 from datetime import datetime, timedelta
 from typing import List
-from dataclasses import dataclass
-
 from src import config, messages
 from src.database import Database
-from src.astro_engine import (
-    get_astro_events_from_period,
+from src.astro_engine.predictions import get_astro_events_from_period
+from src.astro_engine.models import (
     User as PredictionUser,
     Location as PredictionLocation,
     AstroEvent
 )
-
-
-@dataclass
-class Interpretation:
-    natal_planet: str
-    transit_planet: str
-    aspect: int
-    general: str
-    favorably: str
-    unfavorably: str
+from src.routers.user.prediction.models import Interpretation
 
 
 def get_interpretations_dict():
@@ -49,6 +38,50 @@ def get_interpretations_dict():
             interpretations_dict[key] = Interpretation(*interpretation)
 
     return interpretations_dict
+
+
+DATETIME_FORMAT: str = config.get('database.datetime_format')
+DATE_FORMAT: str = config.get('database.date_format')
+TIME_FORMAT: str = config.get('database.time_format')
+
+DAYS = [
+    "Понедельник",
+    "Вторник",
+    "Среда",
+    "Четверг",
+    "Пятница",
+    "Суббота",
+    "Воскресенье",
+]
+MONTHS = [
+    "января",
+    "февраля",
+    "марта",
+    "апреля",
+    "мая",
+    "июня",
+    "июля",
+    "августа",
+    "сентября",
+    "октября",
+    "ноября",
+    "декабря",
+]
+
+interpretations_dict = get_interpretations_dict()
+
+PLANET_ID_TO_NAME_RU = {
+    0: "Солнце",
+    1: "Луна",
+    2: "Меркурий",
+    3: "Венера",
+    4: "Марс",
+    5: "Юпитер",
+    6: "Сатурн",
+    7: "Уран",
+    8: "Нептун",
+    9: "Плутон"
+}
 
 
 def formatted_general_events(events: List[AstroEvent]) -> str:
@@ -134,9 +167,9 @@ def format_date_russian(date: datetime) -> str:
     # Словари с названиями дней недели и месяцев на русском языке
 
     # Форматирование даты
-    day_name = days[date.weekday()]
+    day_name = DAYS[date.weekday()]
     day_num = date.day
-    month_name = months[date.month - 1]
+    month_name = MONTHS[date.month - 1]
 
     return f"{day_name}, {day_num} {month_name}"
 
@@ -145,14 +178,11 @@ def filtered_and_formatted_prediction(
     user: PredictionUser,
     target_date: datetime
 ) -> str:
-    # start = time.time()
     astro_events = get_astro_events_from_period(
         start=target_date + timedelta(hours=3),  # От 3:00 утра
         finish=target_date + timedelta(hours=27),  # до 3:00 утра следующего дня,
         user=user
     )
-    # p1 = time.time() - start
-    # print(f"Время получения событий из движка = {p1}")
 
     start_of_day = target_date + timedelta(hours=6, minutes=30)
     middle_of_day = target_date + timedelta(hours=15, minutes=30)
@@ -256,7 +286,7 @@ async def get_prediction_text(
     prediction_user = PredictionUser(
         birth_datetime=datetime.strptime(
             user.birth_datetime,
-            database_datetime_format
+            DATETIME_FORMAT
         ),
         birth_location=PredictionLocation(
             longitude=birth_location.longitude,
@@ -279,58 +309,7 @@ async def get_prediction_text(
     text = await future
     database.add_viewed_prediction(
         user_id=user_id,
-        prediction_date=target_date.strftime(date_format)
+        prediction_date=target_date.strftime(DATE_FORMAT)
     )
     return text
-
-
-database_datetime_format: str = config.get(
-    'database.datetime_format'
-)
-date_format: str = config.get(
-    'database.date_format'
-)
-
-time_format: str = config.get(
-    'database.time_format'
-)
-
-days = [
-    "Понедельник",
-    "Вторник",
-    "Среда",
-    "Четверг",
-    "Пятница",
-    "Суббота",
-    "Воскресенье",
-]
-months = [
-    "января",
-    "февраля",
-    "марта",
-    "апреля",
-    "мая",
-    "июня",
-    "июля",
-    "августа",
-    "сентября",
-    "октября",
-    "ноября",
-    "декабря",
-]
-
-interpretations_dict = get_interpretations_dict()
-
-PLANET_ID_TO_NAME_RU = {
-    0: "Солнце",
-    1: "Луна",
-    2: "Меркурий",
-    3: "Венера",
-    4: "Марс",
-    5: "Юпитер",
-    6: "Сатурн",
-    7: "Уран",
-    8: "Нептун",
-    9: "Плутон"
-}
 

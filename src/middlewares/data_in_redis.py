@@ -8,7 +8,8 @@ from src.database import Database
 
 class AddDataInRedis(BaseMiddleware):
     keys_list = [
-        'timezone_offset'
+        'timezone_offset',
+        'name'
     ]
 
     async def __call__(
@@ -35,6 +36,11 @@ class AddDataInRedis(BaseMiddleware):
                     
                     if user:
                         await state.update_data(timezone_offset=user.timezone_offset)
+                case 'name':
+                    user = database.get_user(user_id = event.from_user.id)
+                    
+                    if user:
+                        await state.update_data(name=user.name)
 
         result = await handler(event, data)
         return result

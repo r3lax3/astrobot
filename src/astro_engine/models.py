@@ -21,3 +21,10 @@ class AstroEvent:
     aspect: int
     peak_at: datetime | None
 
+
+@dataclass
+class LunarDay:
+    number: int
+    start: datetime
+    end: datetime
+

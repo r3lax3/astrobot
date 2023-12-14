@@ -99,7 +99,7 @@ class Payment(Base):
     status = Column(String)  # 'success' | 'failed' | 'pending'
     period = Column(Integer)
     created_at = Column(String)  # "%d.%m.%Y %H:%M" as default
-    ended_at = Column(String)  # "%d.%m.%Y %H:%M" as default
+    status_change_timestamp = Column(String)  # "%d.%m.%Y %H:%M" as default
 
 
 class Promocode(Base):
