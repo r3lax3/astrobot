@@ -1,12 +1,12 @@
 from aiogram import Router, Bot
 from aiogram.types import Message, User
 from aiogram.fsm.context import FSMContext
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.exceptions import TelegramBadRequest
 
 from src import config, messages
 from src.keyboard_manager import KeyboardManager
-from src.filters import AdminFilter, UserFilter
+from src.filters import AdminFilter, UserFilter, UserInDatabase
 from src.database import Database
 from src.routers.states import MainMenu
 from .main_menu import main_menu
@@ -20,6 +20,7 @@ start_video: str = config.get(
 
 # Handler for '/start' command for admin user
 @r.message(CommandStart(), AdminFilter())
+@r.message(Command(commands=['menu']), ~UserInDatabase(), AdminFilter())
 async def user_command_start_handler(
     message: Message,
     state: FSMContext,
@@ -30,6 +31,7 @@ async def user_command_start_handler(
 
 # Handler for '/start' command for regular users
 @r.message(CommandStart(), UserFilter())
+@r.message(Command(commands=['menu']), ~UserInDatabase(), UserFilter())
 async def admin_command_start_handler(
     message: Message,
     state: FSMContext,

@@ -7,6 +7,7 @@ from aiogram.exceptions import TelegramBadRequest
 from src import config, messages
 from src.keyboard_manager import KeyboardManager, bt
 from src.routers.states import MainMenu, Subscription
+from src.filters import UserInDatabase
 
 
 r = Router()
@@ -20,7 +21,7 @@ print(f'{MAIN_MENU_IMAGE = }')
     F.text == bt.back
 )
 @r.message(F.text, F.text == bt.main_menu)
-@r.message(Command(commands=['menu']))
+@r.message(Command(commands=['menu']), UserInDatabase())
 async def main_menu(
     message: Message,
     state: FSMContext,
@@ -51,7 +52,6 @@ async def main_menu(
 
     else:
         text = messages.main_menu
-    print(f'{text = }')
 
     main_menu_message = await message.answer_photo(
         photo=MAIN_MENU_IMAGE,
