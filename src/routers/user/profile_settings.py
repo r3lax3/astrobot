@@ -183,8 +183,15 @@ async def gender_is_female(
     ProfileSettings.choose_option,
     F.data == bt.change_timezone
 )
-async def enter_current_location(
+async def change_timezone(
     callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    await enter_current_location(callback.message, state, keyboards)
+
+async def enter_current_location(
+    message: Message,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
@@ -193,27 +200,17 @@ async def enter_current_location(
     first_time = data['first_time']
 
     if not first_time:
-        bot_message = await callback.message.answer(
+        bot_message = await message.answer(
             messages.enter_new_current_location,
             reply_markup=keyboards.to_main_menu
         )
     else:
-        bot_message = await callback.message.answer(
+        bot_message = await message.answer(
             messages.enter_current_location
         )
     
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(ProfileSettings.get_current_location)
-
-
-@r.message(ProfileSettings.get_current_location)
-async def get_current_location_error(
-    message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager
-):
-    bot_message = await message.answer(messages.not_location)
-    await enter_current_location(bot_message, state, keyboards)
 
 
 @r.message(ProfileSettings.get_current_location, F.location)
@@ -246,6 +243,16 @@ async def get_current_location(
         current_location_title=current_location_title
     )
     await state.set_state(ProfileSettings.location_confirm)
+
+
+@r.message(ProfileSettings.get_current_location)
+async def get_current_location_error(
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
+):
+    bot_message = await message.answer(messages.not_location)
+    await enter_current_location(bot_message, state, keyboards)
 
 
 @r.callback_query(ProfileSettings.location_confirm, F.data == bt.decline)

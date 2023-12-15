@@ -82,7 +82,7 @@ def get_moon_signs_at_date(
         dict: Словарь с знаками Луны и временем смены знака.
     """
     date = date.replace(hour=0, minute=0)
-    start_of_day = date + timedelta(hours=timezone_offset)
+    start_of_day = date - timedelta(hours=timezone_offset)
     end_of_day = start_of_day + timedelta(hours=23, minutes=58)
 
     start_sign = get_moon_sign(start_of_day, location)
