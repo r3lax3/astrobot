@@ -2,8 +2,8 @@ import csv
 
 
 def get_moon_in_signs_interpretations(
-        file_path: str = './moon_in_sign.csv'
-    ):
+    file_path: str = './moon_signs_interpretations.csv'
+) -> dict[str, dict[str, str]]:
 
     moon_in_signs_interpretations = {}
 
