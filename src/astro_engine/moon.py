@@ -56,7 +56,7 @@ def calculate_moon_degrees_ut(juliday: float, location: Location):
 def calculate_moon_sign(moon_degrees: float) -> ZodiacSign:
     for i, bound in enumerate(ZODIAC_BOUNDS):
         if moon_degrees < bound:
-            return ZODIAC_SIGNS[i-1]
+            return ZODIAC_SIGNS[i]
     else:
         return ZODIAC_SIGNS[-1]
 
