@@ -105,7 +105,7 @@ def get_lunar_day_number(utcdate: datetime, longitude: float, latitude: float) -
         int: Лунный день.
     """
     # Нахождение времени последнего новолуния до заданной даты
-    previous_new_moon = ephem.previous_new_moon(utcdate).datetime()
+previous_new_moon = ephem.previous_new_moon(utcdate).datetime()
 
     # Получение времени первого восхода Луны после последнего новолуния
     first_moon_rise_after_new_moon = get_lunar_day_end(previous_new_moon, longitude, latitude)

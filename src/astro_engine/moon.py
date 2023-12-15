@@ -1,20 +1,31 @@
 import logging
 import ephem
+import swisseph as swe
 
 from datetime import datetime, timedelta
 from typing import Union, Dict
 
 from src import config
-from src.enums import MoonPhase, ZodiacSign
-from src.astro_engine.models import LunarDay
+from src.enums import MoonPhase, ZodiacSign, SwissEphPlanet
+from src.astro_engine.models import LunarDay, Location
 
 
 # Константы
 SECONDS_IN_DAY = 24 * 60 * 60
 ZODIAC_BOUNDS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360]
 ZODIAC_SIGNS = [
-    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
-    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+    ZodiacSign.ARIES,
+    ZodiacSign.TAURUS,
+    ZodiacSign.GEMINI,
+    ZodiacSign.CANCER,
+    ZodiacSign.LEO,
+    ZodiacSign.VIRGO,
+    ZodiacSign.LIBRA,
+    ZodiacSign.SCORPIO,
+    ZodiacSign.SAGITTARIUS,
+    ZodiacSign.CAPRICORN,
+    ZodiacSign.AQUARIUS,
+    ZodiacSign.PISCES
 ]
 
 MOON_PHASES_RANGES = {
@@ -28,26 +39,38 @@ ISO_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 TIME_FORMAT: str = config.get('database.time_format')
 
 
-def get_moon_sign(date: datetime) -> str:
-    """
-    Определяет зодиакальный знак Луны на заданную дату.
 
-    Args:
-        date (datetime): Дата для расчёта.
+def get_juliday(utc_date: datetime) -> float:
+    """Calculates julian day from the utc time."""
+    utc_time = utc_date.hour + utc_date.minute / 60
+    julian_day = float(swe.julday(utc_date.year, utc_date.month, utc_date.day, utc_time))
+    return julian_day
 
-    Returns:
-        str: Зодиакальный знак Луны.
-    """
-    moon = ephem.Moon(date)
-    ecliptic_long = ephem.Ecliptic(moon).lon * 180 / ephem.pi
+def calculate_moon_degrees_ut(juliday: float, location: Location):
+    # Установка топографических координат наблюдателя
+    swe.set_topo(location.longitude, location.latitude, 0)
+
+    flag = swe.FLG_SWIEPH + swe.FLG_SPEED + swe.FLG_TOPOCTR
+    return swe.calc(juliday, SwissEphPlanet.MOON.value, flag)[0][0]
+
+def calculate_moon_sign(moon_degrees: float) -> ZodiacSign:
     for i, bound in enumerate(ZODIAC_BOUNDS):
-        if ecliptic_long < bound:
-            return ZODIAC_SIGNS[i - 1] if i > 0 else ZODIAC_SIGNS[-1]
+        if moon_degrees < bound:
+            return ZODIAC_SIGNS[i-1]
     else:
-        raise ValueError(f"Ecliptic longitude {ecliptic_long} is out of bounds for zodiac calculation.")
+        return ZODIAC_SIGNS[-1]
+
+def get_moon_sign(date: datetime, location: Location) -> ZodiacSign:
+    juliday = get_juliday(date)
+    moon_degree = calculate_moon_degrees_ut(juliday, location)
+    return calculate_moon_sign(moon_degree)
 
 
-def get_moon_signs_at_date(date: datetime, timezone_offset: int) -> Dict[str, Union[ZodiacSign, str]]:
+def get_moon_signs_at_date(
+    date: datetime,
+    timezone_offset: int,
+    location: Location
+) -> Dict[str, Union[ZodiacSign, str]]:
     """
     Определяет зодиакальный знак Луны на начало и конец заданной даты.
 
@@ -61,17 +84,17 @@ def get_moon_signs_at_date(date: datetime, timezone_offset: int) -> Dict[str, Un
     date = date.replace(hour=0, minute=0)
     start_of_day = date + timedelta(hours=timezone_offset)
     end_of_day = start_of_day + timedelta(hours=23, minutes=58)
+
+    start_sign = get_moon_sign(start_of_day, location)
+    end_sign = get_moon_sign(end_of_day, location)
     
-    start_sign = get_moon_sign(start_of_day)
-    end_sign = get_moon_sign(end_of_day)
-    
-    result = {"start_sign": ZodiacSign(start_sign)}
+    result = {"start_sign": start_sign}
     
     if start_sign != end_sign:
         left_time, right_time = start_of_day, end_of_day
         while right_time - left_time > timedelta(minutes=1):
             middle_time = left_time + (right_time - left_time) / 2
-            if get_moon_sign(middle_time) == start_sign:
+            if get_moon_sign(middle_time, location) == start_sign:
                 left_time = middle_time
             else:
                 right_time = middle_time
@@ -79,7 +102,7 @@ def get_moon_signs_at_date(date: datetime, timezone_offset: int) -> Dict[str, Un
         result.update(
             {
                 "change_time": change_time.strftime(TIME_FORMAT),
-                "end_sign": ZodiacSign(end_sign)
+                "end_sign": end_sign
             }
         )
     
@@ -110,7 +133,7 @@ def get_moon_phase(utcdate: datetime, longitude: float, latitude: float) -> Moon
         if start <= current_phase <= end:
             if isinstance(phase, tuple):
                 # Определение растущей или убывающей фазы Луны
-                observer.date = observer.date - timedelta(hours=6) # Смещение на 6 часов назад
+                observer.date = observer.date.datetime() - timedelta(hours=6) # Смещение на 6 часов назад
                 moon.compute(observer)
                 is_waxing = current_phase > moon.moon_phase
                 return phase[0] if is_waxing else phase[1]

@@ -33,10 +33,13 @@ async def general_moon_sign_menu(
     
     timezone_offset = user.timezone_offset
     date = datetime.utcnow() + timedelta(hours=timezone_offset)
+
+    location = user.current_location
     
     moon_signs = get_moon_signs_at_date(
         date,
-        timezone_offset
+        timezone_offset,
+        location
     )
     text = get_formatted_moon_sign_text(
         moon_signs,
@@ -45,13 +48,16 @@ async def general_moon_sign_menu(
 
     photo = get_moon_signs_image(user, database, moon_signs)
 
-    bot_message = await message.answer_photo(
-        photo=photo,
-        caption=text,
+    bot_message1 = await message.answer_photo(photo=photo)
+    bot_message2 = await message.answer(
+        text,
         reply_markup=keyboards.moon_in_sign_menu
     )
     await state.update_data(
-        del_messages=[bot_message.message_id]
+        del_messages=[
+            bot_message1.message_id,
+            bot_message2.message_id
+        ]
     )
     await state.set_state(MainMenu.moon_in_sign_general)
 
@@ -99,26 +105,36 @@ async def moon_in_sign_description(
     database: Database,
     event_from_user: User
 ):
-    data = await state.get_data()
-    timezone_offset: int = data['timezone_offset']
+    user = database.get_user(event_from_user.id)
 
+    data = await state.get_data()
+
+    timezone_offset: int = data['timezone_offset']
     date: datetime = datetime.utcnow() + timedelta(hours=timezone_offset)
-    moon_signs = get_moon_signs_at_date(date, timezone_offset)
+
+    moon_signs = get_moon_signs_at_date(
+        date, 
+        timezone_offset,
+        user.current_location
+    )
 
     text = get_formatted_moon_sign_text(
         moon_signs,
         MoonSignInterpretationType(from_text_to_bt[callback.data])
     )
 
-    user = database.get_user(event_from_user.id)
-
     photo = get_moon_signs_image(user, database, moon_signs)
 
-    bot_message = await callback.message.answer_photo(
-        photo=photo,
-        caption=text,
+    bot_message1 = await callback.message.answer_photo(photo=photo)
+    bot_message2 = await callback.message.answer(
+        text,
         reply_markup=keyboards.moon_in_sign_menu
     )
-    await state.update_data(del_messages=[bot_message.message_id])
+    await state.update_data(
+        del_messages=[
+            bot_message1.message_id,
+            bot_message2.message_id
+        ]
+    )
     await state.set_state(MainMenu.moon_in_sign_description)
 
