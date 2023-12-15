@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 
 from aiogram.types import BufferedInputFile
 
@@ -165,14 +166,16 @@ def get_moon_signs_image(user, database, moon_signs):
         user.timezone_offset
     )
 
-    start_sign: ZodiacSign = moon_signs.get('start_sign', None)
-    end_sign: ZodiacSign = moon_signs.get('end_sign', None)
+    start_sign: Optional[ZodiacSign] = moon_signs.get('start_sign', None)
+    change_time: Optional[str] = moon_signs.get('change_time', None)
+    end_sign: Optional[ZodiacSign] = moon_signs.get('end_sign', None)
 
     photo = BufferedInputFile(
         file=generate_image_for_moon_signs(
             date=date.strftime(DATE_FORMAT),
             moon_phase=moon_phase,
             moon_phase_caption=moon_phase_caption,
+            change_time=change_time,
             start_sign=start_sign,
             end_sign=end_sign
         ),

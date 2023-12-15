@@ -101,7 +101,6 @@ class Database:
             )
             self.session.commit()
 
-
     def update_user_current_location(
         self, 
         user_id: int, 

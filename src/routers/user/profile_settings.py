@@ -346,16 +346,16 @@ async def get_current_location_confirmed(
             event_from_user.id,
             timezone_offset=get_timezone_offset(**current_location)
         )
-        await scheduler.edit_send_message_job(
-            user_id=event_from_user.id, 
-            database=database,
-            bot=bot
-        )
         bot_message = await callback.message.answer(messages.current_location_changed_success)
         await main_menu(
             bot_message, 
             state,
             keyboards,
             bot
+        )
+        await scheduler.edit_send_message_job(
+            user_id=event_from_user.id, 
+            database=database,
+            bot=bot
         )
 
