@@ -351,8 +351,9 @@ async def get_current_location_confirmed(
             database=database,
             bot=bot
         )
+        bot_message = await callback.message.answer(messages.current_location_changed_success)
         await main_menu(
-            callback.message, 
+            bot_message, 
             state,
             keyboards,
             bot
