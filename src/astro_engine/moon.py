@@ -101,7 +101,7 @@ def get_moon_signs_at_date(
         change_time = left_time
         result.update(
             {
-                "change_time": change_time.strftime(TIME_FORMAT),
+                "change_time": (change_time + timedelta(hours=timezone_offset)).strftime(TIME_FORMAT),
                 "end_sign": end_sign
             }
         )
