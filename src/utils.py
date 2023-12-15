@@ -20,7 +20,7 @@ def load_yaml(file_path: str) -> dict:
         return yaml.safe_load(file)
 
 
-def get_timezone_offset(latitude, longitude) -> int:
+def get_timezone_offset(latitude: float, longitude: float) -> int:
     obj = TimezoneFinder()
     tz_name = obj.timezone_at(lat=latitude, lng=longitude)  # Получаем имя временной зоны
     if tz_name:

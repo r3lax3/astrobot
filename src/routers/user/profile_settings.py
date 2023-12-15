@@ -343,6 +343,10 @@ async def get_current_location_confirmed(
                 title=get_location_by_coords(**current_location)
             )
         )
+        database.update_user(
+            event_from_user.id,
+            timezone_offset=get_timezone_offset(**current_location)
+        )
         await scheduler.edit_send_message_job(
             user_id=event_from_user.id, 
             database=database,

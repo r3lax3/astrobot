@@ -51,6 +51,38 @@ class Database:
     def get_user(self, user_id: int) -> User:
         return self.session.query(User).filter_by(user_id=user_id).first()
 
+    def update_user(self, user_id: int, **kwargs):
+        """
+        Обновление данных пользователя.
+
+        :param user_id: Идентификатор пользователя для обновления.
+        :param kwargs: Словарь с атрибутами и их новыми значениями.
+        """
+        try:
+            # Найти пользователя по ID
+            user = self.session.query(User).filter_by(user_id=user_id).first()
+            if not user:
+                logging.warning(f"Пользователь с ID {user_id} не найден.")
+                return False
+
+            # Обновить атрибуты пользователя
+            for key, value in kwargs.items():
+                if hasattr(user, key):
+                    setattr(user, key, value)
+                else:
+                    logging.warning(f"Атрибут {key} не существует в модели User.")
+
+            # Сохранить изменения
+            self.session.commit()
+            return True
+        except IntegrityError:
+            logging.error("Ошибка целостности данных при обновлении пользователя.")
+            self.session.rollback()
+            return False
+        except Exception as e:
+            logging.error(f"Ошибка при обновлении пользователя: {e}")
+            self.session.rollback()
+            return False
     def update_user_every_day_prediction_time(
         self, 
         user_id: int,
