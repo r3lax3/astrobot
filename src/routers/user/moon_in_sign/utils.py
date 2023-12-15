@@ -74,13 +74,12 @@ def get_formatted_moon_sign_text(
         first_part = get_interpretation(first_sign.value, interpretation_type)
         second_part = get_interpretation(second_sign.value, interpretation_type)
 
-        time_obj = datetime.strptime(sign_changed_time, TIME_FORMAT)
-        time_with_added_minute = time_obj + timedelta(minutes=1)
-        time_str_with_added_minute = time_with_added_minute.strftime(TIME_FORMAT)
+        time = datetime.strptime(sign_changed_time, TIME_FORMAT)
+        time_str = time.strftime(TIME_FORMAT)
 
         text = messages.moon_sign_changed.format(
             first_time=sign_changed_time,
-            second_time=time_str_with_added_minute,
+            second_time=time_str,
             start_sign=ZODIAC_RU_TRANSLATION.get(first_sign, "Неизвестный знак"),
             end_sign=ZODIAC_RU_TRANSLATION.get(second_sign, "Неизвестный знак"),
             first_part=first_part,
