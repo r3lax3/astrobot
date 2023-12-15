@@ -337,8 +337,7 @@ async def get_current_location_confirmed(
         database.update_user_current_location(
             event_from_user.id, 
             Location(
-                id=0,
-                type='current', 
+                type=LocationType.current.value, 
                 **current_location,
                 title=get_location_by_coords(**current_location)
             )
