@@ -290,6 +290,7 @@ class KeyboardManager:
         self.moon_in_sign_menu = self.build_keyboard_from_structure(
             [
                 [bt.favorable, bt.unfavorable],
+                [bt.general],
                 [bt.main_menu]
             ],
             is_inline=True

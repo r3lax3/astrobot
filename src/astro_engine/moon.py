@@ -67,7 +67,7 @@ def get_moon_sign(date: datetime, location: Location) -> ZodiacSign:
 
 
 def get_moon_signs_at_date(
-    date: datetime,
+    utcdate: datetime,
     timezone_offset: int,
     location: Location
 ) -> Dict[str, Union[ZodiacSign, str]]:
