@@ -72,6 +72,7 @@ buttons_text: dict = {
     'moon_in_sign': '🌗 Луна в знаке',
     'favorable': '🟢 Благоприятно',
     'unfavorable': '🔴 Неблагоприятно',
+    'general': "Общий",
 
     # General predictions
     'general_predictions': '🌒 Общие прогнозы',
