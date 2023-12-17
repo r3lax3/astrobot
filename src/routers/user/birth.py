@@ -16,6 +16,7 @@ from src.routers.states import GetBirthData, MainMenu, ProfileSettings
 
 
 r = Router()
+r.message.filter(~F.text.startswith('/'))
 
 
 DATE_FORMAT = config.get('database.date_format')
@@ -50,8 +51,7 @@ async def get_name_success(
 @r.message(
     MainMenu.get_name,
     F.text, 
-    F.text.len() > 20,
-    ~F.text.startswith('/')
+    F.text.len() > 20
 )
 async def get_name_max_length_error(
     message: Message,

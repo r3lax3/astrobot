@@ -77,3 +77,4 @@ async def start(
         del_messages=[bot_message.message_id]
     )
     await state.set_state(MainMenu.get_name)
+
