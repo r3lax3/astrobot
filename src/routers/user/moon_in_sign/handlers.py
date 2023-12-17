@@ -74,9 +74,9 @@ async def moon_in_sign_menu(
     user = database.get_user(event_from_user.id)
 
     data = await state.get_data()
-    interpretation_type = FROM_BT_TO_MOON_SIGN_INTERPRETATION_TYPE(
+    interpretation_type = FROM_BT_TO_MOON_SIGN_INTERPRETATION_TYPE[
         data['interpretation_type']
-    )
+    ]
 
     timezone_offset: int = data['timezone_offset']
     utcdate: datetime = datetime.utcnow() - timedelta(hours=timezone_offset)
