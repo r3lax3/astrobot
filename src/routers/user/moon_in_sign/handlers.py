@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Dict
 
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
@@ -18,7 +19,7 @@ from src.astro_engine.moon import get_moon_signs_at_date
 
 r = Router()
 
-FROM_BT_TO_MOON_SIGN_INTERPRETATION_TYPE = {
+FROM_BT_TO_MOON_SIGN_INTERPRETATION_TYPE: Dict[str, MoonSignInterpretationType] = {
     bt.general: MoonSignInterpretationType.GENERAL,
     bt.favorable: MoonSignInterpretationType.FAVORABLE,
     bt.unfavorable: MoonSignInterpretationType.UNFAVORABLE
