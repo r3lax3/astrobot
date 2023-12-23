@@ -51,38 +51,31 @@ async def get_distribution_message(
         text = message.text
     
     if photo_file_id is None and text is not None:
-        del_message1 = await message.answer(
-            messages.broadcast_message_type_not_supported
-        )
-    else:
-        del_message1 = await message.answer_photo(
-            photo=photo_file_id,
-            caption=text
-        )
-
-    if text is None and photo_file_id is None:
         del_message = await message.answer(
             messages.broadcast_message_type_not_supported,
             reply_markup=keyboards.back_to_adminpanel
         )
         await state.update_data(del_messages=[del_message.message_id])
-        return
+    else:
+        del_message1 = await message.answer_photo(
+            photo=photo_file_id,
+            caption=text
+        )
+        del_message2 = await message.answer(
+            messages.broadcast_msg_confirm,
+            reply_markup=keyboards.confirm
+        )
 
-    del_message2 = await message.answer(
-        messages.broadcast_msg_confirm,
-        reply_markup=keyboards.confirm
-    )
-
-    await state.update_data(
-        broadcast_photo_file_id=photo_file_id,
-        broadcast_text=text,
-        del_messages=[
-            del_message1.message_id,
-            del_message2.message_id,
-            message.message_id
-        ]
-    )
-    await state.set_state(AdminStates.broadcast_get_confirm)
+        await state.update_data(
+            broadcast_photo_file_id=photo_file_id,
+            broadcast_text=text,
+            del_messages=[
+                del_message1.message_id,
+                del_message2.message_id,
+                message.message_id
+            ]
+        )
+        await state.set_state(AdminStates.broadcast_get_confirm)
 
 
 @r.callback_query(AdminStates.broadcast_get_confirm, F.data == bt.confirm)

@@ -112,19 +112,19 @@ def formatted_general_events(events: List[AstroEvent]) -> str:
             )
             continue
         interpretations.append(
-            f'{interpretation.general}'
+            f'💫{interpretation.general}'
         )
-    return '\n'.join(interpretations)
+    return '\n\n'.join(interpretations)
 
 
 def formatted_moon_events(events: List[AstroEvent]):
-    favourably = []
-    unfavourably = []
+    favorably = []
+    unfavorably = []
 
     for event in events:
         transit_planet = PLANET_ID_TO_NAME_RU[event.transit_planet]
         natal_planet = PLANET_ID_TO_NAME_RU[event.natal_planet]
-        aspect=event.aspect
+        aspect = event.aspect
 
         interpretation = interpretations_dict.get(
             (transit_planet, natal_planet, event.aspect),
@@ -147,17 +147,15 @@ def formatted_moon_events(events: List[AstroEvent]):
             )
             continue
 
-        favourably.append(interpretation.favorably)
-        unfavourably.append(interpretation.unfavorably)
+        favorably.append(interpretation.favorably.strip())
+        unfavorably.append(interpretation.unfavorably.strip())
 
-    favourably = '\n'.join(favourably)
-    unfavourably = '\n'.join(unfavourably)
+    favorably = '\n'.join(favorably)
+    unfavorably = '\n'.join(unfavorably)
 
-    formatted_text = (
-        '🟢Благоприятно:\n'
-        f'{favourably}\n\n'
-        '🔴Неблагоприятно:\n'
-        f'{unfavourably}\n'
+    formatted_text = messages.favorable_and_unfavorable.format(
+        favorably=favorably,
+        unfavorably=unfavorably
     )
 
     return formatted_text
@@ -228,6 +226,7 @@ def filtered_and_formatted_prediction(
 
     # Date
     formatted_date = format_date_russian(date=target_date)
+    texts = []
 
     if not day_events_formatted:
 
@@ -236,41 +235,64 @@ def filtered_and_formatted_prediction(
             and
             first_half_moon_events_formatted is None
         ):
-            formatted_text = (
-                f'<strong>{formatted_date}</strong>\n\n'
-                'Сегодня у Вас действует общий фон. \n\n'
-                'Чтобы правильно распланировать дела, воспользуйтесь кнопкой '
-                '«Луна в знаке» или «Общий прогноз на день»\n'
+            formatted_date_str = messages.prediction_text_formatted_date.format(
+                formatted_date=formatted_date
             )
+
+            texts = [
+                formatted_date_str, 
+                messages.prediction_text_neutral_background_today,
+                messages.use_other_function_for_correct_planning, 
+            ]
         else:
-            formatted_text = (
-                f'<strong>{formatted_date}</strong>\n\n'
-                '<strong>🌟В первой половине дня🌟</strong>\n\n'
-                f'{first_half_moon_events_formatted or messages.neutral_background_go_to_other_menus}\n'
-                '<strong>🌟Во второй половине дня🌟</strong>\n\n'
-                f'{second_half_moon_events_formatted or messages.neutral_background_go_to_other_menus}'
+            formatted_date_str = messages.prediction_text_formatted_date.format(
+                formatted_date=formatted_date
             )
+            default_moon_sign_text = (
+                messages.prediction_text_neutral_background + '\n' + 
+                messages.use_other_function_for_correct_planning
+            )
+            moon_events = messages.prediction_text_moon_events.format(
+                first_half_moon_events=first_half_moon_events_formatted or default_moon_sign_text,
+                second_half_moon_events=second_half_moon_events_formatted or default_moon_sign_text
+            )
+
+            texts = [
+                formatted_date_str, 
+                messages.use_other_function_for_correct_planning, 
+                moon_events
+            ]
     else:
         if (
             second_half_moon_events_formatted is None
             and
             first_half_moon_events_formatted is None
         ):
-            formatted_text = (
-                f'<strong>{formatted_date}</strong>\n\n'
-                f'{day_events_formatted}\n\n'
-                'Чтобы правильно распланировать дела в течение дня, '
-                'воспользуйтесь кнопкой «Луна в знаке» или «Общий прогноз на день»'
+            formatted_date_str = messages.prediction_text_formatted_date.format(
+                formatted_date=formatted_date
             )
+
+            texts = [
+                formatted_date_str, 
+                day_events_formatted, 
+                messages.use_other_function_for_correct_planning
+            ]
         else:
-            formatted_text = (
-                f'<strong>{formatted_date}</strong>\n\n'
-                f'{day_events_formatted}\n\n'
-                '<strong>🌟В первой половине дня🌟</strong>\n\n'
-                f'{first_half_moon_events_formatted or messages.neutral_background}\n'
-                '<strong>🌟Во второй половине дня🌟</strong>\n\n'
-                f'{second_half_moon_events_formatted or messages.neutral_background}'
+            formatted_date_str = messages.prediction_text_formatted_date.format(
+                formatted_date=formatted_date
             )
+            moon_events = messages.prediction_text_moon_events.format(
+                first_half_moon_events=first_half_moon_events_formatted or messages.neutral_background,
+                second_half_moon_events=second_half_moon_events_formatted or messages.neutral_background
+            )
+
+            texts = [
+                formatted_date_str, 
+                day_events_formatted,
+                moon_events
+            ]
+
+    formatted_text = '\n\n'.join(texts)
 
     return formatted_text
 

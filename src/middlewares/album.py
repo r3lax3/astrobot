@@ -13,7 +13,7 @@ DEFAULT_DELAY = 0.6
 
 
 class MediaGroupMiddleware(BaseMiddleware):
-    ALBUM_DATA: Dict[str, List[Message]] = {}
+    ALBUM_DATA: Dict[str, List[int]] = {}
 
     def __init__(self, delay: Union[int, float] = DEFAULT_DELAY):
         self.delay = delay
@@ -27,13 +27,13 @@ class MediaGroupMiddleware(BaseMiddleware):
         if not event.media_group_id:
             return await handler(event, data)
 
-        logging.info('Ловлю альбом')
         try:
-            self.ALBUM_DATA[event.media_group_id].append(event)
+            self.ALBUM_DATA[event.media_group_id].append(event.message_id)
             return  # Don't propagate the event
         except KeyError:
-            self.ALBUM_DATA[event.media_group_id] = [event]
+            self.ALBUM_DATA[event.media_group_id] = [event.message_id]
             await asyncio.sleep(self.delay)
             data["album"] = self.ALBUM_DATA.pop(event.media_group_id)
 
         return await handler(event, data)
+

@@ -1,49 +1,37 @@
-from datetime import datetime, timedelta
-from typing import Optional
-
 from aiogram.types import BufferedInputFile
 
+from typing import Optional, Dict
+from datetime import datetime, timedelta
+
 from src import config, messages
-from src.enums import MoonSignInterpretationType, MoonPhase, ZodiacSign, FileName
+from src.enums import (
+    ZodiacSign, 
+    FileName,
+    MoonSignInterpretationType
+)
+from src.database import Database
 from src.astro_engine.utils import get_moon_in_signs_interpretations
 from src.astro_engine.moon import (
     get_main_lunar_day_at_date, 
     get_next_lunar_day, 
-    get_moon_phase
+    get_moon_phase,
+    get_moon_signs_at_date 
 )
-from src.image_processing import generate_image_for_moon_signs
+from src.image_processing.generate_images import generate_image_with_astrodata
+from src.translations import (
+    ZODIAC_RU_TRANSLATION, 
+    MOON_PHASE_RU_TRANSLATIONS
+)
 
+
+# Get the date format from the configuration
+DATE_FORMAT: str = config.get('database.date_format')
 
 DATETIME_FORMAT: str = config.get('database.datetime_format')
 DATE_FORMAT: str = config.get('database.date_format')
 TIME_FORMAT: str = config.get('database.time_format')
 
 MOON_IN_SIGNS_INTERPRETATIONS = get_moon_in_signs_interpretations()
-
-ZODIAC_RU_TRANSLATION = {
-    ZodiacSign.ARIES: "Овне",
-    ZodiacSign.TAURUS: "Тельце",
-    ZodiacSign.GEMINI: "Близнецах",
-    ZodiacSign.CANCER: "Раке",
-    ZodiacSign.LEO: "Льве",
-    ZodiacSign.VIRGO: "Деве",
-    ZodiacSign.LIBRA: "Весах",
-    ZodiacSign.SCORPIO: "Скорпионе",
-    ZodiacSign.SAGITTARIUS: "Стрельце",
-    ZodiacSign.CAPRICORN: "Козероге",
-    ZodiacSign.AQUARIUS: "Водолее",
-    ZodiacSign.PISCES: "Рыбах"
-}
-MOON_PHASE_RU_TRANSLATIONS = {
-    MoonPhase.NEW_MOON: "НОВОЛУНИЕ",
-    MoonPhase.WAXING_CRESCENT: "РАСТУЩИЙ ПОЛУМЕСЯЦ",
-    MoonPhase.FIRST_QUARTER: "ПЕРВАЯ ЧЕТВЕРТЬ",
-    MoonPhase.WAXING_GIBBOUS: "РАСТУЩАЯ ЛУНА",
-    MoonPhase.FULL_MOON: "ПОЛНОЛУНИЕ",
-    MoonPhase.WANING_GIBBOUS: "УБЫВАЮЩАЯ ЛУНА",
-    MoonPhase.LAST_QUARTER: "ПОСЛЕДНЯЯ ЧЕТВЕРТЬ",
-    MoonPhase.WANING_CRESCENT: "УБЫВАЮЩИЙ ПОЛУМЕСЯЦ"
-}
 
 
 def get_interpretation(
@@ -58,42 +46,9 @@ def get_interpretation(
             MoonSignInterpretationType.UNFAVORABLE: messages.moon_sign_unfavourable
         }
         message = _messages[interpretation_type]
-        return message.format(text=MOON_IN_SIGNS_INTERPRETATIONS[sign][interpretation_type.value])
-
-
-def get_formatted_moon_sign_text(
-    moon_signs: dict, 
-    interpretation_type: MoonSignInterpretationType
-) -> str:
-    sign_changed_time: str = moon_signs.get('change_time', False)
-
-    if sign_changed_time:
-        first_sign = moon_signs['start_sign']
-        second_sign = moon_signs['end_sign']
-
-        first_part = get_interpretation(first_sign.value, interpretation_type)
-        second_part = get_interpretation(second_sign.value, interpretation_type)
-
-        time = datetime.strptime(sign_changed_time, TIME_FORMAT)
-        time_str = time.strftime(TIME_FORMAT)
-
-        text = messages.moon_sign_changed.format(
-            first_time=sign_changed_time,
-            second_time=time_str,
-            start_sign=ZODIAC_RU_TRANSLATION.get(first_sign, "Неизвестный знак"),
-            end_sign=ZODIAC_RU_TRANSLATION.get(second_sign, "Неизвестный знак"),
-            first_part=first_part,
-            second_part=second_part
+        return message.format(
+            text=MOON_IN_SIGNS_INTERPRETATIONS[sign][interpretation_type.value]
         )
-    else:
-        sign = moon_signs['start_sign']
-        interpretation_str = get_interpretation(sign.value, interpretation_type)
-        text = messages.moon_sign_not_changed.format(
-            start_sign=ZODIAC_RU_TRANSLATION.get(sign, "Неизвестный знак"),
-            text=interpretation_str
-        )
-
-    return text
 
 
 def get_moon_phase_caption(
@@ -144,7 +99,22 @@ def get_moon_phase_caption(
     return text
 
 
-def get_moon_signs_image(user, database, moon_signs):
+def get_image_with_astrodata(
+    user, 
+    database: Database,
+    moon_signs: Optional[Dict] = None
+) -> bytes:
+    if moon_signs is None:
+        # Getting image
+        timezone_offset: int = user.timezone_offset
+        date: datetime = datetime.utcnow() + timedelta(hours=timezone_offset)
+
+        moon_signs = get_moon_signs_at_date(
+            date,  # %Y-%m-%d, not datetime
+            timezone_offset,
+            user.current_location
+        )
+
     timezone_offset = user.timezone_offset
     date = datetime.utcnow() + timedelta(hours=timezone_offset)
 
@@ -169,16 +139,13 @@ def get_moon_signs_image(user, database, moon_signs):
     change_time: Optional[str] = moon_signs.get('change_time', None)
     end_sign: Optional[ZodiacSign] = moon_signs.get('end_sign', None)
 
-    photo = BufferedInputFile(
-        file=generate_image_for_moon_signs(
-            date=date.strftime(DATE_FORMAT),
-            moon_phase=moon_phase,
-            moon_phase_caption=moon_phase_caption,
-            change_time=change_time,
-            start_sign=start_sign,
-            end_sign=end_sign
-        ),
-        filename=FileName.MOON_SIGN.value
+    photo = generate_image_with_astrodata(
+        date=date.strftime(DATE_FORMAT),
+        moon_phase=moon_phase,
+        moon_phase_caption=moon_phase_caption,
+        change_time=change_time,
+        start_sign=start_sign,
+        end_sign=end_sign
     )
     return photo
 

@@ -4,21 +4,23 @@ from typing import Dict
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
-from aiogram.types import User
+from aiogram.types import User, BufferedInputFile
 
-from src.enums import MoonSignInterpretationType
+from src.enums import MoonSignInterpretationType, FileName
 from src.routers.states import MainMenu
 from src.keyboard_manager import (
     KeyboardManager, 
     bt
 )
 from src.database import Database
-from src.routers.user.moon_in_sign.utils import get_formatted_moon_sign_text, get_moon_signs_image
 from src.astro_engine.moon import get_moon_signs_at_date
+from src.image_processing import get_image_with_astrodata
+from src.routers.user.moon_in_sign.text_formatting import (
+    get_formatted_moon_sign_text,
+)
 
 
 r = Router()
-
 FROM_BT_TO_MOON_SIGN_INTERPRETATION_TYPE: Dict[str, MoonSignInterpretationType] = {
     bt.general: MoonSignInterpretationType.GENERAL,
     bt.favorable: MoonSignInterpretationType.FAVORABLE,
@@ -42,12 +44,9 @@ async def moon_sign_menu_button_handler(
         database,
         event_from_user
     )
-    
 
-@r.callback_query(
-    MainMenu.moon_in_sign,
-    F.data.in_([bt.favorable, bt.unfavorable, bt.general])
-)
+
+@r.callback_query(F.data == bt.moon_in_sign)
 async def moon_in_sign_menu_callback_handler(
     callback: CallbackQuery,
     state: FSMContext,
@@ -55,6 +54,27 @@ async def moon_in_sign_menu_callback_handler(
     database: Database,
     event_from_user: User
 ):
+    await moon_in_sign_menu(
+        callback.message,
+        state,
+        keyboards,
+        database,
+        event_from_user
+    )
+
+
+@r.callback_query(
+    MainMenu.moon_in_sign,
+    F.data.in_([bt.favorable, bt.unfavorable, bt.general])
+)
+async def moon_in_sign_menu_type_handler(
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database: Database,
+    event_from_user: User
+):
+    await state.update_data(interpretation_type=callback.data)
     await moon_in_sign_menu(
         callback.message,
         state,
@@ -92,7 +112,11 @@ async def moon_in_sign_menu(
         interpretation_type
     )
 
-    photo = get_moon_signs_image(user, database, moon_signs)
+    photo_bytes = get_image_with_astrodata(user, database, moon_signs)
+    photo = BufferedInputFile(
+        file=photo_bytes,
+        filename=FileName.MOON_SIGN.value
+    )
 
     bot_message1 = await message.answer_photo(photo=photo)
     bot_message2 = await message.answer(
@@ -106,4 +130,5 @@ async def moon_in_sign_menu(
             bot_message2.message_id
         ]
     )
+    await state.set_state(MainMenu.moon_in_sign)
 

@@ -40,6 +40,7 @@ async def admin_command_start_handler(
     keyboards: KeyboardManager
 ):
     user = database.get_user(user_id=event_from_user.id)
+
     if user is None:
         await start(message, state, bot)
     else:

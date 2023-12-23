@@ -9,9 +9,7 @@ from src.routers.user.main_menu import main_menu
 
 
 r = Router()
-not_implemented_list = [
-    bt.theme
-]
+not_implemented_list = [bt.theme, bt.compatibility]
 
 
 # Всякая хуйня которую я ещё не написал

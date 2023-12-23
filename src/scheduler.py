@@ -11,9 +11,10 @@ from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src import config, messages
+from src.enums import FileName
 from src.database import Database
 from src.routers.user.prediction.text_formatting import get_prediction_text
-from src.image_processing import generate_image_with_date_for_prediction
+from src.image_processing import get_image_with_astrodata
 
 
 DATETIME_FORMAT: str = config.get('database.datetime_format')
@@ -88,13 +89,12 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
         utc_target_date = datetime.utcnow()
         target_date = utc_target_date + timedelta(hours=user.timezone_offset)
-        target_date_str = target_date.strftime(DATE_FORMAT)
+
+        photo_bytes = get_image_with_astrodata(user, database)
 
         photo = BufferedInputFile(
-            generate_image_with_date_for_prediction(
-                target_date_str
-            ),
-            filename='prediction_date.jpeg'
+            file=photo_bytes,
+            filename=FileName.PREDICTION.value
         )
 
         text: str = await get_prediction_text(

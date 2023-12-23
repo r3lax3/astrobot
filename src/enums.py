@@ -52,6 +52,7 @@ class MoonPhase(Enum):
     
 class FileName(Enum):
     MOON_SIGN = 'moon_sign.jpeg'
+    PREDICTION = 'prediction.jpeg'
 
 
 class ZodiacSign(Enum):
@@ -79,4 +80,9 @@ class SwissEphPlanet(Enum):
     URANUS = 7
     NEPTUNE = 8
     PLUTO = 9
+
+class PaymentStatus(Enum):
+    SUCCESS = 'success'
+    FAILED = 'failed'
+    PENDING = 'pending'
 

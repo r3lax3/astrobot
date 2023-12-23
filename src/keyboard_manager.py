@@ -76,9 +76,9 @@ buttons_text: dict = {
 
     # General predictions
     'general_predictions': '🌒 Общие прогнозы',
-    'prediction_on_day': 'На день',
-    'prediction_on_week': 'На неделю',
-    'prediction_on_month': 'На месяц',
+    'prediction_on_day': '🗓️ Общий прогноз на день',
+    'prediction_on_week': '📆 Общий прогноз на неделю',
+    'prediction_on_month': '📅 Общий прогноз на месяц',
 
     # Admin
     'add_card_of_day': 'Добавить карту дня',

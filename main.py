@@ -26,21 +26,11 @@ from src.middlewares import (
 )
 
 
-admin_chat_id: int = config.get(
-    'admin_chat.id'
-)
-backup_thread_id: int = config.get(
-    'admin_chat.threads.backup'
-)
-database_datetime_format: str = config.get(
-    'database.datetime_format'
-)
-date_format: str = config.get(
-    'database.date_format'
-)
-time_format: str = config.get(
-    'database.time_format'
-)
+ADMIN_CHAT_ID: int = config.get('admin_chat.id')
+BACKUP_THREAD_ID: int = config.get('admin_chat.threads.backup')
+DATABASE_DATETIME_FORMAT: str = config.get('database.datetime_format')
+DATE_FORMAT: str = config.get('database.date_format')
+TIME_FORMAT: str = config.get('database.time_format')
 
 WEB_SERVER_HOST = "127.0.0.1"
 WEB_SERVER_PORT = 8080
@@ -56,12 +46,12 @@ async def backup_db(db: Database, bot: Bot):
         db_str = '\n'.join(con.iterdump())
 
         await bot.send_document(
-            chat_id=admin_chat_id,
+            chat_id=ADMIN_CHAT_ID,
             document=BufferedInputFile(
                 filename='backup_database.sql_dump',
                 file=db_str.encode('utf-8')
             ),
-            reply_to_message_id=backup_thread_id
+            reply_to_message_id=BACKUP_THREAD_ID
         )
 
 
@@ -128,41 +118,22 @@ async def main():
 
     # Message
 
-    dp.message.middleware(
-        MediaGroupMiddleware()
-    )
-    dp.message.middleware(
-        SkipGroupsUpdates()
-    )
-    dp.message.middleware(
-        DeleteMessagesMiddleware()
-    )
-    dp.message.middleware(
-        AddDataInRedis()
-    )
+    dp.message.middleware(MediaGroupMiddleware())
+    dp.message.middleware(SkipGroupsUpdates())
+    dp.message.middleware(DeleteMessagesMiddleware())
+    dp.message.middleware(AddDataInRedis())
 
     # Callback
 
-    dp.callback_query.middleware(
-        NullMiddleware()
-    )
-    dp.callback_query.middleware(
-        DeleteMessagesMiddleware()
-    )
-    dp.callback_query.middleware(
-        PredictionMessageDeleteKeyboardMiddleware()
-    )
-    dp.callback_query.middleware(
-        AddDataInRedis()
-    )
+    dp.callback_query.middleware(NullMiddleware())
+    dp.callback_query.middleware(DeleteMessagesMiddleware())
+    dp.callback_query.middleware(PredictionMessageDeleteKeyboardMiddleware())
+    dp.callback_query.middleware(AddDataInRedis())
 
     # Include routers
 
-    dp.include_routers(
-        user_router,
-        admin_router
-    )
-    #
+    dp.include_routers(user_router, admin_router)
+
     # # Create aiohttp.web.Application instance
     # app = web.Application()
     # 

@@ -21,7 +21,9 @@ r.message.filter(~F.text.startswith('/'))
 
 DATE_FORMAT = config.get('database.date_format')
 TIME_FORMAT = config.get('database.time_format')
+
 GUIDE_SEND_GEOPOS_IMAGES = config.get('files.how_to_send_geopos_screenshots')
+HELLO_IMAGE = config.get('files.hello_image')
 BIRTH_DATA_CONFIRMED_IMAGE = config.get('files.birth_data_confirmed')
 
 
@@ -37,8 +39,11 @@ async def get_name_success(
 ):
     name = message.text
 
-    bot_message = await message.answer(
-        messages.hello,
+    bot_message = await message.answer_photo(
+        photo=HELLO_IMAGE,
+        caption=messages.hello.format(
+            name=name
+        ),
         reply_markup=keyboards.enter_birth_data
     )
     await state.update_data(

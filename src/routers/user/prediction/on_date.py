@@ -12,6 +12,7 @@ from aiogram.types import (
 )
 
 from src import config, messages
+from src.enums import FileName
 from src.utils import get_timezone_offset
 from src.models import DateModifier
 from src.routers.states import MainMenu, Subscription
@@ -19,14 +20,15 @@ from src.database import Database
 from src.filters import HasPredictionAccess
 from src.keyboard_manager import KeyboardManager, bt
 
-from src.image_processing import generate_image_with_date_for_prediction
+
+from src.image_processing import get_image_with_astrodata
 from src.routers.user.prediction.text_formatting import get_prediction_text
 
 
 DATETIME_FORMAT: str = config.get('database.datetime_format')
 DATE_FORMAT: str = config.get('database.date_format')
 
-wait_sticker = config.get('files.wait_sticker')
+WAIT_STICKER = config.get('files.wait_sticker')
 
 r = Router()
 
@@ -218,8 +220,9 @@ async def prediction_on_date_get_prediction(
 ):
     data = await state.get_data()
 
+    # Getting user
     user = database.get_user(event_from_user.id)
-    
+
     subscription_end_date = datetime.strptime(
         user.subscription_end_date, 
         DATETIME_FORMAT
@@ -230,19 +233,19 @@ async def prediction_on_date_get_prediction(
 
     if subscription_end_date + timezone_offset > target_date:
         wait_message = await message.answer(messages.wait)
-        sticker_message = await message.answer_sticker(wait_sticker)
+        sticker_message = await message.answer_sticker(WAIT_STICKER)
 
         text = await get_prediction_text(
             target_date=target_date,
             database=database,
             user_id=event_from_user.id
         )
-        
+
+        photo_bytes = get_image_with_astrodata(user, database)
+
         photo = BufferedInputFile(
-            generate_image_with_date_for_prediction(
-                target_date_str
-            ),
-            filename='prediction_date.jpeg'
+            file=photo_bytes,
+            filename=FileName.PREDICTION.value
         )
 
         for msg in [wait_message, sticker_message]:
@@ -290,9 +293,7 @@ async def prediction_update_date_callback_handler(
         days=DateModifier.unpack(callback.data).modifier
     )
 
-    await state.update_data(
-        date=modified_date.strftime(DATE_FORMAT)
-    )
+    await state.update_data(date=modified_date.strftime(DATE_FORMAT))
     await update_prediction_date(
         callback.message, 
         state,
@@ -329,9 +330,7 @@ async def update_prediction_date(
             ]
         )
     else:
-        await state.update_data(
-            del_messages=[date_message.message_id]
-        )
+        await state.update_data(del_messages=[date_message.message_id])
 
     await state.set_state(MainMenu.prediction_choose_date)
 
