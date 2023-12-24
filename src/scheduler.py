@@ -96,17 +96,14 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             file=photo_bytes,
             filename=FileName.PREDICTION.value
         )
-
         text: str = await get_prediction_text(
             target_date=target_date, 
             database=database, 
             user_id=user_id
         )
-        await bot.send_photo(
-            chat_id=user_id, 
-            photo=photo,
-            caption=text
-        )
+
+        await bot.send_photo(chat_id=user_id, photo=photo)
+        await bot.send_message(chat_id=user_id, text=text)
 
     async def _send_renewal_reminder(
         self, 

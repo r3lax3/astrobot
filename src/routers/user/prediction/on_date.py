@@ -257,9 +257,9 @@ async def prediction_on_date_get_prediction(
             except exceptions.TelegramBadRequest:
                 continue
 
-        prediction_message = await message.answer_photo(
-            photo=photo,
-            caption=text,
+        await message.answer_photo(photo=photo)
+        prediction_message = await message.answer(
+            text=text,
             reply_markup=keyboards.predict_completed
         )
        
