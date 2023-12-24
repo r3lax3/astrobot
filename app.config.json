@@ -1,0 +1,10 @@
+{
+  "apps": [
+    {
+      "name": "Astrobot",
+      "script": "./main.py",
+      "interpreter": "./venv/bin/python"
+    }
+  ]
+}
+
