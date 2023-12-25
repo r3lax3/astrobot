@@ -29,11 +29,11 @@ ZODIAC_SIGNS = [
 ]
 
 MOON_PHASES_RANGES = {
-    (0, 0.05): MoonPhase.NEW_MOON,
+    (0, 0.01): MoonPhase.NEW_MOON,
     (0.05, 0.45): (MoonPhase.WAXING_CRESCENT, MoonPhase.WANING_CRESCENT),
     (0.45, 0.55): (MoonPhase.FIRST_QUARTER, MoonPhase.LAST_QUARTER),
-    (0.55, 0.95): (MoonPhase.WAXING_GIBBOUS, MoonPhase.WANING_GIBBOUS),
-    (0.95, 1): MoonPhase.FULL_MOON,
+    (0.55, 0.99): (MoonPhase.WAXING_GIBBOUS, MoonPhase.WANING_GIBBOUS),
+    (0.99, 1): MoonPhase.FULL_MOON,
 }
 ISO_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 TIME_FORMAT: str = config.get('database.time_format')
@@ -128,6 +128,8 @@ def get_moon_phase(utcdate: datetime, longitude: float, latitude: float) -> Moon
 
     moon = ephem.Moon(observer)
     current_phase = moon.moon_phase
+
+    print(f'{current_phase = }')
 
     for (start, end), phase in MOON_PHASES_RANGES.items():
         if start <= current_phase <= end:
