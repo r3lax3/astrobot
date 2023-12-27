@@ -249,7 +249,7 @@ def filtered_and_formatted_prediction(
                 formatted_date=formatted_date
             )
             default_moon_sign_text = (
-                messages.prediction_text_neutral_background + '\n' + 
+                messages.prediction_text_neutral_background + '\n\n' + 
                 messages.use_other_function_for_correct_planning
             )
             moon_events = messages.prediction_text_moon_events.format(
@@ -259,7 +259,6 @@ def filtered_and_formatted_prediction(
 
             texts = [
                 formatted_date_str, 
-                messages.use_other_function_for_correct_planning, 
                 moon_events
             ]
     else:
