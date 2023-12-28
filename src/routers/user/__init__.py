@@ -21,13 +21,13 @@ r = Router()
 
 # The main router for the Telegram bot, integrating various sub-routers
 all_routers = [
+    main_menu_router,
     about_router,
     birth_router,
     card_of_day_router,
     compatibility_router,
     dreams_router,
     general_predictions_router,
-    main_menu_router,
     moon_in_sign_router,
     not_implemented_router,
     prediction_router,
@@ -36,7 +36,5 @@ all_routers = [
     subsription_router,
     technical_support_router
 ]
-r.include_routers(
-    *all_routers
-)
+r.include_routers(*all_routers)
 

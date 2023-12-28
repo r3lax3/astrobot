@@ -118,17 +118,12 @@ async def moon_in_sign_menu(
         filename=FileName.MOON_SIGN.value
     )
 
-    bot_message1 = await message.answer_photo(photo=photo)
-    bot_message2 = await message.answer(
+    await message.answer_photo(photo=photo)
+    bot_message = await message.answer(
         text,
         reply_markup=keyboards.moon_in_sign_menu
     )
 
-    await state.update_data(
-        del_messages=[
-            bot_message1.message_id,
-            bot_message2.message_id
-        ]
-    )
+    await state.update_data(delete_keyboard_message_id=bot_message.message_id)
     await state.set_state(MainMenu.moon_in_sign)
 

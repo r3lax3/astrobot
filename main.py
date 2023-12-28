@@ -21,7 +21,7 @@ from src.middlewares import (
     MediaGroupMiddleware, 
     SkipGroupsUpdates,
     NullMiddleware,
-    PredictionMessageDeleteKeyboardMiddleware,
+    ClearKeyboardFromMessageMiddleware,
     AddDataInRedis
 )
 
@@ -127,7 +127,7 @@ async def main():
 
     dp.callback_query.middleware(NullMiddleware())
     dp.callback_query.middleware(DeleteMessagesMiddleware())
-    dp.callback_query.middleware(PredictionMessageDeleteKeyboardMiddleware())
+    dp.callback_query.middleware(ClearKeyboardFromMessageMiddleware())
     dp.callback_query.middleware(AddDataInRedis())
 
     # Include routers

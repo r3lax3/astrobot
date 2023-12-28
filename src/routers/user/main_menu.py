@@ -20,7 +20,7 @@ MAIN_MENU_IMAGE: str = config.get('files.main_menu')
     F.text,
     F.text == bt.back
 )
-@r.message(F.text, F.text == bt.main_menu)
+@r.message(F.text, F.text == bt.main_menu, UserInDatabase())
 @r.message(Command(commands=['menu']), UserInDatabase(), AdminFilter())
 async def main_menu(
     message: Message,
@@ -65,7 +65,7 @@ async def main_menu(
     await state.set_state(MainMenu.choose_action)
 
 
-@r.callback_query(F.data == bt.main_menu)
+@r.callback_query(F.data == bt.main_menu, UserInDatabase())
 @r.callback_query(Subscription.period, F.data == bt.back)
 async def to_main_menu_button_handler(
     callback: CallbackQuery,

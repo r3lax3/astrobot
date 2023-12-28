@@ -263,9 +263,7 @@ async def prediction_on_date_get_prediction(
             reply_markup=keyboards.predict_completed
         )
        
-        await state.update_data(
-            prediction_message_id=prediction_message.message_id
-        )
+        await state.update_data(delete_keyboard_message_id=prediction_message.message_id)
         await state.set_state(MainMenu.prediction_end)
     else:
         bot_message = await message.answer(

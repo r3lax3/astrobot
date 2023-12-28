@@ -24,6 +24,8 @@ class PILPositions(Enum):
     MOON_PHASE = (990, 140)
     MOON_PHASE_CAPTION = (990, 290)
 
+    NAME_TEXT = (315, 205)
+
 
 class Align(Enum):
     CENTER = 'center'

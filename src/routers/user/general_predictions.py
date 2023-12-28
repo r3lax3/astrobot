@@ -70,6 +70,6 @@ async def get_prediction_type(
         caption=prediction_text,
         reply_markup=keyboards.to_main_menu
     )
-    await state.update_data(del_messages=[bot_message.message_id])
+    await state.update_data(delete_keyboard_message_id=bot_message.message_id)
     await state.set_state(MainMenu.end_action)
 
