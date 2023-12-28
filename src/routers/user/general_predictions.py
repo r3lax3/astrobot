@@ -42,8 +42,9 @@ async def general_predictions_menu(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    bot_message = await message.answer(
-        messages.user_choose_general_prediction_type,
+    bot_message = await message.answer_photo(
+        photo=GENERAL_PREDICTION_IMAGE,
+        caption=messages.user_choose_general_prediction_type,
         reply_markup=keyboards.user_gen_pred_type
     )
     await state.update_data(del_messages=[bot_message.message_id])
