@@ -2,7 +2,7 @@ import logging
 import ephem
 import swisseph as swe
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Union, Dict
 
 from src import config
@@ -67,7 +67,7 @@ def get_moon_sign(date: datetime, location: Location) -> ZodiacSign:
 
 
 def get_moon_signs_at_date(
-    date: datetime,
+    date: date,
     timezone_offset: int,
     location: Location
 ) -> Dict[str, Union[ZodiacSign, str]]:
@@ -81,7 +81,7 @@ def get_moon_signs_at_date(
     Returns:
         dict: Словарь с знаками Луны и временем смены знака.
     """
-    date = date.replace(hour=0, minute=0)
+    date = datetime(date.year, date.month, date.day)
     start_of_day = date - timedelta(hours=timezone_offset)
     end_of_day = start_of_day + timedelta(hours=23, minutes=58)
 
@@ -109,7 +109,7 @@ def get_moon_signs_at_date(
     return result
 
 
-def get_moon_phase(utcdate: datetime, longitude: float, latitude: float) -> MoonPhase:
+def get_moon_phase(date: date, longitude: float, latitude: float) -> MoonPhase:
     """
     Вычисляет фазу Луны для заданной даты и координат.
 
@@ -122,14 +122,14 @@ def get_moon_phase(utcdate: datetime, longitude: float, latitude: float) -> Moon
         MoonPhase: Фаза Луны.
     """
     observer = ephem.Observer()
-    observer.date = utcdate
+    observer.date = datetime(date.year, date.month, date.day)
     observer.lon = str(longitude)
     observer.lat = str(latitude)
 
     moon = ephem.Moon(observer)
     current_phase = moon.moon_phase
 
-    print(f'{current_phase = }')
+    # print(f'{current_phase = }')
 
     for (start, end), phase in MOON_PHASES_RANGES.items():
         if start <= current_phase <= end:

@@ -1,7 +1,7 @@
 from aiogram.types import BufferedInputFile
 
 from typing import Optional, Dict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from src import config, messages
 from src.enums import (
@@ -52,7 +52,7 @@ def get_interpretation(
 
 
 def get_moon_phase_caption(
-    utc_date: datetime,
+    utcdate: date,
     longitude: float, 
     latitude: float, 
     timezone_offset: int
@@ -72,19 +72,20 @@ def get_moon_phase_caption(
     Returns:
         str: Описание фазы Луны и лунных дней.
     """
-    utc_date = datetime.utcnow().replace(hour=0, minute=0) - timedelta(hours=timezone_offset)
+    utcdate = datetime(utcdate.year, utcdate.month, utcdate.day)
 
-    current_lunar_day = get_main_lunar_day_at_date(utc_date, longitude, latitude)
+    current_lunar_day = get_main_lunar_day_at_date(utcdate, longitude, latitude)
     next_lunar_day = get_next_lunar_day(current_lunar_day, longitude, latitude)
 
-    moon_phase = get_moon_phase(utc_date, longitude, latitude)
+    moon_phase = get_moon_phase(utcdate, longitude, latitude)
+    # print(f'Фаза в описании: {moon_phase}')
     moon_phase_str = MOON_PHASE_RU_TRANSLATIONS.get(moon_phase, "Неизвестная фаза")
 
     next_lunar_day_start_time_str = (
         next_lunar_day.start + timedelta(hours=timezone_offset)
     ).strftime(TIME_FORMAT)
 
-    if utc_date + timedelta(hours=24) < next_lunar_day.start:
+    if utcdate + timedelta(hours=24) < next_lunar_day.start:
         next_lunar_day_start_str = f'{next_lunar_day_start_time_str} след. дня'
     else:
         next_lunar_day_start_str = next_lunar_day_start_time_str
@@ -102,12 +103,12 @@ def get_moon_phase_caption(
 def get_image_with_astrodata(
     user, 
     database: Database,
-    moon_signs: Optional[Dict] = None
+    moon_signs: Optional[Dict] = None,
 ) -> bytes:
+    date = (datetime.utcnow() + timedelta(hours=user.timezone_offset)).date()
     if moon_signs is None:
         # Getting image
         timezone_offset: int = user.timezone_offset
-        date: datetime = datetime.utcnow() + timedelta(hours=timezone_offset)
 
         moon_signs = get_moon_signs_at_date(
             date,  # %Y-%m-%d, not datetime
@@ -116,7 +117,6 @@ def get_image_with_astrodata(
         )
 
     timezone_offset = user.timezone_offset
-    date = datetime.utcnow() + timedelta(hours=timezone_offset)
 
     current_user_location = database.get_location(user.current_location_id)
     longitude = current_user_location.longitude
@@ -127,6 +127,7 @@ def get_image_with_astrodata(
         longitude,
         latitude
     )
+    # print(f'Фаза на картинке: {moon_phase}')
 
     moon_phase_caption = get_moon_phase_caption(
         date,

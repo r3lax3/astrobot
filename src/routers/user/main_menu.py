@@ -13,7 +13,6 @@ from src.filters import UserInDatabase
 
 r = Router()
 MAIN_MENU_IMAGE: str = config.get('files.main_menu')
-print(f'{MAIN_MENU_IMAGE = }')
 
 
 @r.message(

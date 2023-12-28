@@ -486,7 +486,7 @@ messages:
   moon_phase_caption: |-
     {current_lunar_day_number} Лунный день
     {moon_phase}
-    C {next_lunar_day_start}
+    c {next_lunar_day_start}
     {next_lunar_day_number} Лунный день
 
   current_location_changed_success : |-

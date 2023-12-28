@@ -99,7 +99,7 @@ async def moon_in_sign_menu(
     ]
 
     timezone_offset: int = data['timezone_offset']
-    date: datetime = datetime.utcnow() + timedelta(hours=timezone_offset)
+    date = (datetime.utcnow() + timedelta(hours=timezone_offset)).date()
 
     moon_signs = get_moon_signs_at_date(
         date,  # %Y-%m-%d, not datetime
