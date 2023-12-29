@@ -1,13 +1,14 @@
 from enum import Enum
 
+
 class Gender(Enum):
-    male = 'male'
-    female = 'female'
+    male = "male"
+    female = "female"
 
 
 class LocationType(Enum):
-    current = 'current'
-    birth = 'birth'
+    current = "current"
+    birth = "birth"
 
 
 class PromocodeStatus(Enum):
@@ -28,7 +29,7 @@ class PILPositions(Enum):
 
 
 class Align(Enum):
-    CENTER = 'center'
+    CENTER = "center"
 
 
 class FileFormat(Enum):
@@ -37,8 +38,8 @@ class FileFormat(Enum):
 
 class MoonSignInterpretationType(Enum):
     GENERAL = "general"
-    FAVORABLE = 'favorable'
-    UNFAVORABLE = 'unfavorable'
+    FAVORABLE = "favorable"
+    UNFAVORABLE = "unfavorable"
 
 
 class MoonPhase(Enum):
@@ -51,10 +52,10 @@ class MoonPhase(Enum):
     LAST_QUARTER = "Last Quarter"
     WANING_CRESCENT = "Waning Crescent"
 
-    
+
 class FileName(Enum):
-    MOON_SIGN = 'moon_sign.jpeg'
-    PREDICTION = 'prediction.jpeg'
+    MOON_SIGN = "moon_sign.jpeg"
+    PREDICTION = "prediction.jpeg"
 
 
 class ZodiacSign(Enum):
@@ -71,6 +72,7 @@ class ZodiacSign(Enum):
     AQUARIUS = "Aquarius"
     PISCES = "Pisces"
 
+
 class SwissEphPlanet(Enum):
     SUN = 0
     MOON = 1
@@ -83,8 +85,8 @@ class SwissEphPlanet(Enum):
     NEPTUNE = 8
     PLUTO = 9
 
-class PaymentStatus(Enum):
-    SUCCESS = 'success'
-    FAILED = 'failed'
-    PENDING = 'pending'
 
+class PaymentStatus(Enum):
+    SUCCESS = "success"
+    FAILED = "failed"
+    PENDING = "pending"

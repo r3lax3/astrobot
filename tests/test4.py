@@ -1,9 +1,8 @@
 import time
-
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Tuple
-from dataclasses import dataclass
 
 import swisseph as swe
 

@@ -1,14 +1,13 @@
 import logging
+from datetime import date, datetime, timedelta
+from typing import Dict, Union
+
 import ephem
 import swisseph as swe
 
-from datetime import datetime, timedelta, date
-from typing import Union, Dict
-
 from src import config
-from src.enums import MoonPhase, ZodiacSign, SwissEphPlanet
-from src.astro_engine.models import LunarDay, Location
-
+from src.astro_engine.models import Location, LunarDay
+from src.enums import MoonPhase, SwissEphPlanet, ZodiacSign
 
 # Константы
 SECONDS_IN_DAY = 24 * 60 * 60
@@ -25,7 +24,7 @@ ZODIAC_SIGNS = [
     ZodiacSign.SAGITTARIUS,
     ZodiacSign.CAPRICORN,
     ZodiacSign.AQUARIUS,
-    ZodiacSign.PISCES
+    ZodiacSign.PISCES,
 ]
 
 MOON_PHASES_RANGES = {
@@ -35,16 +34,18 @@ MOON_PHASES_RANGES = {
     (0.55, 0.99): (MoonPhase.WAXING_GIBBOUS, MoonPhase.WANING_GIBBOUS),
     (0.99, 1): MoonPhase.FULL_MOON,
 }
-ISO_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
-TIME_FORMAT: str = config.get('database.time_format')
-
+ISO_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+TIME_FORMAT: str = config.get("database.time_format")
 
 
 def get_juliday(utc_date: datetime) -> float:
     """Calculates julian day from the utc time."""
     utc_time = utc_date.hour + utc_date.minute / 60
-    julian_day = float(swe.julday(utc_date.year, utc_date.month, utc_date.day, utc_time))
+    julian_day = float(
+        swe.julday(utc_date.year, utc_date.month, utc_date.day, utc_time)
+    )
     return julian_day
+
 
 def calculate_moon_degrees_ut(juliday: float, location: Location):
     # Установка топографических координат наблюдателя
@@ -53,12 +54,14 @@ def calculate_moon_degrees_ut(juliday: float, location: Location):
     flag = swe.FLG_SWIEPH + swe.FLG_SPEED + swe.FLG_TOPOCTR
     return swe.calc(juliday, SwissEphPlanet.MOON.value, flag)[0][0]
 
+
 def calculate_moon_sign(moon_degrees: float) -> ZodiacSign:
     for i, bound in enumerate(ZODIAC_BOUNDS):
         if moon_degrees < bound:
             return ZODIAC_SIGNS[i]
     else:
         return ZODIAC_SIGNS[-1]
+
 
 def get_moon_sign(date: datetime, location: Location) -> ZodiacSign:
     juliday = get_juliday(date)
@@ -67,9 +70,7 @@ def get_moon_sign(date: datetime, location: Location) -> ZodiacSign:
 
 
 def get_moon_signs_at_date(
-    date: date,
-    timezone_offset: int,
-    location: Location
+    date: date, timezone_offset: int, location: Location
 ) -> Dict[str, Union[ZodiacSign, str]]:
     """
     Определяет зодиакальный знак Луны на начало и конец заданной даты.
@@ -87,9 +88,9 @@ def get_moon_signs_at_date(
 
     start_sign = get_moon_sign(start_of_day, location)
     end_sign = get_moon_sign(end_of_day, location)
-    
+
     result = {"start_sign": start_sign}
-    
+
     if start_sign != end_sign:
         left_time, right_time = start_of_day, end_of_day
         while right_time - left_time > timedelta(minutes=1):
@@ -101,11 +102,13 @@ def get_moon_signs_at_date(
         change_time = left_time
         result.update(
             {
-                "change_time": (change_time + timedelta(hours=timezone_offset)).strftime(TIME_FORMAT),
-                "end_sign": end_sign
+                "change_time": (
+                    change_time + timedelta(hours=timezone_offset)
+                ).strftime(TIME_FORMAT),
+                "end_sign": end_sign,
             }
         )
-    
+
     return result
 
 
@@ -135,26 +138,26 @@ def get_moon_phase(date: date, longitude: float, latitude: float) -> MoonPhase:
         if start <= current_phase <= end:
             if isinstance(phase, tuple):
                 # Определение растущей или убывающей фазы Луны
-                observer.date = observer.date.datetime() - timedelta(hours=6) # Смещение на 6 часов назад
+                observer.date = observer.date.datetime() - timedelta(
+                    hours=6
+                )  # Смещение на 6 часов назад
                 moon.compute(observer)
                 is_waxing = current_phase > moon.moon_phase
                 return phase[0] if is_waxing else phase[1]
             else:
                 return phase
-    logging.error(f'get_moon_phase: No suitable range for current phase - {current_phase}')
+    logging.error(
+        f"get_moon_phase: No suitable range for current phase - {current_phase}"
+    )
     return MoonPhase.NEW_MOON
 
 
-def get_lunar_day_end(
-    utcdate: datetime,
-    longitude: float,
-    latitude: float
-) -> datetime:
+def get_lunar_day_end(utcdate: datetime, longitude: float, latitude: float) -> datetime:
     """
     Dычисляет время следующего восхода Луны или следующего новолуния после заданной даты и времени.
 
     Функция использует библиотеку `ephem` для расчета астрономических событий, таких как восходы Луны.
-    
+
     Args:
         utcdate (datetime): Дата и время для начала расчета.
         longitude (float): Долгота наблюдателя.
@@ -173,7 +176,7 @@ def get_lunar_day_end(
     moon = ephem.Moon(observer)
     # Расчет времени следующего восхода Луны
     moon_rise = observer.next_rising(moon).datetime().replace(tzinfo=None)
-    
+
     # Расчет времени следующего новолуния
     next_new_moon = ephem.next_new_moon(utcdate).datetime()
 
@@ -183,15 +186,13 @@ def get_lunar_day_end(
 
 
 def get_lunar_day_start(
-    utcdate: datetime,
-    longitude: float,
-    latitude: float
+    utcdate: datetime, longitude: float, latitude: float
 ) -> datetime:
     """
     Вычисляет время следующего восхода Луны или следующего новолуния после заданной даты и времени.
 
     Функция использует библиотеку `ephem` для расчета астрономических событий, таких как восходы Луны.
-    
+
     Args:
         utcdate (datetime): Дата и время для начала расчета.
         longitude (float): Долгота наблюдателя.
@@ -210,7 +211,7 @@ def get_lunar_day_start(
     moon = ephem.Moon(observer)
     # Расчет времени следующего восхода Луны
     moon_rise = observer.previous_rising(moon).datetime().replace(tzinfo=None)
-    
+
     # Расчет времени следующего новолуния
     previous_new_moon = ephem.previous_new_moon(utcdate).datetime()
 
@@ -262,23 +263,19 @@ def get_lunar_day_number(utcdate: datetime, longitude: float, latitude: float) -
     return lunar_day_count
 
 
-def get_lunar_day(
-    time_point: datetime,
-    longitude: float,
-    latitude: float
-) -> LunarDay:
+def get_lunar_day(time_point: datetime, longitude: float, latitude: float) -> LunarDay:
     lunar_day_number = get_lunar_day_number(time_point, longitude, latitude)
     lunar_day_start = get_lunar_day_start(time_point, longitude, latitude)
-    lunar_day_end = get_lunar_day_end(time_point, longitude, latitude) 
+    lunar_day_end = get_lunar_day_end(time_point, longitude, latitude)
 
-    lunar_day = LunarDay(number=lunar_day_number, start=lunar_day_start, end=lunar_day_end)
+    lunar_day = LunarDay(
+        number=lunar_day_number, start=lunar_day_start, end=lunar_day_end
+    )
     return lunar_day
 
 
 def get_main_lunar_day_at_date(
-    utcdate: datetime,
-    longitude: float,
-    latitude: float
+    utcdate: datetime, longitude: float, latitude: float
 ) -> LunarDay:
     """
     Определяет лунный день, который занимает наибольшее количество времени в течение указанной даты.
@@ -294,7 +291,9 @@ def get_main_lunar_day_at_date(
 
     midnight_lunar_day = get_lunar_day(utcdate, longitude, latitude)
     noon_lunar_day = get_lunar_day(utcdate + timedelta(hours=12), longitude, latitude)
-    next_midnight_lunar_day = get_lunar_day(utcdate + timedelta(hours=24), longitude, latitude)
+    next_midnight_lunar_day = get_lunar_day(
+        utcdate + timedelta(hours=24), longitude, latitude
+    )
 
     # Один лунный день 00:00 -> 12:00
     if midnight_lunar_day.number == noon_lunar_day.number:
@@ -310,8 +309,8 @@ def get_main_lunar_day_at_date(
 
     # Разбиваем день на 25 интервалов (по одному часу каждый)
 
-    # 25, а не 24 чтобы учитывать последний час и избежать равнозначного 
-    # результата, когда каждый лунный день занимает по 8 часов. 
+    # 25, а не 24 чтобы учитывать последний час и избежать равнозначного
+    # результата, когда каждый лунный день занимает по 8 часов.
     for hour in range(25):
         # Вычисляем временную метку для каждого часа
         time_point = utcdate + timedelta(hours=hour)
@@ -319,16 +318,20 @@ def get_main_lunar_day_at_date(
         # Получаем номер лунного дня для каждого часа
         lunar_day_number = get_lunar_day_number(time_point, longitude, latitude)
         lunar_day_start = get_lunar_day_start(time_point, longitude, latitude)
-        lunar_day_end = get_lunar_day_end(time_point, longitude, latitude) 
+        lunar_day_end = get_lunar_day_end(time_point, longitude, latitude)
 
-        lunar_day = LunarDay(number=lunar_day_number, start=lunar_day_start, end=lunar_day_end)
+        lunar_day = LunarDay(
+            number=lunar_day_number, start=lunar_day_start, end=lunar_day_end
+        )
         lunar_days.append(lunar_day)
 
     # Сопоставление каждого лунного дня с его продолжительностью
     lunar_day_durations = {}
     for ld in lunar_days:
         if ld.number in lunar_day_durations:
-            lunar_day_durations[ld.number] += 1 # Увеличиваем продолжительность на единицу (час)
+            lunar_day_durations[
+                ld.number
+            ] += 1  # Увеличиваем продолжительность на единицу (час)
         else:
             lunar_day_durations[ld.number] = 1
 
@@ -340,7 +343,10 @@ def get_main_lunar_day_at_date(
         if ld.number == most_common_lunar_day_number:
             return ld
 
-def get_next_lunar_day(lunar_day: LunarDay, longitude: float, latitude: float) -> LunarDay:
+
+def get_next_lunar_day(
+    lunar_day: LunarDay, longitude: float, latitude: float
+) -> LunarDay:
     """
     Определяет следующий лунный день после заданного.
 
@@ -352,22 +358,24 @@ def get_next_lunar_day(lunar_day: LunarDay, longitude: float, latitude: float) -
     Returns:
         LunarDay: Следующий лунный день.
     """
-    # Находим начало следующего лунного дня, которое является концом 
+    # Находим начало следующего лунного дня, которое является концом
     # текущего + маленький интервал самого восхода
     next_lunar_day_start = lunar_day.end + timedelta(minutes=10)
 
     # Получаем данные следующего лунного дня
-    next_lunar_day_number = get_lunar_day_number(next_lunar_day_start, longitude, latitude)
+    next_lunar_day_number = get_lunar_day_number(
+        next_lunar_day_start, longitude, latitude
+    )
     next_lunar_day_end = get_lunar_day_end(next_lunar_day_start, longitude, latitude)
 
     return LunarDay(
-        number=next_lunar_day_number,
-        start=next_lunar_day_start,
-        end=next_lunar_day_end
+        number=next_lunar_day_number, start=next_lunar_day_start, end=next_lunar_day_end
     )
 
 
-def get_previous_lunar_day(lunar_day: LunarDay, longitude: float, latitude: float) -> LunarDay:
+def get_previous_lunar_day(
+    lunar_day: LunarDay, longitude: float, latitude: float
+) -> LunarDay:
     """
     Определяет предыдущий лунный день до заданного.
 
@@ -383,12 +391,15 @@ def get_previous_lunar_day(lunar_day: LunarDay, longitude: float, latitude: floa
     previous_lunar_day_end = lunar_day.start - timedelta(minutes=10)
 
     # Получаем данные предыдущего лунного дня
-    previous_lunar_day_number = get_lunar_day_number(previous_lunar_day_end, longitude, latitude)
-    previous_lunar_day_start = get_lunar_day_start(previous_lunar_day_end, longitude, latitude)
-
-    return LunarDay(
-        number=previous_lunar_day_number, 
-        start=previous_lunar_day_start,
-        end=previous_lunar_day_end
+    previous_lunar_day_number = get_lunar_day_number(
+        previous_lunar_day_end, longitude, latitude
+    )
+    previous_lunar_day_start = get_lunar_day_start(
+        previous_lunar_day_end, longitude, latitude
     )
 
+    return LunarDay(
+        number=previous_lunar_day_number,
+        start=previous_lunar_day_start,
+        end=previous_lunar_day_end,
+    )

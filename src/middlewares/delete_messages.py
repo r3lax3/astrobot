@@ -1,8 +1,8 @@
-from typing import Any, Callable, Dict, Awaitable
+from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import TelegramObject, User, Message
+from aiogram.types import Message, TelegramObject, User
 
 
 class DeleteMessagesMiddleware(BaseMiddleware):
@@ -10,16 +10,15 @@ class DeleteMessagesMiddleware(BaseMiddleware):
         self,
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
         event: TelegramObject,
-        data: Dict[str, Any]
+        data: Dict[str, Any],
     ) -> Any:
+        state_data = await data["state"].get_data()
 
-        state_data = await data['state'].get_data()
+        del_messages = state_data.get("del_messages", [])
 
-        del_messages = state_data.get('del_messages', [])
-        
         user: User = data["event_from_user"]
-        bot = data['bot']
-        
+        bot = data["bot"]
+
         if isinstance(del_messages, list):
             for message_id in del_messages:
                 try:
@@ -30,7 +29,7 @@ class DeleteMessagesMiddleware(BaseMiddleware):
         result = await handler(event, data)
         if not isinstance(event, Message):
             return result
-        if event.text and event.text.startswith('/'):
+        if event.text and event.text.startswith("/"):
             return result
         else:
             try:
@@ -38,4 +37,3 @@ class DeleteMessagesMiddleware(BaseMiddleware):
             except TelegramBadRequest:
                 pass
             return result
-

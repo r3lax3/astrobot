@@ -1,9 +1,8 @@
-import ephem
 import timeit
-
-from datetime import datetime, timedelta
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
+import ephem
 
 READABLE_DATETIME_FORMAT = '%H:%M %d.%m.%Y'
 ISO_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -186,9 +185,11 @@ def measure_performance():
     return single_run_time
 
 
-import ephem
 from datetime import datetime, timedelta
 from typing import List, Tuple
+
+import ephem
+
 
 def get_moon_rises(latitude: float, longitude: float, start_date: datetime, end_date: datetime) -> List[Tuple[datetime, datetime]]:
     """

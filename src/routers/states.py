@@ -15,9 +15,8 @@ class ProfileSettings(StatesGroup):
     location_confirm = State()
 
     choose_gender = State()
-    
+
     get_new_name = State()
-    
 
 
 class MainMenu(StatesGroup):
@@ -58,7 +57,7 @@ class Subscription(StatesGroup):
 
 class AdminStates(StatesGroup):
     choose_action = State()
-    
+
     choose_general_prediction_type = State()
     get_general_prediction_date = State()
     get_general_prediction_text = State()
@@ -73,5 +72,3 @@ class AdminStates(StatesGroup):
     broadcast_get_confirm = State()
 
     action_end = State()
-
-    

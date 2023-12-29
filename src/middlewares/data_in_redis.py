@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Awaitable
+from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
@@ -7,41 +7,37 @@ from src.database import Database
 
 
 class AddDataInRedis(BaseMiddleware):
-    keys_list = [
-        'timezone_offset',
-        'name'
-    ]
+    keys_list = ["timezone_offset", "name"]
 
     async def __call__(
         self,
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
         event: TelegramObject,
-        data: Dict[str, Any]
+        data: Dict[str, Any],
     ) -> Any:
-        state = data['state']
+        state = data["state"]
         state_data = await state.get_data()
 
-        database: Database = data['database']
-        
+        database: Database = data["database"]
+
         missing_keys = []
-    
+
         for key in self.keys_list:
             if state_data.get(key, None) is None:
                 missing_keys.append(key)
 
         for key in missing_keys:
             match key:
-                case 'timezone_offset':
-                    user = database.get_user(user_id = event.from_user.id)
-                    
+                case "timezone_offset":
+                    user = database.get_user(user_id=event.from_user.id)
+
                     if user:
                         await state.update_data(timezone_offset=user.timezone_offset)
-                case 'name':
-                    user = database.get_user(user_id = event.from_user.id)
-                    
+                case "name":
+                    user = database.get_user(user_id=event.from_user.id)
+
                     if user:
                         await state.update_data(name=user.name)
 
         result = await handler(event, data)
         return result
-

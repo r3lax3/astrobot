@@ -1,8 +1,9 @@
 import io
-
-from typing import Optional
-from PIL import Image, ImageDraw, ImageFont
 from enum import Enum
+from typing import Optional
+
+from PIL import Image, ImageDraw, ImageFont
+
 
 class PILPositions(Enum):
     DATE_TEXT = (600, 500)

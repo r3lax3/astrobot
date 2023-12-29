@@ -1,4 +1,8 @@
 class PathDoesNotExistError(Exception):
     """Исключение, возникающее, когда путь не существует."""
-    pass
 
+class InvalidButtonTypeException(Exception):
+    """Exception raised for errors in the input button type."""
+
+class TypeMismatchException(Exception):
+    """Exception raised when there is a type mismatch in the button construction."""

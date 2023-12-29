@@ -1,28 +1,28 @@
-import yaml
-import pytz
 import os
-import ephem
-
 from datetime import datetime, timedelta
 from typing import Any
 
-from timezonefinder import TimezoneFinder
+import ephem
+import pytz
+import yaml
 from geopy.geocoders import Nominatim
+from timezonefinder import TimezoneFinder
 
 from src.exceptions import PathDoesNotExistError
-
 
 geolocator = Nominatim(user_agent="AstroBot")
 
 
 def load_yaml(file_path: str) -> dict:
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         return yaml.safe_load(file)
 
 
 def get_timezone_offset(latitude: float, longitude: float) -> int:
     obj = TimezoneFinder()
-    tz_name = obj.timezone_at(lat=latitude, lng=longitude)  # Получаем имя временной зоны
+    tz_name = obj.timezone_at(
+        lat=latitude, lng=longitude
+    )  # Получаем имя временной зоны
     if tz_name:
         timezone = pytz.timezone(tz_name)
         offset = timezone.utcoffset(datetime.utcnow())
@@ -31,7 +31,7 @@ def get_timezone_offset(latitude: float, longitude: float) -> int:
         raise Exception(f"Can't get timezone name. {latitude = }, {longitude = }")
 
 
-def get_timezone_str_from_coords(longitude, latitude) -> str:
+def get_timezone_str_from_coords(longitude: float, latitude: float) -> str:
     """
     Get the timezone for given latitude and longitude coordinates.
 
@@ -54,6 +54,7 @@ def get_timezone_str_from_coords(longitude, latitude) -> str:
                 f"Latitude {latitude}, Longitude {longitude}"
             )
         )
+
 
 def convert_to_utc(dt: datetime, offset: int) -> datetime:
     return dt - timedelta(hours=offset)
@@ -81,19 +82,13 @@ def split_list(input_list: list, sublist_len: int = 2):
     [1, 2, 3, 4, 5] -> [[1, 2], [3, 4], [5]]
     """
     return [
-        input_list[i:i + sublist_len]
-        for i in range(0, len(input_list), sublist_len)
+        input_list[i : i + sublist_len] for i in range(0, len(input_list), sublist_len)
     ]
 
 
 def get_location_by_coords(longitude: float, latitude: float) -> str:
     location = geolocator.reverse(
-        (
-            latitude, 
-            longitude
-        ),
-        language='ru',
-        exactly_one=True
+        (latitude, longitude), language="ru", exactly_one=True
     )
 
     if location and "address" in location.raw:
@@ -130,33 +125,32 @@ def path_validation(path: str) -> None:
 async def get_lunar_day(date: datetime, latitude: float, longitude: float):
     """
     Calculate the lunar day for a given date and location.
-    
+
     Parameters:
     date (str): The date for which to calculate the lunar day, formatted as 'YYYY/MM/DD'.
     latitude (str): The latitude of the location, formatted as a string (e.g., '48.8566').
     longitude (str): The longitude of the location, formatted as a string (e.g., '2.3522').
-    
+
     Returns:
     int: The lunar day number.
     """
     # Set up an observer at the given latitude and longitude
     observer = ephem.Observer()
     observer.lat, observer.lon = str(latitude), str(longitude)
-    
+
     # Calculate the next and previous new moons relative to the given date
     next_new_moon = ephem.next_new_moon(date)
     last_new_moon = ephem.previous_new_moon(date)
-    
+
     # Calculate the lunation as a fraction of the lunar month
     lunation = (observer.date - last_new_moon) / (next_new_moon - last_new_moon)
-    
+
     # Calculate the lunar day, noting there are approximately 29.53 days in a lunar month
     lunar_day = lunation * 29.53
-    
+
     # Return the lunar day as an integer, adding 1 since lunar days start at 1
     return int(lunar_day) + 1
 
 
 def in_range(value: Any, start: Any, end: Any) -> bool:
     return start <= value < end
-

@@ -1,13 +1,9 @@
 import asyncio
 import logging
-
 from typing import Any, Awaitable, Callable, Dict, List, Union
 
 from aiogram import BaseMiddleware
-from aiogram.types import (
-    Message,
-    TelegramObject,
-)
+from aiogram.types import Message, TelegramObject
 
 DEFAULT_DELAY = 0.6
 
@@ -36,4 +32,3 @@ class MediaGroupMiddleware(BaseMiddleware):
             data["album"] = self.ALBUM_DATA.pop(event.media_group_id)
 
         return await handler(event, data)
-

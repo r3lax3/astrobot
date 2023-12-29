@@ -1,5 +1,6 @@
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+
 
 @dataclass
 class Location:
@@ -16,8 +17,8 @@ class User:
 
 @dataclass
 class AstroEvent:
-    natal_planet: int  
-    transit_planet: int 
+    natal_planet: int
+    transit_planet: int
     aspect: int
     peak_at: datetime | None
 
@@ -27,4 +28,3 @@ class LunarDay:
     number: int
     start: datetime
     end: datetime
-

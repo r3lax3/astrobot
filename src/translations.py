@@ -1,6 +1,5 @@
 from src.enums import MoonPhase, ZodiacSign
 
-
 ZODIAC_RU_TRANSLATION = {
     ZodiacSign.ARIES: "Овне",
     ZodiacSign.TAURUS: "Тельце",
@@ -13,7 +12,7 @@ ZODIAC_RU_TRANSLATION = {
     ZodiacSign.SAGITTARIUS: "Стрельце",
     ZodiacSign.CAPRICORN: "Козероге",
     ZodiacSign.AQUARIUS: "Водолее",
-    ZodiacSign.PISCES: "Рыбах"
+    ZodiacSign.PISCES: "Рыбах",
 }
 MOON_PHASE_RU_TRANSLATIONS = {
     MoonPhase.NEW_MOON: "НОВОЛУНИЕ",
@@ -23,6 +22,5 @@ MOON_PHASE_RU_TRANSLATIONS = {
     MoonPhase.FULL_MOON: "ПОЛНОЛУНИЕ",
     MoonPhase.WANING_GIBBOUS: "УБЫВАЮЩАЯ ЛУНА",
     MoonPhase.LAST_QUARTER: "ПОСЛЕДНЯЯ ЧЕТВЕРТЬ",
-    MoonPhase.WANING_CRESCENT: "УБЫВАЮЩИЙ ПОЛУМЕСЯЦ"
+    MoonPhase.WANING_CRESCENT: "УБЫВАЮЩИЙ ПОЛУМЕСЯЦ",
 }
-

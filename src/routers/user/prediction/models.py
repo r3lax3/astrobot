@@ -9,4 +9,3 @@ class Interpretation:
     general: str
     favorably: str
     unfavorably: str
-

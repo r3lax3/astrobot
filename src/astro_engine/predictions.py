@@ -1,11 +1,10 @@
+from datetime import datetime, timedelta
+from typing import List, Optional
+
 import swisseph as swe
 
-from typing import List, Optional
-from datetime import datetime, timedelta
-
-from src.utils import get_timezone_offset, convert_to_utc, convert_from_utc
-from src.astro_engine.models import User, AstroEvent
-
+from src.astro_engine.models import AstroEvent, User
+from src.utils import convert_from_utc, convert_to_utc, get_timezone_offset
 
 # 10 планет для натальной карты
 NATAL_PLANETS = [
@@ -18,35 +17,26 @@ NATAL_PLANETS = [
     swe.SATURN,
     swe.URANUS,
     swe.NEPTUNE,
-    swe.PLUTO
+    swe.PLUTO,
 ]
 # 5 планет для транзитной карты
-TRANSIT_PLANETS = [
-    swe.SUN,
-    swe.MOON,
-    swe.MERCURY,
-    swe.VENUS,
-    swe.MARS
-]
+TRANSIT_PLANETS = [swe.SUN, swe.MOON, swe.MERCURY, swe.VENUS, swe.MARS]
 
 ASPECTS = [0, 60, 90, 120, 180]
 ORBIS = 0.1
 ZODIAC_BOUNDS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360]
 
+
 def find_peak_time(
-    time: datetime,
-    natal_position: float,
-    transit_planet: int,
-    aspect_value: int
+    time: datetime, natal_position: float, transit_planet: int, aspect_value: int
 ) -> datetime:
     julian_day_time = swe.julday(
-        time.year,
-        time.month,
-        time.day,
-        time.hour + time.minute / 60
+        time.year, time.month, time.day, time.hour + time.minute / 60
     )
 
-    transit_planet_data = swe.calc_ut(julian_day_time, transit_planet, swe.FLG_SWIEPH | swe.FLG_SPEED)
+    transit_planet_data = swe.calc_ut(
+        julian_day_time, transit_planet, swe.FLG_SWIEPH | swe.FLG_SPEED
+    )
     transit_position = transit_planet_data[0][0]
     transit_speed = transit_planet_data[0][3]
 
@@ -58,9 +48,7 @@ def find_peak_time(
 
 
 def calculate_aspect(
-    transit_position: float,
-    natal_position: float,
-    orbis: float
+    transit_position: float, natal_position: float, orbis: float
 ) -> Optional[int]:
     """
     Вычислить аспект между двумя планетами на основе их текущих позиций.
@@ -69,9 +57,13 @@ def calculate_aspect(
     :param natal_position: Натальная позиция планеты.
     :return: Значение аспекта (если есть) или None.
     """
-    diff = abs(transit_position - natal_position) % 360  # Подсчет разницы в градусах между планетами
+    diff = (
+        abs(transit_position - natal_position) % 360
+    )  # Подсчет разницы в градусах между планетами
     for aspect in ASPECTS:
-        if abs(diff - aspect) <= orbis:  # Если разница близка к одному из аспектов, возвращаем этот аспект
+        if (
+            abs(diff - aspect) <= orbis
+        ):  # Если разница близка к одному из аспектов, возвращаем этот аспект
             return aspect
     return None  # Нет соответствующего аспекта
 
@@ -88,10 +80,7 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
 
     # Преобразование текущего времени в юлианскую дату
     julian_day_time = swe.julday(
-        time.year,
-        time.month,
-        time.day,
-        time.hour + time.minute / 60
+        time.year, time.month, time.day, time.hour + time.minute / 60
     )
 
     # Преобразование времени рождения пользователя в юлианскую дату
@@ -99,7 +88,7 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
         user.birth_datetime.year,
         user.birth_datetime.month,
         user.birth_datetime.day,
-        user.birth_datetime.hour + user.birth_datetime.minute / 60
+        user.birth_datetime.hour + user.birth_datetime.minute / 60,
     )
 
     # Вычисление натальных позиций для всех планет на основе даты рождения пользователя
@@ -110,12 +99,16 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
 
     for transit_planet in TRANSIT_PLANETS:
         # Получение текущей позиции планеты в движении
-        transit_planet_position = swe.calc_ut(julian_day_time, transit_planet, swe.FLG_SWIEPH)[0][0]
+        transit_planet_position = swe.calc_ut(
+            julian_day_time, transit_planet, swe.FLG_SWIEPH
+        )[0][0]
 
         for natal_planet, natal_planet_position in natal_positions.items():
             # Вычисление аспекта между текущей позицией планеты и натальной позицией
 
-            aspect_value = calculate_aspect(transit_planet_position, natal_planet_position, orbis=ORBIS)
+            aspect_value = calculate_aspect(
+                transit_planet_position, natal_planet_position, orbis=ORBIS
+            )
 
             if aspect_value:  # Если аспект существует, добавляем событие в список
                 events.append(
@@ -123,7 +116,7 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
                         natal_planet=natal_planet,
                         transit_planet=transit_planet,
                         aspect=aspect_value,
-                        peak_at=time if transit_planet == swe.MOON else None
+                        peak_at=time if transit_planet == swe.MOON else None,
                     )
                 )
 
@@ -131,14 +124,12 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
 
 
 def get_astro_events_from_period(
-    start: datetime, 
-    finish: datetime,
-    user: User
+    start: datetime, finish: datetime, user: User
 ) -> List[AstroEvent]:
     timezone = int(
         get_timezone_offset(
             latitude=user.current_location.latitude,
-            longitude=user.current_location.longitude
+            longitude=user.current_location.longitude,
         )
     )
 
@@ -161,7 +152,9 @@ def get_astro_events_from_period(
             natal_planet=event.natal_planet,
             transit_planet=event.transit_planet,
             aspect=event.aspect,
-            peak_at=convert_from_utc(event.peak_at, timezone) if event.peak_at else None
+            peak_at=convert_from_utc(event.peak_at, timezone)
+            if event.peak_at
+            else None,
         )
         for event in all_events
     ]
@@ -176,4 +169,3 @@ def get_astro_events_from_period(
     unique_events = list(unique_events_dict.values())
 
     return unique_events
-

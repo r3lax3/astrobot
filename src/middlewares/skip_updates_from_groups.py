@@ -1,9 +1,8 @@
 import logging
-
-from typing import Any, Callable, Dict, Awaitable
+from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
-from aiogram.types import TelegramObject, Message
+from aiogram.types import Message, TelegramObject
 
 
 class SkipGroupsUpdates(BaseMiddleware):
@@ -11,10 +10,10 @@ class SkipGroupsUpdates(BaseMiddleware):
         self,
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
         message: Message,
-        data: Dict[str, Any]
+        data: Dict[str, Any],
     ) -> Any:
-        if message.chat.type in ['group', 'supergroup', 'channel']:
-            logging.info('Скипаю апдейт т.к. групповой чат')
+        if message.chat.type in ["group", "supergroup", "channel"]:
+            logging.info("Скипаю апдейт т.к. групповой чат")
             return
         result = await handler(message, data)
         return result

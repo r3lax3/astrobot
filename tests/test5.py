@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+
 import ephem
+
 
 # Функция для определения знака Зодиака Луны на определенную дату
 def get_moon_sign(date):

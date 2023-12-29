@@ -1,31 +1,25 @@
-from aiogram import Router, Bot
-from aiogram.types import Message, User
-from aiogram.fsm.context import FSMContext
-from aiogram.filters import CommandStart, Command
+from aiogram import Bot, Router
 from aiogram.exceptions import TelegramBadRequest
+from aiogram.filters import Command, CommandStart
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, User
 
 from src import config, messages
-from src.keyboard_manager import KeyboardManager
-from src.filters import AdminFilter, UserFilter, UserInDatabase
 from src.database import Database
+from src.filters import AdminFilter, UserFilter, UserInDatabase
+from src.keyboard_manager import KeyboardManager
 from src.routers.states import MainMenu
+
 from .main_menu import main_menu
 
-
 r = Router()
-start_video: str = config.get(
-    'files.start_video'
-)
+start_video: str = config.get("files.start_video")
 
 
 # Handler for '/start' command for admin user
 @r.message(CommandStart(), AdminFilter())
-@r.message(Command(commands=['menu']), ~UserInDatabase(), AdminFilter())
-async def user_command_start_handler(
-    message: Message,
-    state: FSMContext,
-    bot: Bot
-):
+@r.message(Command(commands=["menu"]), ~UserInDatabase(), AdminFilter())
+async def user_command_start_handler(message: Message, state: FSMContext, bot: Bot):
     await start(message, state, bot)
 
 
@@ -37,7 +31,7 @@ async def admin_command_start_handler(
     bot: Bot,
     database: Database,
     event_from_user: User,
-    keyboards: KeyboardManager
+    keyboards: KeyboardManager,
 ):
     user = database.get_user(user_id=event_from_user.id)
 
@@ -48,34 +42,25 @@ async def admin_command_start_handler(
 
 
 # Function to initiate the bot interaction, sending welcome video and message
-async def start(
-    message: Message,
-    state: FSMContext,
-    bot: Bot
-):
+async def start(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
 
-    start_message_id = data.get('start_message_id', None)
+    start_message_id = data.get("start_message_id", None)
     if start_message_id is not None:
         try:
             await bot.delete_message(
-                chat_id=message.chat.id,
-                message_id=start_message_id
+                chat_id=message.chat.id, message_id=start_message_id
             )
         except TelegramBadRequest:
             pass
-    
+
     start_message = await message.answer_video(
-        video=start_video,
-        caption=messages.start
+        video=start_video, caption=messages.start
     )
-    bot_message = await message.answer(
-        messages.enter_your_name
-    )
+    bot_message = await message.answer(messages.enter_your_name)
     await state.update_data(
-        main_menu_message_id=start_message.message_id, 
+        main_menu_message_id=start_message.message_id,
         start_message_id=start_message.message_id,
-        del_messages=[bot_message.message_id]
+        del_messages=[bot_message.message_id],
     )
     await state.set_state(MainMenu.get_name)
-

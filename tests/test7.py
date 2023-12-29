@@ -1,7 +1,7 @@
-import ephem
-
-from datetime import datetime, timedelta
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+
+import ephem
 
 
 @dataclass

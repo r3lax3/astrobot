@@ -1,29 +1,27 @@
 import asyncio
-import sys
 import logging
 import sqlite3
+import sys
+
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.types import BufferedInputFile
+
+from src import config
+from src.database import Database
+from src.database.models import User
+from src.keyboard_manager import KeyboardManager
+from src.middlewares import (AddDataInRedis,
+                             ClearKeyboardFromMessageMiddleware,
+                             DeleteMessagesMiddleware, MediaGroupMiddleware,
+                             NullMiddleware, SkipGroupsUpdates)
+from src.routers import admin_router, user_router
+from src.scheduler import EveryDayPredictionScheduler
 
 # from aiohttp import web
 
-from aiogram import Bot, Dispatcher
-from aiogram.types import BufferedInputFile
-from aiogram.fsm.storage.redis import RedisStorage
 # from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-from src import config
-from src.routers import user_router, admin_router
-from src.database import Database
-from src.database.models import User
-from src.scheduler import EveryDayPredictionScheduler
-from src.keyboard_manager import KeyboardManager
-from src.middlewares import (
-    DeleteMessagesMiddleware, 
-    MediaGroupMiddleware, 
-    SkipGroupsUpdates,
-    NullMiddleware,
-    ClearKeyboardFromMessageMiddleware,
-    AddDataInRedis
-)
 
 
 ADMIN_CHAT_ID: int = config.get('admin_chat.id')
@@ -61,23 +59,6 @@ async def schedule_backup(db, bot, interval_seconds):
         await asyncio.sleep(interval_seconds)
 
 
-async def check_users_and_schedule(
-    scheduler: EveryDayPredictionScheduler, 
-    database: Database, 
-    bot: Bot
-):
-    rows = database.session.query(
-        User.user_id
-    ).all()
-    for row in rows:
-        user_id = row[0]
-        await scheduler.add_send_message_job(
-            user_id, 
-            database, 
-            bot
-        )
-
-
 # async def on_startup(bot: Bot) -> None:
 #     # If you have a self-signed SSL certificate, then you will need to send a public
 #     # certificate to Telegram
@@ -91,11 +72,15 @@ async def main():
     bot = Bot(token, parse_mode='html')
     database = Database()
 
-    scheduler = EveryDayPredictionScheduler()
-
-    await check_users_and_schedule(scheduler, database, bot)
-
+    scheduler = EveryDayPredictionScheduler(database, bot)
     scheduler.start()
+    await scheduler.check_users_and_schedule()
+
+    jobs = scheduler.get_jobs()
+    print('\n\n')
+    for job in jobs:
+        print(f"ID: {job.id}, Next run: {job.next_run_time}, Job: {job.func.__name__}")
+    print('\n\n')
 
     dp = Dispatcher(
         storage=RedisStorage.from_url('redis://localhost:6379'),
