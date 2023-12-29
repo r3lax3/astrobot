@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sqlite3
 import sys
+import locale
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
@@ -140,6 +141,7 @@ async def main():
 
 
 if __name__ == '__main__':
+    locale.setlocale(locale.LC_ALL, 'en_US.utf-8')
     logging.basicConfig(level=logging.INFO, stream=sys.stdout, encoding="utf-8")
     asyncio.run(main())
 
