@@ -16,11 +16,12 @@ ZODIAC_RU_TRANSLATION = {
 }
 MOON_PHASE_RU_TRANSLATIONS = {
     MoonPhase.NEW_MOON: "НОВОЛУНИЕ",
-    MoonPhase.WAXING_CRESCENT: "РАСТУЩИЙ ПОЛУМЕСЯЦ",
-    MoonPhase.FIRST_QUARTER: "ПЕРВАЯ ЧЕТВЕРТЬ",
+    MoonPhase.WAXING_CRESCENT: "РАСТУЩИЙ\nПОЛУМЕСЯЦ",
+    MoonPhase.FIRST_QUARTER: "ПЕРВАЯ\nЧЕТВЕРТЬ",
     MoonPhase.WAXING_GIBBOUS: "РАСТУЩАЯ ЛУНА",
     MoonPhase.FULL_MOON: "ПОЛНОЛУНИЕ",
     MoonPhase.WANING_GIBBOUS: "УБЫВАЮЩАЯ ЛУНА",
-    MoonPhase.LAST_QUARTER: "ПОСЛЕДНЯЯ ЧЕТВЕРТЬ",
-    MoonPhase.WANING_CRESCENT: "УБЫВАЮЩИЙ ПОЛУМЕСЯЦ",
+    MoonPhase.LAST_QUARTER: "ПОСЛЕДНЯЯ\nЧЕТВЕРТЬ",
+    MoonPhase.WANING_CRESCENT: "УБЫВАЮЩИЙ\nПОЛУМЕСЯЦ",
 }
+

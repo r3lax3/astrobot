@@ -154,8 +154,14 @@ async def yookassa_payment(
 
     payment = Payment.create(
         {
-            "amount": {"value": f"{price}", "currency": "RUB"},
-            "confirmation": {"type": "redirect", "return_url": RETURN_URL},
+            "amount": {
+                "value": f"{price}", 
+                "currency": "RUB"
+            },
+            "confirmation": {
+                "type": "redirect", 
+                "return_url": RETURN_URL
+            },
             "capture": False,
             "expires_at": payment_auto_cancel_datetime,
             "description": f"Подписка на АстроПульс, {months_str}",
@@ -171,16 +177,22 @@ async def yookassa_payment(
             created_at=datetime.utcnow().strftime(DATETIME_FORMAT),
         )
     )
+    redirect_url=payment.confirmation.confirmation_url
+    print(f'{redirect_url = }')
+    print(f'{payment.id = }')
 
     await state.update_data(
-        redirect_url=payment.confirmation.confirmation_url, payment_id=payment.id
+        redirect_url=redirect_url,
+        payment_id=payment.id
     )
 
     await get_payment_menu(callback.message, state, keyboards)
 
 
 async def get_payment_menu(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, 
+    state: FSMContext, 
+    keyboards: KeyboardManager
 ):
     data = await state.get_data()
 
@@ -189,8 +201,9 @@ async def get_payment_menu(
     bot_message = await message.answer(
         messages.payment_redirect,
         reply_markup=keyboards.payment_redirect(
-            redirect_url=redirect_url, offer_url=OFFER_URL
-        ),
+            redirect_url=redirect_url, 
+            # offer_url=OFFER_URL
+        )
     )
     await state.update_data(del_messages=[bot_message.message_id, message.message_id])
     await state.set_state(Subscription.check_payment_status)
@@ -257,13 +270,17 @@ async def check_payment_status(
 @r.callback_query(Subscription.action_end, F.data == bt.back_to_menu)
 @r.callback_query(Subscription.chooose_action, F.data == bt.enter_promocode)
 async def enter_promocode_menu_callback_handler(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery,
+    state: FSMContext, 
+    keyboards: KeyboardManager
 ):
     await enter_promocode_menu(callback.message, state, keyboards)
 
 
 async def enter_promocode_menu(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, 
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     bot_message = await message.answer(
         messages.enter_promocode, reply_markup=keyboards.back
@@ -275,7 +292,10 @@ async def enter_promocode_menu(
 # GET PROMOCODE
 @r.message(Subscription.get_promocode, F.text)
 async def get_promocode(
-    message: Message, state: FSMContext, keyboards: KeyboardManager, database: Database
+    message: Message, 
+    state: FSMContext,
+    keyboards: KeyboardManager, 
+    database: Database
 ):
     await state.update_data(promocode_str=message.text)
     await enter_activate_promocode_confirm(message, state, keyboards, database)
@@ -292,7 +312,10 @@ async def enter_activate_promocode_confirm_callback_handler(
 
 
 async def enter_activate_promocode_confirm(
-    message: Message, state: FSMContext, keyboards: KeyboardManager, database: Database
+    message: Message, 
+    state: FSMContext, 
+    keyboards: KeyboardManager,
+    database: Database
 ):
     data = await state.get_data()
 
@@ -300,15 +323,15 @@ async def enter_activate_promocode_confirm(
     promocode = database.get_promocode(promocode_str)
 
     if promocode is not None:
+        if promocode.is_activated:
+            status = PromocodeStatus.activated.value
+        else:
+            status = PromocodeStatus.not_activated.value
         bot_message = await message.answer(
             messages.get_activate_promocode_confirm.format(
                 promocode=promocode_str,
                 period=MONTHS_TO_STR_MONTHS.get(promocode.period, "Ошибка"),
-                status=(
-                    PromocodeStatus.activated.value
-                    if promocode.is_activated
-                    else PromocodeStatus.not_activated.value
-                ),
+                status=status,
             ),
             reply_markup=keyboards.get_activate_promocode_confirm,
         )
@@ -325,7 +348,9 @@ async def enter_activate_promocode_confirm(
 
 @r.message(Subscription.get_promocode)
 async def get_promocode_error(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, 
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     bot_message = await message.answer(messages.not_promocode)
     await enter_promocode_menu(bot_message, state, keyboards)

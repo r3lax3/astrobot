@@ -1,16 +1,15 @@
 from datetime import date, datetime, timedelta
 from typing import Dict, Optional
 
-from aiogram.types import BufferedInputFile
-
 from src import config, messages
 from src.astro_engine.moon import (get_main_lunar_day_at_date, get_moon_phase,
                                    get_moon_signs_at_date, get_next_lunar_day)
 from src.astro_engine.utils import get_moon_in_signs_interpretations
 from src.database import Database
-from src.enums import FileName, MoonSignInterpretationType, ZodiacSign
+from src.enums import MoonSignInterpretationType, ZodiacSign
 from src.image_processing.generate_images import generate_image_with_astrodata
-from src.translations import MOON_PHASE_RU_TRANSLATIONS, ZODIAC_RU_TRANSLATION
+from src.translations import MOON_PHASE_RU_TRANSLATIONS
+
 
 # Get the date format from the configuration
 DATE_FORMAT: str = config.get("database.date_format")

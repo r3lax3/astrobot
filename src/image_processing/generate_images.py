@@ -8,23 +8,27 @@ from src.astro_engine.utils import get_moon_in_signs_interpretations
 from src.enums import Align, FileFormat, MoonPhase, PILPositions, ZodiacSign
 from src.translations import ZODIAC_RU_TRANSLATION
 
-# Get the date format from the configuration
-DATE_FORMAT: str = config.get("database.date_format")
+# PATHS
 BACKGROUND_IMAGE_PATH = "images/backgrounds/purple_background.jpg"
-DATE_TEXT_POSITION = (404, 450)  # Подганял чётко под изображение методом тыка
-COLOR_WHITE = "#ffffff"
 FONT_PATH = "fonts/Comic Sans MS.ttf"
+
+# COLOR
+COLOR_WHITE = "#ffffff"
+
+# FONT SIZES
 DATE_FONT_SIZE = 80
 TEXT_FONT_SIZE = 32
 
+# FONTS
+DATE_FONT = ImageFont.truetype(FONT_PATH, DATE_FONT_SIZE)
+TEXT_FONT = ImageFont.truetype(FONT_PATH, TEXT_FONT_SIZE)
+
+# DATETIME FORMATS
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
 TIME_FORMAT: str = config.get("database.time_format")
 
 MOON_IN_SIGNS_INTERPRETATIONS = get_moon_in_signs_interpretations()
-
-DATE_FONT = ImageFont.truetype(FONT_PATH, DATE_FONT_SIZE)
-TEXT_FONT = ImageFont.truetype(FONT_PATH, TEXT_FONT_SIZE)
 
 
 def zodiac_sign_translate_to_russian(sign_str: ZodiacSign):
@@ -177,3 +181,4 @@ def generate_image_with_astrodata(
     byte_array = io.BytesIO()
     background_image.save(byte_array, format=FileFormat.JPEG.value)
     return byte_array.getvalue()
+

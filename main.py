@@ -2,7 +2,6 @@ import asyncio
 import logging
 import sqlite3
 import sys
-import locale
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
@@ -10,19 +9,20 @@ from aiogram.types import BufferedInputFile
 
 from src import config
 from src.database import Database
-from src.database.models import User
 from src.keyboard_manager import KeyboardManager
-from src.middlewares import (AddDataInRedis,
-                             ClearKeyboardFromMessageMiddleware,
-                             DeleteMessagesMiddleware, MediaGroupMiddleware,
-                             NullMiddleware, SkipGroupsUpdates)
+from src.middlewares import (
+    AddDataInRedis,
+    ClearKeyboardFromMessageMiddleware,
+    DeleteMessagesMiddleware, 
+    MediaGroupMiddleware,
+    NullMiddleware, 
+    SkipGroupsUpdates
+)
 from src.routers import admin_router, user_router
 from src.scheduler import EveryDayPredictionScheduler
 
 # from aiohttp import web
-
 # from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
-
 
 
 ADMIN_CHAT_ID: int = config.get('admin_chat.id')
@@ -141,7 +141,6 @@ async def main():
 
 
 if __name__ == '__main__':
-    locale.setlocale(locale.LC_ALL, 'en_US.utf-8')
     logging.basicConfig(level=logging.INFO, stream=sys.stdout, encoding="utf-8")
     asyncio.run(main())
 

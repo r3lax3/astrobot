@@ -369,13 +369,13 @@ class KeyboardManager:
     def payment_redirect(
         self,
         redirect_url: str,
-        offer_url: str
-    ) -> InlineKeyboardMarkup:
+        # offer_url: str
+    ):
         return self.build_keyboard_from_structure(
             [
                 [
-                    (bt.redirect_button_text, redirect_url),
-                    (bt.offer, offer_url)
+                    (bt.redirect_button_text, redirect_url)
+                    # (bt.offer, offer_url)
                 ],
                 [bt.check_payment_status],
                 [bt.back]
@@ -393,6 +393,8 @@ class KeyboardManager:
                 return InlineKeyboardButton(text=item, callback_data=item)
             if isinstance(item, tuple):
                 if isinstance(item[1], str):
+                    if item[1].startswith('https://'):
+                        return InlineKeyboardButton(text=item[0], url=item[1])
                     return InlineKeyboardButton(text=item[0], callback_data=item[1])
                 if isinstance(item[1], CallbackData):
                     return InlineKeyboardButton(
