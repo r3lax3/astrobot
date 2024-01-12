@@ -81,7 +81,7 @@ buttons_text: dict = {
     # Misc
     "dreams": "💫 Сны",
     "about_bot": "🤔 О боте",
-    "tech_support": "🔧 Техническая поддержка",
+    "support": "📞 Поддержка",
     "try_again": "Попробовать ещё раз",
     "compatibility": "💞Совместимость",
 }
@@ -127,7 +127,7 @@ class KeyboardManager:
                 [bt.general_predictions, bt.moon_in_sign],
                 [bt.compatibility, bt.dreams],
                 [bt.profile_settings],
-                [bt.about_bot, bt.tech_support],
+                [bt.about_bot, bt.support],
             ]
         )
         self.main_menu_prediction_no_access = self.build_keyboard_from_structure(
@@ -137,7 +137,7 @@ class KeyboardManager:
                 [bt.general_predictions, bt.moon_in_sign],
                 [bt.compatibility, bt.dreams],
                 [bt.profile_settings],
-                [bt.about_bot, bt.tech_support],
+                [bt.about_bot, bt.support],
             ]
         )
 

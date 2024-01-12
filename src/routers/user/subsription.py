@@ -38,6 +38,8 @@ MONTHS_TO_STR_MONTHS = {
     12: "12 месяцев",
 }
 
+PROMOCODE_IMAGE: str = config.get("files.promocode")
+
 r = Router()
 
 
@@ -282,8 +284,10 @@ async def enter_promocode_menu(
     state: FSMContext,
     keyboards: KeyboardManager
 ):
-    bot_message = await message.answer(
-        messages.enter_promocode, reply_markup=keyboards.back
+    bot_message = await message.answer_photo(
+        photo=PROMOCODE_IMAGE,
+        caption=messages.enter_promocode, 
+        reply_markup=keyboards.back
     )
     await state.update_data(del_messages=[bot_message.message_id, message.message_id])
     await state.set_state(Subscription.get_promocode)
@@ -358,7 +362,8 @@ async def get_promocode_error(
 
 # GET PROMOCODE ACTIVATION CONFIRM
 @r.callback_query(
-    Subscription.get_activate_promocode_confirm, F.data == bt.activate_promocode
+    Subscription.get_activate_promocode_confirm, 
+    F.data == bt.activate_promocode
 )
 async def activate_promocode(
     callback: CallbackQuery,

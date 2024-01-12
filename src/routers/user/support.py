@@ -9,12 +9,13 @@ from src.routers.states import MainMenu
 r = Router()
 
 
-@r.message(F.text == bt.tech_support)
-async def technical_support_menu(
+@r.message(F.text == bt.support)
+async def support_menu(
     message: Message, state: FSMContext, keyboards: KeyboardManager
 ):
     bot_message = await message.answer(
-        messages.technical_support, reply_markup=keyboards.to_main_menu
+        messages.support, 
+        reply_markup=keyboards.to_main_menu
     )
 
     await state.update_data(del_messages=[bot_message.message_id])

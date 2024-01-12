@@ -14,12 +14,11 @@ from src.routers.user.prediction import r as prediction_router
 from src.routers.user.profile_settings import r as profile_settings_router
 from src.routers.user.start import r as start_router
 from src.routers.user.subsription import r as subsription_router
-from src.routers.user.technical_support import r as technical_support_router
+from src.routers.user.support import r as support_router
 
 r = Router()
 
 
-# The main router for the Telegram bot, integrating various sub-routers
 all_routers = [
     main_menu_router,
     about_router,
@@ -34,6 +33,6 @@ all_routers = [
     profile_settings_router,
     start_router,
     subsription_router,
-    technical_support_router,
+    support_router,
 ]
 r.include_routers(*all_routers)

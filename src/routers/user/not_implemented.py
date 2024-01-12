@@ -7,10 +7,9 @@ from src.keyboard_manager import KeyboardManager, bt
 from src.routers.user.main_menu import main_menu
 
 r = Router()
-not_implemented_list = [bt.theme, bt.compatibility]
+not_implemented_list = [bt.theme]
 
 
-# Всякая хуйня которую я ещё не написал
 @r.callback_query(F.data.in_(not_implemented_list))
 async def not_implemented_error_callback_handler(
     callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager, bot: Bot

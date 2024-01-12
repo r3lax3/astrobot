@@ -149,17 +149,29 @@ async def enter_current_location(
 async def get_current_location(
     message: Message, state: FSMContext, keyboards: KeyboardManager
 ):
+    data = await state.get_data()
+
     longitude = message.location.longitude
     latitude = message.location.latitude
     current_location_title = get_location_by_coords(
-        longitude=longitude, latitude=latitude
+        longitude=longitude, 
+        latitude=latitude
     )
-    bot_message = await message.answer(
-        messages.get_current_location_confirm.format(
-            current_location=current_location_title
-        ),
-        reply_markup=keyboards.confirm,
-    )
+
+    if data['first_time']:
+        bot_message = await message.answer(
+            messages.get_current_location_confirm_first_time.format(
+                current_location=current_location_title
+            ),
+            reply_markup=keyboards.confirm,
+        )
+    else:
+        bot_message = await message.answer(
+            messages.get_current_location_confirm.format(
+                current_location=current_location_title
+            ),
+            reply_markup=keyboards.confirm,
+        )
     await state.update_data(
         del_messages=[bot_message.message_id, message.message_id],
         current_location={"latitude": latitude, "longitude": longitude},
