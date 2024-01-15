@@ -240,9 +240,7 @@ async def get_current_location_confirmed(
                 every_day_prediction_time="7:30",
             )
         )
-        await scheduler.add_send_message_job(
-            user_id=event_from_user.id, database=database, bot=bot
-        )
+        await scheduler.set_all_jobs(user_id=event_from_user.id)
         await state.update_data(
             prediction_access=True,
             subscription_end_date=test_period_end.strftime(database_datetime_format),
