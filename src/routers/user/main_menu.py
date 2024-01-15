@@ -32,7 +32,11 @@ async def main_menu(
         except TelegramBadRequest:
             pass
 
-    if data["prediction_access"]:
+    prediction_access = data.get("prediction_access", None)
+    if prediction_access is None:
+        await state.update_data(prediction_access=True)
+        prediction_access = True
+    if prediction_access:
         keyboard = keyboards.main_menu
     else:
         keyboard = keyboards.main_menu_prediction_no_access

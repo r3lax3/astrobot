@@ -177,7 +177,7 @@ async def prediction_on_date_get_prediction(
         sticker_message = await message.answer_sticker(WAIT_STICKER)
 
         text = await get_prediction_text(
-            target_date=target_date, database=database, user_id=event_from_user.id
+            date=target_date, database=database, user_id=event_from_user.id
         )
 
         photo_bytes = get_image_with_astrodata(user, database)
