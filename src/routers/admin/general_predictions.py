@@ -143,13 +143,20 @@ async def get_general_prediction_text(
 ):
     data = await state.get_data()
 
+    prediction_type = data['general_predictions_type']
+    prediction_date = data["general_prediction_date"]
+    prediction_format = pred_type_to_date_fmt[prediction_type]
+
+    formatted_date = datetime.strptime(prediction_date, prediction_format).strftime(prediction_format)
+
     database.add_general_prediction(
-        date=data["general_prediction_date"], prediction=message.text
+        date=formatted_date, 
+        prediction=message.text
     )
 
     bot_message = await message.answer(
         messages.general_prediction_added.format(
-            type=data["general_predictions_type"],
+            type=prediction_type,
             date=data["general_prediction_date"],
             text=message.text,
         ),
