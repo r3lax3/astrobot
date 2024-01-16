@@ -55,14 +55,14 @@ async def card_of_day_menu(
 
     while True:
         try:
-            await bot.copy_message(
+            card_of_day_message = await bot.copy_message(
                 chat_id=event_from_user.id,           # Куда
                 from_chat_id=admin_chat_id,           # Откуда
                 message_id=card_message_id,           # Что
                 caption=messages.card_of_day,         # Текст к изображению
                 reply_markup=keyboards.to_main_menu,  # Клавиатура
             )
-            break
+            
         except TelegramBadRequest:
             if cards is None:
                 cards = database.get_all_card_of_day()
@@ -80,6 +80,11 @@ async def card_of_day_menu(
         except TelegramForbiddenError:
             await state.set_state(MainMenu.end_action)
             return
+        else:
+            await state.update_data(
+                delete_keyboard_message_id=card_of_day_message.message_id
+            )
+            break
 
     await state.set_state(MainMenu.end_action)
 
