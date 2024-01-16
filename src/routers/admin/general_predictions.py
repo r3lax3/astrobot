@@ -93,14 +93,14 @@ async def get_general_prediction_date(
     prediction_type = data["general_predictions_type"]
 
     try:
-        datetime.strptime(message.text, pred_type_to_date_fmt[type])
+        datetime.strptime(message.text, pred_type_to_date_fmt[prediction_type])
 
     except ValueError:
         bot_message1 = await message.answer(messages.get_general_prediction_date_error)
         bot_message2 = await message.answer(
             messages.enter_general_prediction_date.format(
-                type=type,
-                format=pred_type_to_example[type],
+                type=prediction_type,
+                format=pred_type_to_example[prediction_type],
             ),
             reply_markup=keyboards.back,
         )
