@@ -67,11 +67,12 @@ async def enter_general_prediction_date(
 ):
     data = await state.get_data()
 
-    type = data["general_predictions_type"]
+    predictions_type = data["general_predictions_type"]
 
     bot_message = await message.answer(
         messages.enter_general_prediction_date.format(
-            type=type, format=pred_type_to_example[type]
+            type=predictions_type, 
+            format=pred_type_to_example[predictions_type]
         ),
         reply_markup=keyboards.back,
     )
