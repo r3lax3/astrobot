@@ -58,13 +58,17 @@ async def get_prediction_type(
 
     date_str = datetime.now().strftime(format)
     prediction_text = database.get_general_prediction(date_str)
+
     if prediction_text is None:
         prediction_text = messages.general_prediction_not_added
 
-    bot_message = await callback.message.answer_photo(
-        photo=GENERAL_PREDICTION_IMAGE,
-        caption=prediction_text,
+    await callback.message.answer_photo(
+        photo=GENERAL_PREDICTION_IMAGE
+    )
+    bot_message = await callback.message.answer(
+        text=prediction_text,
         reply_markup=keyboards.to_main_menu,
+        parse_mode='html'
     )
     await state.update_data(delete_keyboard_message_id=bot_message.message_id)
     await state.set_state(MainMenu.end_action)

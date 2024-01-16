@@ -83,15 +83,17 @@ async def enter_general_prediction_date(
 
 @r.message(AdminStates.get_general_prediction_date, F.text)
 async def get_general_prediction_date(
-    message: Message, state: FSMContext, keyboards: KeyboardManager, database: Database
+    message: Message, 
+    state: FSMContext,
+    keyboards: KeyboardManager, 
+    database: Database
 ):
     data = await state.get_data()
-    type = data["general_predictions_type"]
+    prediction_type = data["general_predictions_type"]
 
     try:
         datetime.strptime(message.text, pred_type_to_date_fmt[type])
-        await state.update_data(general_prediction_date=message.text)
-        await enter_general_prediction_text(message, state, keyboards, database)
+
     except ValueError:
         bot_message1 = await message.answer(messages.get_general_prediction_date_error)
         bot_message2 = await message.answer(
@@ -105,9 +107,19 @@ async def get_general_prediction_date(
             del_messages=[bot_message1.message_id, bot_message2.message_id]
         )
 
+    else:
+        prediction_format = pred_type_to_date_fmt[prediction_type]
+        formatted_date = datetime.strptime(message.text, prediction_format).strftime(prediction_format)
+
+        await state.update_data(general_prediction_date=formatted_date)
+        await enter_general_prediction_text(message, state, keyboards, database)
+
 
 async def enter_general_prediction_text(
-    message: Message, state: FSMContext, keyboards: KeyboardManager, database: Database
+    message: Message, 
+    state: FSMContext, 
+    keyboards: KeyboardManager,
+    database: Database
 ):
     data = await state.get_data()
 
@@ -145,22 +157,21 @@ async def get_general_prediction_text(
 
     prediction_type = data['general_predictions_type']
     prediction_date = data["general_prediction_date"]
-    prediction_format = pred_type_to_date_fmt[prediction_type]
 
-    formatted_date = datetime.strptime(prediction_date, prediction_format).strftime(prediction_format)
 
     database.add_general_prediction(
-        date=formatted_date, 
-        prediction=message.text
+        date=prediction_date, 
+        prediction=message.html_text
     )
 
     bot_message = await message.answer(
         messages.general_prediction_added.format(
             type=prediction_type,
             date=data["general_prediction_date"],
-            text=message.text,
+            text=message.html_text,
         ),
         reply_markup=keyboards.back_to_adminpanel,
+        parse_mode='html'
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.action_end)
