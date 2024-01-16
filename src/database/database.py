@@ -348,7 +348,7 @@ class Database:
         self.session.add(card_of_day)
         self.session.commit()
 
-    def get_all_card_of_day(self) -> Optional[List[int]]:
+    def get_all_card_of_day(self) -> List[int]:
         cards = self.session.query(CardOfDay).all()
         return [card.message_id for card in cards]
 

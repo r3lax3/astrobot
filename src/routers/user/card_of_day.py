@@ -33,32 +33,54 @@ async def card_of_day_menu(
     today = datetime.utcnow() + timedelta(hours=user.timezone_offset)
     formatted_today = today.strftime(date_format)
 
-    cards: List[int] = None
-    if formatted_today == user.last_card_update and user.card_message_id is not None:
+    cards: List[int] = []
+    if (
+        formatted_today == user.last_card_update 
+        and 
+        user.card_message_id is not None
+    ):
         card_message_id = user.card_message_id
     else:
         cards = database.get_all_card_of_day()
-        card_message_id = random.choice(cards)
+
+        if len(cards) == 0:
+            bot_message = await message.answer(
+                messages.no_cards_of_day,
+                reply_markup=keyboards.to_main_menu
+            )
+            await state.update_data(del_messages=[bot_message.message_id])
+            return
+        
+        card_message_id: int = random.choice(cards)
+
     while True:
         try:
-            bot_message = await bot.copy_message(
-                chat_id=event_from_user.id,  # Куда
-                from_chat_id=admin_chat_id,  # Откуда
-                message_id=card_message_id,  # Что
-                caption=messages.card_of_day,  # Текст к изображению
+            await bot.copy_message(
+                chat_id=event_from_user.id,           # Куда
+                from_chat_id=admin_chat_id,           # Откуда
+                message_id=card_message_id,           # Что
+                caption=messages.card_of_day,         # Текст к изображению
                 reply_markup=keyboards.to_main_menu,  # Клавиатура
             )
             break
         except TelegramBadRequest:
             if cards is None:
                 cards = database.get_all_card_of_day()
+
+            if len(cards) == 0:
+                bot_message = await message.answer(
+                    messages.no_cards_of_day,
+                    reply_markup=keyboards.to_main_menu
+                )
+                await state.update_data(del_messages=[bot_message.message_id])
+                return
+
             card_message_id = random.choice(cards)
 
         except TelegramForbiddenError:
             await state.set_state(MainMenu.end_action)
             return
 
-    await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(MainMenu.end_action)
 
     # В самом конце чтобы задержку пользователь не видел
@@ -68,3 +90,4 @@ async def card_of_day_menu(
             card_message_id=card_message_id,
             card_update_time=today.strftime(date_format),
         )
+
