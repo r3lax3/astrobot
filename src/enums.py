@@ -90,3 +90,9 @@ class PaymentStatus(Enum):
     SUCCESS = "success"
     FAILED = "failed"
     PENDING = "pending"
+
+class GeneralPredictionType(Enum):
+    month = "month"
+    week = "week"
+    day = "day"
+
