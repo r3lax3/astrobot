@@ -44,6 +44,8 @@ async def dreams_menu(
         caption=dreams_interpretations[lunar_day.number - 1],
         reply_markup=keyboards.to_main_menu,
     )
-    await state.update_data(del_messages=[bot_message.message_id])
+    await state.update_data(
+        delete_keyboard_message_id=bot_message.message_id
+    )
     await state.set_state(MainMenu.end_action)
 
