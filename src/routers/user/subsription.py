@@ -7,6 +7,7 @@ from aiogram.types import CallbackQuery, Message, User
 from yookassa import Configuration, Payment
 
 from src import config, messages
+from src.scheduler import EveryDayPredictionScheduler
 from src.database import Database
 from src.database.models import Payment as DBPayment
 from src.database.models import Promocode
@@ -157,11 +158,11 @@ async def yookassa_payment(
     payment = Payment.create(
         {
             "amount": {
-                "value": f"{price}", 
+                "value": f"{price}",
                 "currency": "RUB"
             },
             "confirmation": {
-                "type": "redirect", 
+                "type": "redirect",
                 "return_url": RETURN_URL
             },
             "capture": False,
@@ -192,8 +193,8 @@ async def yookassa_payment(
 
 
 async def get_payment_menu(
-    message: Message, 
-    state: FSMContext, 
+    message: Message,
+    state: FSMContext,
     keyboards: KeyboardManager
 ):
     data = await state.get_data()
@@ -203,7 +204,7 @@ async def get_payment_menu(
     bot_message = await message.answer(
         messages.payment_redirect,
         reply_markup=keyboards.payment_redirect(
-            redirect_url=redirect_url, 
+            redirect_url=redirect_url,
             # offer_url=OFFER_URL
         )
     )
@@ -273,20 +274,20 @@ async def check_payment_status(
 @r.callback_query(Subscription.chooose_action, F.data == bt.enter_promocode)
 async def enter_promocode_menu_callback_handler(
     callback: CallbackQuery,
-    state: FSMContext, 
+    state: FSMContext,
     keyboards: KeyboardManager
 ):
     await enter_promocode_menu(callback.message, state, keyboards)
 
 
 async def enter_promocode_menu(
-    message: Message, 
+    message: Message,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
     bot_message = await message.answer_photo(
         photo=PROMOCODE_IMAGE,
-        caption=messages.enter_promocode, 
+        caption=messages.enter_promocode,
         reply_markup=keyboards.back
     )
     await state.update_data(del_messages=[bot_message.message_id, message.message_id])
@@ -296,9 +297,9 @@ async def enter_promocode_menu(
 # GET PROMOCODE
 @r.message(Subscription.get_promocode, F.text)
 async def get_promocode(
-    message: Message, 
+    message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager, 
+    keyboards: KeyboardManager,
     database: Database
 ):
     await state.update_data(promocode_str=message.text)
@@ -316,8 +317,8 @@ async def enter_activate_promocode_confirm_callback_handler(
 
 
 async def enter_activate_promocode_confirm(
-    message: Message, 
-    state: FSMContext, 
+    message: Message,
+    state: FSMContext,
     keyboards: KeyboardManager,
     database: Database
 ):
@@ -352,7 +353,7 @@ async def enter_activate_promocode_confirm(
 
 @r.message(Subscription.get_promocode)
 async def get_promocode_error(
-    message: Message, 
+    message: Message,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
@@ -362,7 +363,7 @@ async def get_promocode_error(
 
 # GET PROMOCODE ACTIVATION CONFIRM
 @r.callback_query(
-    Subscription.get_activate_promocode_confirm, 
+    Subscription.get_activate_promocode_confirm,
     F.data == bt.activate_promocode
 )
 async def activate_promocode(
@@ -371,6 +372,7 @@ async def activate_promocode(
     keyboards: KeyboardManager,
     database: Database,
     event_from_user: User,
+    scheduler: EveryDayPredictionScheduler
 ):
     data = await state.get_data()
 
@@ -380,13 +382,15 @@ async def activate_promocode(
 
     if not is_promocode_activated:
         database.add_period_to_subscription_end_date(
-            user_id=event_from_user.id, period=timedelta(days=period * 30)
+            user_id=event_from_user.id,
+            period=timedelta(days=period * 30)
         )
         database.update_promocode(
             promocode_str=promocode_str,
             is_activated=True,
             activated_by=event_from_user.id,
         )
+        await scheduler.set_all_jobs(event_from_user.id)
         bot_message = await callback.message.answer(
             messages.promocode_activated, reply_markup=keyboards.promocode_activated
         )

@@ -130,7 +130,8 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
     async def _add_reminder_jobs(self, user: User):
         subscription_end_datetime = datetime.strptime(
-            user.subscription_end_date, DATETIME_FORMAT
+            user.subscription_end_date,
+            DATETIME_FORMAT
         )
 
         current_location = self.database.get_location(

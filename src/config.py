@@ -52,3 +52,4 @@ def set(key: str, value: Any) -> None:
 
     with open("config.toml", "wb") as f:
         tomli_w.dump(config, f)
+
