@@ -111,7 +111,7 @@ async def delete_user_subscription(
         new_subscription_end_date=datetime.utcnow().strftime(datetime_format)
     )
     await change_user_subscription_end_date(
-        callback.message, state, keyboards, database, scheduler, bot
+        callback.message, state, keyboards, database, scheduler
     )
 
 
@@ -126,7 +126,7 @@ async def get_user_subscription_end_date(
 ):
     await state.update_data(new_subscription_end_date=message.text)
     await change_user_subscription_end_date(
-        message, state, keyboards, database, scheduler, bot
+        message, state, keyboards, database, scheduler
     )
 
 
