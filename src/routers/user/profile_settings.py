@@ -15,24 +15,30 @@ from src.routers.user.main_menu import main_menu
 from src.scheduler import EveryDayPredictionScheduler
 from src.utils import get_location_by_coords, get_timezone_offset
 
-r = Router()
-database_datetime_format: str = config.get("database.datetime_format")
 
-subscription_test_period_in_days: int = config.get("subscription.test_period_in_days")
+DATETIME_FORMAT: str = config.get("database.datetime_format")
+SUBSCRIPTION_TEST_PERIOD: int = config.get("subscription.test_period_in_days")
+PROFILE_IMAGE = config.get("files.birth_data_confirmed")
+
+r = Router()
 
 
 @r.callback_query(ProfileSettings.choose_gender, F.data == bt.back)
 @r.callback_query(ProfileSettings.get_new_name, F.data == bt.back)
 @r.callback_query(F.data == bt.profile_settings)
 async def profile_settings_menu_callback_handler(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     await profile_settings_menu(callback.message, state, keyboards)
 
 
 @r.message(F.text, F.text == bt.profile_settings)
 async def profile_settings_menu(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     data = await state.get_data()
 
@@ -43,8 +49,9 @@ async def profile_settings_menu(
     birth_datetime = data["birth_datetime"]
     birth_location_title = data["birth_location_title"]
 
-    bot_message = await message.answer(
-        messages.profile_settings.format(
+    bot_message = await message.answer_photo(
+        photo=PROFILE_IMAGE,
+        caption=messages.profile_settings.format(
             name=name,
             current_location_title=current_location_title,
             birth_datetime=birth_datetime,
@@ -217,7 +224,7 @@ async def get_current_location_confirmed(
         birth_location_title = data["birth_location_title"]
 
         now = datetime.utcnow()
-        test_period_end = now + timedelta(days=subscription_test_period_in_days)
+        test_period_end = now + timedelta(days=SUBSCRIPTION_TEST_PERIOD)
         database.add_user(
             DBUser(
                 user_id=event_from_user.id,
@@ -234,7 +241,7 @@ async def get_current_location_confirmed(
                     title=birth_location_title
                 ),
                 subscription_end_date=test_period_end.strftime(
-                    database_datetime_format
+                    DATETIME_FORMAT
                 ),
                 timezone_offset=get_timezone_offset(**current_location),
                 every_day_prediction_time="7:30",
@@ -243,7 +250,7 @@ async def get_current_location_confirmed(
         await scheduler.set_all_jobs(user_id=event_from_user.id)
         await state.update_data(
             prediction_access=True,
-            subscription_end_date=test_period_end.strftime(database_datetime_format),
+            subscription_end_date=test_period_end.strftime(DATETIME_FORMAT),
             timezone_offset=get_timezone_offset(**current_location),
         )
         await main_menu(callback.message, state, keyboards, bot)
