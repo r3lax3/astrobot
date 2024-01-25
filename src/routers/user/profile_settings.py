@@ -18,7 +18,7 @@ from src.utils import get_location_by_coords, get_timezone_offset
 
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 SUBSCRIPTION_TEST_PERIOD: int = config.get("subscription.test_period_in_days")
-PROFILE_IMAGE = config.get("files.birth_data_confirmed")
+PROFILE_IMAGE = config.get("files.profile")
 
 r = Router()
 
