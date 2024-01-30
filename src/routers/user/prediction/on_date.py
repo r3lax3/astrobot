@@ -226,7 +226,8 @@ async def prediction_on_date_get_prediction(
 
         await message.answer_photo(photo=photo)
         prediction_message = await message.answer(
-            text=text, reply_markup=keyboards.predict_completed
+            text=text,
+            reply_markup=keyboards.predict_completed
         )
 
         await state.update_data(
@@ -265,12 +266,16 @@ async def update_prediction_date(
         reply_markup=keyboards.predict_choose_date(date),
     )
 
-    prediction_message_id = data.get("prediction_message_id", None)
+    prediction_message_id = data.get("delete_keyboard_message_id", None)
 
     if message.message_id != prediction_message_id:
         await state.update_data(
-            del_messages=[date_message.message_id, message.message_id]
+            del_messages=[
+                date_message.message_id,
+                message.message_id
+            ]
         )
+
     else:
         await state.update_data(del_messages=[date_message.message_id])
 
