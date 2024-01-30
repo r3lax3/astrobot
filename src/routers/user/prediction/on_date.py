@@ -231,7 +231,8 @@ async def prediction_on_date_get_prediction(
         )
 
         await state.update_data(
-            delete_keyboard_message_id=prediction_message.message_id
+            delete_keyboard_message_id=prediction_message.message_id,
+            last_prediction_message_id=prediction_message.message_id
         )
         await state.set_state(MainMenu.prediction_end)
     else:
@@ -255,7 +256,9 @@ async def prediction_update_date_callback_handler(
 
 
 async def update_prediction_date(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     data = await state.get_data()
 
@@ -266,7 +269,7 @@ async def update_prediction_date(
         reply_markup=keyboards.predict_choose_date(date),
     )
 
-    prediction_message_id = data.get("delete_keyboard_message_id", None)
+    prediction_message_id = data.get("last_prediction_message_id", None)
 
     if message.message_id != prediction_message_id:
         await state.update_data(
