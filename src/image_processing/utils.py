@@ -87,14 +87,19 @@ def get_image_with_astrodata(
     user,
     database: Database,
     moon_signs: Optional[Dict] = None,
+    date: Optional[datetime] = None
 ) -> bytes:
-    date = (datetime.utcnow() + timedelta(hours=user.timezone_offset)).date()
+    if date is None:
+        date = (datetime.utcnow() + timedelta(hours=user.timezone_offset)).date()
+
     if moon_signs is None:
         # Getting image
         timezone_offset: int = user.timezone_offset
 
         moon_signs = get_moon_signs_at_date(
-            date, timezone_offset, user.current_location  # %Y-%m-%d, not datetime
+            date,  # date is %Y-%m-%d, not datetime
+            timezone_offset,
+            user.current_location
         )
 
     timezone_offset = user.timezone_offset

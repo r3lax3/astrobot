@@ -16,6 +16,7 @@ from src.routers.states import MainMenu, Subscription
 from src.routers.user.prediction.text_formatting import get_prediction_text
 from src.utils import get_timezone_offset
 
+
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
 DREAMS_INTERPRETATIONS_FILEPATH = "./dreams.csv"
@@ -36,7 +37,13 @@ async def get_prediction_callback_redirect(
     database: Database,
     event_from_user: User,
 ):
-    await get_prediction(callback.message, state, keyboards, database, event_from_user)
+    await get_prediction(
+        callback.message,
+        state,
+        keyboards,
+        database,
+        event_from_user
+    )
 
 
 @r.message(F.text, F.text == bt.prediction)
@@ -72,18 +79,27 @@ async def get_prediction(
 
 
 @r.callback_query(
-    MainMenu.prediction_end, F.data == bt.check_another_date, ~HasPredictionAccess()
+    MainMenu.prediction_end,
+    F.data == bt.check_another_date,
+    ~HasPredictionAccess()
 )
-@r.callback_query(MainMenu.prediction_choose_date, ~HasPredictionAccess())
+@r.callback_query(
+    MainMenu.prediction_choose_date,
+    ~HasPredictionAccess()
+)
 async def prediction_access_denied_callback_handler(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     await prediction_access_denied(callback.message, state, keyboards)
 
 
 @r.message(MainMenu.prediction_choose_action, ~HasPredictionAccess())
 async def prediction_access_denied(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     bot_message = await message.answer(
         messages.prediction_access_denied,
@@ -97,12 +113,17 @@ async def prediction_access_denied(
 
 @r.callback_query(MainMenu.prediction_end, F.data == bt.check_another_date)
 async def prediction_ended_back(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     await prediction_on_date(callback.message, state, keyboards)
 
 
-@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.prediction_for_date)
+@r.message(
+    MainMenu.prediction_choose_action,
+    F.text, F.text == bt.prediction_for_date
+)
 async def prediction_on_date(
     message: Message, state: FSMContext, keyboards: KeyboardManager
 ):
@@ -114,7 +135,10 @@ async def prediction_on_date(
     await update_prediction_date(message, state, keyboards)
 
 
-@r.message(MainMenu.prediction_choose_action, F.text, F.text == bt.prediction_for_today)
+@r.message(
+    MainMenu.prediction_choose_action,
+    F.text, F.text == bt.prediction_for_today
+)
 async def prediction_for_today(
     message: Message,
     state: FSMContext,
@@ -133,7 +157,12 @@ async def prediction_for_today(
     await state.update_data(date=today_date.strptime(today_date, DATE_FORMAT))
 
     await prediction_on_date_get_prediction(
-        message, state, keyboards, database, event_from_user, bot
+        message,
+        state,
+        keyboards,
+        database,
+        event_from_user,
+        bot
     )
 
 
@@ -148,7 +177,12 @@ async def prediction_on_date_get_prediction_callback_redirect(
     bot: Bot,
 ):
     await prediction_on_date_get_prediction(
-        callback.message, state, keyboards, database, event_from_user, bot
+        callback.message,
+        state,
+        keyboards,
+        database,
+        event_from_user,
+        bot
     )
 
 
@@ -180,7 +214,7 @@ async def prediction_on_date_get_prediction(
             date=target_date, database=database, user_id=event_from_user.id
         )
 
-        photo_bytes = get_image_with_astrodata(user, database)
+        photo_bytes = get_image_with_astrodata(user, database, date=target_date)
 
         photo = BufferedInputFile(file=photo_bytes, filename=FileName.PREDICTION.value)
 
