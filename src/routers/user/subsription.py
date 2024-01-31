@@ -16,6 +16,7 @@ from src.keyboard_manager import KeyboardManager, bt
 from src.models import SubscriptionPeriod
 from src.routers.states import MainMenu, Subscription
 
+
 YOOKASSA_TOKEN: str = config.get("payments.yookassa_token")
 YOOKASSA_SHOP_ID: int = config.get("payments.yookassa_shop_id")
 
@@ -96,7 +97,8 @@ async def buy_subscription_menu(
 
     if now > user_subscription_end_datetime:
         bot_message = await callback.message.answer(
-            messages.subscription_buy, reply_markup=keyboards.buy_subscription
+            messages.subscription_buy,
+            reply_markup=keyboards.buy_subscription
         )
     else:
         subscription_end_datetime = (
@@ -347,8 +349,7 @@ async def enter_activate_promocode_confirm(
         )
         await state.set_state(Subscription.get_activate_promocode_confirm)
     else:
-        bot_message = await message.answer(messages.promocode_not_found)
-        await enter_promocode_menu(bot_message, state, keyboards)
+        await get_promocode_error(message, state, keyboards)
 
 
 @r.message(Subscription.get_promocode)
