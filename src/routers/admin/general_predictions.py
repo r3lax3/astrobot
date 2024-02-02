@@ -53,7 +53,7 @@ async def general_predictions_add_menu(
     keyboards: KeyboardManager
 ):
     bot_message = await callback.message.answer(
-        messages.choose_general_prediction_type,
+        messages.CHOOSE_GENERAL_PREDICTION_TYPE,
         reply_markup=keyboards.choose_general_prediction_type,
     )
     await state.update_data(del_messages=[bot_message.message_id])
@@ -91,7 +91,7 @@ async def enter_general_prediction_date(
     predictions_type = GeneralPredictionType(data["general_predictions_type"])
 
     bot_message = await message.answer(
-        messages.enter_general_prediction_date.format(
+        messages.ENTER_GENERAL_PREDICTION_DATE.format(
             type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[predictions_type], 
             format=PRED_TYPE_TO_EXAMPLE[predictions_type]
         ),
@@ -106,7 +106,7 @@ async def get_general_prediction_date(
     message: Message, 
     state: FSMContext,
     keyboards: KeyboardManager, 
-    database: Database
+    database
 ):
     data = await state.get_data()
     
@@ -124,9 +124,9 @@ async def get_general_prediction_date(
             datetime.strptime(message.text, prediction_format)
 
     except ValueError:
-        bot_message1 = await message.answer(messages.get_general_prediction_date_error)
+        bot_message1 = await message.answer(messages.GET_GENERAL_PREDICTION_DATE_ERROR)
         bot_message2 = await message.answer(
-            messages.enter_general_prediction_date.format(
+            messages.ENTER_GENERAL_PREDICTION_DATE.format(
                 type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[prediction_type],
                 format=PRED_TYPE_TO_EXAMPLE[prediction_type],
             ),
@@ -160,7 +160,7 @@ async def enter_general_prediction_text(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager, 
-    database: Database
+    database
 ):
     data = await state.get_data()
 
@@ -173,7 +173,7 @@ async def enter_general_prediction_text(
 
     if general_prediction is not None:
         bot_message = await message.answer(
-            messages.enter_general_prediction_text_already_added.format(
+            messages.ENTER_GENERAL_PREDICTION_TEXT_ALREADY_ADDED.format(
                 type=data["general_predictions_type"],
                 date=data["general_prediction_date"],
                 text=general_prediction,
@@ -182,7 +182,7 @@ async def enter_general_prediction_text(
         )
     else:
         bot_message = await message.answer(
-            messages.enter_general_prediction_text.format(
+            messages.ENTER_GENERAL_PREDICTION_TEXT.format(
                 type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[prediction_type],
                 date=data["general_prediction_date"],
             ),
@@ -198,7 +198,7 @@ async def get_general_prediction_text(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager, 
-    database: Database
+    database
 ):
     data = await state.get_data()
 
@@ -208,7 +208,7 @@ async def get_general_prediction_text(
     database.add_general_prediction(date=prediction_date, prediction=message.html_text)
 
     bot_message = await message.answer(
-        messages.general_prediction_added.format(
+        messages.GENERAL_PREDICTION_ADDED.format(
             type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[prediction_type],
             date=data["general_prediction_date"],
             text=message.html_text,

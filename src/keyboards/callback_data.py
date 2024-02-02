@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from aiogram.filters.callback_data import CallbackData
 
 
@@ -10,12 +9,9 @@ class SubscriptionPeriod(CallbackData, prefix="sub_period"):
     months: int
 
 
-class SubscriptionItem(CallbackData, prefix="sub"):
-    months: int
-
-
-@dataclass
-class Payment:
+class Payment(CallbackData, prefix='payment'):
     id: str
-    payment_link: str
-    price: int
+
+
+class Promocode(CallbackData, prefix='promocode'):
+    promocode: str

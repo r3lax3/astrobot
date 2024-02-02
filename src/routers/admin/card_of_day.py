@@ -20,7 +20,7 @@ async def add_card_of_day(
     keyboards: KeyboardManager,
 ):
     bot_message = await callback.message.answer(
-        messages.send_me_card, reply_markup=keyboards.back_to_adminpanel
+        messages.SEND_ME_CARD, reply_markup=keyboards.back_to_adminpanel
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.get_card_of_day)
@@ -31,7 +31,7 @@ async def get_card_of_day(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     bot: Bot,
     event_from_user: User,
 ):
@@ -47,13 +47,13 @@ async def get_card_of_day(
         await add_card_of_day(bot, photo_message_id, event_from_user, database)
 
     bot_message = await message.answer(
-        messages.card_of_day_successful_saved, reply_markup=keyboards.back_to_adminpanel
+        messages.CARD_OF_DAY_SUCCESSFUL_SAVED, reply_markup=keyboards.back_to_adminpanel
     )
     await state.update_data(del_messages=[bot_message.message_id])
 
 
 async def add_card_of_day(
-    bot: Bot, photo_message_id: int, event_from_user: User, database: Database
+    bot: Bot, photo_message_id: int, event_from_user: User, database
 ):
     image_resend_message = await bot.copy_message(
         chat_id=ADMIN_CHAT_ID,

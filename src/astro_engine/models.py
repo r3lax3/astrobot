@@ -28,3 +28,9 @@ class LunarDay:
     number: int
     start: datetime
     end: datetime
+
+
+@dataclass
+class TimePeriod:
+    start: datetime
+    end: datetime

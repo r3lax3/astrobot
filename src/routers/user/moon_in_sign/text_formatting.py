@@ -22,8 +22,8 @@ def get_interpretation(
         return MOON_IN_SIGNS_INTERPRETATIONS[sign]["general"]
     else:
         _messages = {
-            MoonSignInterpretationType.FAVORABLE: messages.moon_sign_favourable,
-            MoonSignInterpretationType.UNFAVORABLE: messages.moon_sign_unfavourable,
+            MoonSignInterpretationType.FAVORABLE: messages.MOON_SIGN_FAVOURABLE,
+            MoonSignInterpretationType.UNFAVORABLE: messages.MOON_SIGN_UNFAVOURABLE,
         }
         message = _messages[interpretation_type]
         return message.format(
@@ -32,7 +32,8 @@ def get_interpretation(
 
 
 def get_formatted_moon_sign_text(
-    moon_signs: dict, interpretation_type: MoonSignInterpretationType
+    moon_signs: dict,
+    interpretation_type: MoonSignInterpretationType
 ) -> str:
     sign_changed_time: str = moon_signs.get("change_time", False)
 
@@ -46,7 +47,7 @@ def get_formatted_moon_sign_text(
         time = datetime.strptime(sign_changed_time, TIME_FORMAT)
         time_str = time.strftime(TIME_FORMAT)
 
-        text = messages.moon_sign_changed.format(
+        text = messages.MOON_SIGN_CHANGED.format(
             first_time=sign_changed_time,
             second_time=time_str,
             start_sign=ZODIAC_RU_TRANSLATION.get(first_sign, "Неизвестный знак"),
@@ -57,7 +58,7 @@ def get_formatted_moon_sign_text(
     else:
         sign = moon_signs["start_sign"]
         interpretation_str = get_interpretation(sign.value, interpretation_type)
-        text = messages.moon_sign_not_changed.format(
+        text = messages.MOON_SIGN_NOT_CHANGED.format(
             start_sign=ZODIAC_RU_TRANSLATION.get(sign, "Неизвестный знак"),
             text=interpretation_str,
         )

@@ -28,10 +28,16 @@ ZODIAC_BOUNDS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360]
 
 
 def find_peak_time(
-    time: datetime, natal_position: float, transit_planet: int, aspect_value: int
+    time: datetime,
+    natal_position: float,
+    transit_planet: int,
+    aspect_value: int
 ) -> datetime:
     julian_day_time = swe.julday(
-        time.year, time.month, time.day, time.hour + time.minute / 60
+        time.year,
+        time.month,
+        time.day,
+        time.hour + time.minute / 60
     )
 
     transit_planet_data = swe.calc_ut(
@@ -71,16 +77,15 @@ def calculate_aspect(
 def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
     """
     Получить все астрологические события для заданного времени.
-
-    :param time: Текущее время в формате UTC.
-    :param user: Информация о пользователе, включая место рождения и текущее местоположение.
-    :return: Список астрологических событий для данного времени.
     """
     events = []
 
     # Преобразование текущего времени в юлианскую дату
     julian_day_time = swe.julday(
-        time.year, time.month, time.day, time.hour + time.minute / 60
+        time.year,
+        time.month,
+        time.day,
+        time.hour + time.minute / 60
     )
 
     # Преобразование времени рождения пользователя в юлианскую дату
@@ -104,7 +109,8 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
         )[0][0]
 
         for natal_planet, natal_planet_position in natal_positions.items():
-            # Вычисление аспекта между текущей позицией планеты и натальной позицией
+            # Вычисление аспекта между
+            # текущей позицией планеты и натальной позицией
 
             aspect_value = calculate_aspect(
                 transit_planet_position, natal_planet_position, orbis=ORBIS
@@ -124,7 +130,9 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
 
 
 def get_astro_events_from_period(
-    start: datetime, finish: datetime, user: User
+    start: datetime,
+    finish: datetime,
+    user: User
 ) -> List[AstroEvent]:
     timezone = int(
         get_timezone_offset(

@@ -16,16 +16,38 @@ class PromocodeStatus(Enum):
     not_activated = "Не активирован"
 
 
-class PILPositions(Enum):
+class ImageWideElementsPositions(Enum):
+    BACKGROUND_IMAGE_PATH = 'images/backgrounds/wide_purple_background.jpg'
+
     DATE_TEXT = (600, 500)
+    NAME_TEXT = (315, 205)
+
     START_MOON_SIGN_IMAGE = (175, 140)
     FIRST_MOON_SIGN_CAPTION = (175, 240)
+
     END_MOON_SIGN_IMAGE = (175, 400)
     SECOND_MOON_SIGN_CAPTION = (175, 520)
+
     MOON_PHASE = (990, 140)
     MOON_PHASE_CAPTION = (990, 320)
 
+
+class ImageHighElementsPositions(Enum):  # TODO
+    BACKGROUND_IMAGE_PATH = 'images/backgrounds/high_purple.jpg'
+
+    DATE_TEXT = (600, 533)
     NAME_TEXT = (315, 205)
+
+    START_MOON_SIGN_IMAGE = (175, 185)
+    FIRST_MOON_SIGN_CAPTION = (175, 285)
+
+    END_MOON_SIGN_IMAGE = (175, 445)
+    SECOND_MOON_SIGN_CAPTION = (175, 565)
+
+    MOON_PHASE = (990, 185)
+    MOON_PHASE_CAPTION = (990, 365)
+
+    BLANK_MOON = (600, 670)
 
 
 class Align(Enum):
@@ -91,8 +113,13 @@ class PaymentStatus(Enum):
     FAILED = "failed"
     PENDING = "pending"
 
+
 class GeneralPredictionType(Enum):
     month = "month"
     week = "week"
     day = "day"
 
+
+class PaymentMethod(Enum):
+    YOOKASSA = "yookassa"
+    PRODAMUS = "PRODAMUS"

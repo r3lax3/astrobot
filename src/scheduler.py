@@ -1,3 +1,6 @@
+from tqdm import tqdm
+import logging
+
 from datetime import datetime, timedelta
 from typing import Union
 
@@ -7,12 +10,16 @@ from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src import config, messages
-from src.database import Database
+from src.database import Session
 from src.database.models import User
 from src.enums import FileName
 from src.image_processing import get_image_with_astrodata
 from src.routers.user.prediction.text_formatting import get_prediction_text
 from src.utils import get_timezone_str_from_coords
+from src.keyboards import keyboards
+
+
+LOGGER = logging.getLogger(__name__)
 
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
@@ -28,7 +35,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     renewal reminders.
     """
 
-    def __init__(self, database: Database, bot: Bot):
+    def __init__(self, database, bot: Bot):
         super().__init__()
 
         self.database = database
@@ -46,7 +53,11 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         """
         Add a new task to the scheduler using the provided details.
         """
-        self.add_job(function, trigger, id=self._task_id_str(task_id), **kwargs)
+        self.add_job(
+            function,
+            trigger,
+            id=self._task_id_str(task_id), **kwargs
+        )
 
     def remove_task(self, task_id: TaskID):
         """Remove an existing task using its ID."""
@@ -66,33 +77,49 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         await self._add_reminder_jobs(user)
 
     async def check_users_and_schedule(self):
-        rows = self.database.session.query(User.user_id).all()
-        for row in rows:
-            user_id = row[0]
-            await self.set_all_jobs(user_id)
+        with Session() as session:
+            rows = session.query(User.user_id).all()
+            for row in tqdm(rows, desc="Scheduling Jobs"):
+                user_id = row[0]
+                await self.set_all_jobs(user_id)
+
+        LOGGER.info("Scheduling completed for all users.")
 
     async def _send_message(self, user_id: int):
         """Send the daily prediction message to a user."""
         user = self.database.get_user(user_id=user_id)
 
         utc_target_date = datetime.utcnow()
-        target_datetime = utc_target_date + timedelta(hours=user.timezone_offset)
+        target_datetime = utc_target_date + timedelta(
+            hours=user.timezone_offset
+        )
         target_date = target_datetime.date()
 
-        photo_bytes = get_image_with_astrodata(user, self.database)
+        photo_bytes = get_image_with_astrodata(user)
 
-        photo = BufferedInputFile(file=photo_bytes, filename=FileName.PREDICTION.value)
+        photo = BufferedInputFile(
+            file=photo_bytes,
+            filename=FileName.PREDICTION.value
+        )
 
         subscription_end_datetime = datetime.strptime(
-            user.subscription_end_date, DATETIME_FORMAT
+            user.subscription_end_date,
+            DATETIME_FORMAT
         )
 
         if datetime.utcnow() < subscription_end_datetime:
             text = await get_prediction_text(
-                date=target_date, database=self.database, user_id=user_id
+                date=target_date,
+                database=self.database,
+                user_id=user_id
             )
             await self.bot.send_photo(chat_id=user_id, photo=photo)
-            await self.bot.send_message(chat_id=user_id, text=text)
+            await self.bot.send_message(
+                chat_id=user_id,
+                text=text,
+                reply_markup=keyboards.main_menu()
+            )
+
         else:
             await self.bot.send_photo(chat_id=user_id, photo=photo)
 
@@ -102,7 +129,9 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         about to end.
         """
         await self.bot.send_message(
-            chat_id=user_id, text=messages.renew_subscription_remind
+            chat_id=user_id,
+            text=messages.RENEW_SUBSCRIPTION_REMIND,
+            reply_markup=keyboards.main_menu()
         )
 
     async def _add_send_message_job(self, user: User):
@@ -113,7 +142,8 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             location_id=user.current_location_id
         )
         timezone_str = get_timezone_str_from_coords(
-            longitude=current_location.longitude, latitude=current_location.latitude
+            longitude=current_location.longitude,
+            latitude=current_location.latitude
         )
 
         time = datetime.strptime(user.every_day_prediction_time, TIME_FORMAT)
@@ -138,7 +168,8 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             location_id=user.current_location_id
         )
         timezone_str = get_timezone_str_from_coords(
-            longitude=current_location.longitude, latitude=current_location.latitude
+            longitude=current_location.longitude,
+            latitude=current_location.latitude
         )
 
         now = datetime.utcnow()

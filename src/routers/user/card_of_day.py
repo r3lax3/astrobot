@@ -22,7 +22,7 @@ async def card_of_day_menu(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
     bot: Bot,
 ):
@@ -42,7 +42,7 @@ async def card_of_day_menu(
 
         if len(cards) == 0:
             bot_message = await message.answer(
-                messages.no_cards_of_day,
+                messages.NO_CARDS_OF_DAY,
                 reply_markup=keyboards.to_main_menu
             )
             await state.update_data(del_messages=[bot_message.message_id])
@@ -56,7 +56,7 @@ async def card_of_day_menu(
                 chat_id=event_from_user.id,           # Куда
                 from_chat_id=ADMIN_CHAT_ID,           # Откуда
                 message_id=card_message_id,           # Что
-                caption=messages.card_of_day,         # Текст к изображению
+                caption=messages.CARD_OF_DAY,         # Текст к изображению
                 reply_markup=keyboards.to_main_menu,  # Клавиатура
             )
 
@@ -65,7 +65,7 @@ async def card_of_day_menu(
 
             if len(cards) == 0:
                 bot_message = await message.answer(
-                    messages.no_cards_of_day,
+                    messages.NO_CARDS_OF_DAY,
                     reply_markup=keyboards.to_main_menu
                 )
                 await state.update_data(del_messages=[bot_message.message_id])

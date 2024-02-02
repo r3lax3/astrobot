@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Float, ForeignKey, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.types import Boolean
 
 Base = declarative_base()
@@ -70,10 +69,11 @@ class Payment(Base):
 
     payment_id = Column(String, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.user_id"))
-    status = Column(String)  # 'success' | 'failed' | 'pending'
-    period = Column(Integer)
-    created_at = Column(String)  # "%d.%m.%Y %H:%M" as default
-    status_change_timestamp = Column(String)  # "%d.%m.%Y %H:%M" as default
+    status = Column(String)
+    created_at = Column(String)
+    status_change_timestamp = Column(String)
+    item = Column(String)
+    price = Column(String)
 
 
 class Promocode(Base):

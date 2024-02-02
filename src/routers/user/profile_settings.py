@@ -51,7 +51,7 @@ async def profile_settings_menu(
 
     bot_message = await message.answer_photo(
         photo=PROFILE_IMAGE,
-        caption=messages.profile_settings.format(
+        caption=messages.PROFILE_SETTINGS.format(
             name=name,
             current_location_title=current_location_title,
             birth_datetime=birth_datetime,
@@ -69,12 +69,12 @@ async def change_name(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
 ):
     user = database.get_user(event_from_user.id)
     bot_message = await callback.message.answer(
-        messages.change_name.format(name=user.name), reply_markup=keyboards.back
+        messages.CHANGE_NAME.format(name=user.name), reply_markup=keyboards.back
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(ProfileSettings.get_new_name)
@@ -86,18 +86,18 @@ async def choose_gender(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
 ):
     user = database.get_user(user_id=callback.from_user.id)
 
     if user.gender is not None:
         bot_message = await callback.message.answer(
-            messages.choose_gender.format(gender=buttons_text[user.gender]),
+            messages.CHOOSE_GENDER.format(gender=buttons_text[user.gender]),
             reply_markup=keyboards.choose_gender,
         )
     else:
         bot_message = await callback.message.answer(
-            messages.gender_not_choosen, reply_markup=keyboards.choose_gender
+            messages.GENDER_NOT_CHOOSEN, reply_markup=keyboards.choose_gender
         )
 
     await state.update_data(del_messages=[bot_message.message_id])
@@ -109,7 +109,7 @@ async def gender_is_male(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
 ):
     database.change_user_gender(gender=Gender.male.value, user_id=callback.from_user.id)
     await choose_gender(callback, state, keyboards, database)
@@ -120,7 +120,7 @@ async def gender_is_female(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
 ):
     database.change_user_gender(gender=Gender.male.value, user_id=callback.from_user.id)
     await choose_gender(callback, state, keyboards, database)
@@ -143,10 +143,10 @@ async def enter_current_location(
 
     if not first_time:
         bot_message = await message.answer(
-            messages.enter_new_current_location, reply_markup=keyboards.to_main_menu
+            messages.ENTER_NEW_CURRENT_LOCATION, reply_markup=keyboards.to_main_menu
         )
     else:
-        bot_message = await message.answer(messages.enter_current_location)
+        bot_message = await message.answer(messages.ENTER_CURRENT_LOCATION)
 
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(ProfileSettings.get_current_location)
@@ -167,14 +167,14 @@ async def get_current_location(
 
     if data['first_time']:
         bot_message = await message.answer(
-            messages.get_current_location_confirm_first_time.format(
+            messages.GET_CURRENT_LOCATION_CONFIRM_FIRST_TIME.format(
                 current_location=current_location_title
             ),
             reply_markup=keyboards.confirm,
         )
     else:
         bot_message = await message.answer(
-            messages.get_current_location_confirm.format(
+            messages.GET_CURRENT_LOCATION_CONFIRM.format(
                 current_location=current_location_title
             ),
             reply_markup=keyboards.confirm,
@@ -191,7 +191,7 @@ async def get_current_location(
 async def get_current_location_error(
     message: Message, state: FSMContext, keyboards: KeyboardManager
 ):
-    bot_message = await message.answer(messages.not_location)
+    bot_message = await message.answer(messages.NOT_LOCATION)
     await enter_current_location(bot_message, state, keyboards)
 
 
@@ -207,7 +207,7 @@ async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
     bot: Bot,
     scheduler: EveryDayPredictionScheduler,
@@ -253,7 +253,7 @@ async def get_current_location_confirmed(
             subscription_end_date=test_period_end.strftime(DATETIME_FORMAT),
             timezone_offset=get_timezone_offset(**current_location),
         )
-        await main_menu(callback.message, state, keyboards, bot)
+        await main_menu(callback.message, state, bot)
     else:
         database.update_user_current_location(
             event_from_user.id,
@@ -267,7 +267,7 @@ async def get_current_location_confirmed(
             event_from_user.id, timezone_offset=get_timezone_offset(**current_location)
         )
         bot_message = await callback.message.answer(
-            messages.current_location_changed_success
+            messages.CURRENT_LOCATION_CHANGED_SUCCESS
         )
         await main_menu(bot_message, state, keyboards, bot)
         await scheduler.set_all_jobs(user_id=event_from_user.id)

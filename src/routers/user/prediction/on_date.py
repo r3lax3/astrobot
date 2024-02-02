@@ -34,7 +34,7 @@ async def get_prediction_callback_redirect(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
 ):
     await get_prediction(
@@ -52,7 +52,7 @@ async def get_prediction(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
 ):
     user = database.get_user(user_id=event_from_user.id)
@@ -65,7 +65,7 @@ async def get_prediction(
     if now < current_user_subscription_end_date:
         bot_message = await message.answer_photo(
             photo=PREDICTION_MENU_IMAGE,
-            caption=messages.prediction_descr,
+            caption=messages.PREDICTION_DESCR,
             reply_markup=keyboards.predict_choose_action
         )
         await state.set_state(MainMenu.prediction_choose_action)
@@ -102,7 +102,7 @@ async def prediction_access_denied(
     keyboards: KeyboardManager
 ):
     bot_message = await message.answer(
-        messages.prediction_access_denied,
+        messages.PREDICTION_ACCESS_DENIED,
         reply_markup=keyboards.prediction_access_denied,
     )
     await state.set_state(MainMenu.prediction_access_denied)
@@ -143,7 +143,7 @@ async def prediction_for_today(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
     bot: Bot,
 ):
@@ -172,7 +172,7 @@ async def prediction_on_date_get_prediction_callback_redirect(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
     bot: Bot,
 ):
@@ -190,7 +190,7 @@ async def prediction_on_date_get_prediction(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
     bot: Bot,
 ):
@@ -207,14 +207,16 @@ async def prediction_on_date_get_prediction(
     timezone_offset = timedelta(hours=data["timezone_offset"])
 
     if subscription_end_date + timezone_offset > target_date:
-        wait_message = await message.answer(messages.wait)
+        wait_message = await message.answer(messages.WAIT)
         sticker_message = await message.answer_sticker(WAIT_STICKER)
 
         text = await get_prediction_text(
-            date=target_date, database=database, user_id=event_from_user.id
+            date=target_date,
+            database=database,
+            user_id=event_from_user.id
         )
 
-        photo_bytes = get_image_with_astrodata(user, database, date=target_date)
+        photo_bytes = await get_image_with_astrodata(user, date=target_date)
 
         photo = BufferedInputFile(file=photo_bytes, filename=FileName.PREDICTION.value)
 
@@ -236,7 +238,7 @@ async def prediction_on_date_get_prediction(
         )
         await state.set_state(MainMenu.prediction_end)
     else:
-        bot_message = await message.answer(messages.not_enough_subscription)
+        bot_message = await message.answer(messages.NOT_ENOUGH_SUBSCRIPTION)
         await update_prediction_date(bot_message, state, keyboards)
 
 
@@ -265,7 +267,7 @@ async def update_prediction_date(
     date = data["date"]
     today = data["today"]
     date_message = await message.answer(
-        messages.prediction_at_date.format(today=today),
+        messages.PREDICTION_AT_DATE.format(today=today),
         reply_markup=keyboards.predict_choose_date(date),
     )
 

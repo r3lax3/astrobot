@@ -11,6 +11,6 @@ r = Router()
 @r.message(F.text, F.text == bt.about_bot)
 async def about_bot(message: Message, state: FSMContext, keyboards: KeyboardManager):
     bot_message = await message.answer(
-        messages.about_bot, reply_markup=keyboards.to_main_menu
+        messages.ABOUT_BOT, reply_markup=keyboards.to_main_menu
     )
     await state.update_data(del_messages=[bot_message.message_id])

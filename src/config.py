@@ -15,7 +15,7 @@ def get(key: str) -> Any:
     Returns:
         int | str | Dict[str, Any] | List[int | str | float]:
             The value for the provided key. Can be an integer, string,
-            dictionary, or a list of integers, strings, and floats.
+dictionary, or a list of integers, strings, and floats.
 
     Raises:
         KeyError: If the key is not found in the configuration.

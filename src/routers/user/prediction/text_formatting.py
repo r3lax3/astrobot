@@ -94,7 +94,7 @@ def formatted_general_events(events: List[AstroEvent]) -> str:
 
         if not interpretation:
             logging.info(
-                messages.no_interpretation.format(
+                messages.NO_INTERPRETATION.format(
                     transit_planet=transit_planet,
                     natal_planet=natal_planet,
                     aspect=aspect,
@@ -125,7 +125,7 @@ def formatted_moon_events(events: List[AstroEvent]):
 
         if not interpretation:
             logging.info(
-                messages.no_interpretation.format(
+                messages.NO_INTERPRETATION.format(
                     transit_planet=transit_planet,
                     natal_planet=natal_planet,
                     aspect=aspect,
@@ -139,7 +139,7 @@ def formatted_moon_events(events: List[AstroEvent]):
     favorably = "\n".join(favorably)
     unfavorably = "\n".join(unfavorably)
 
-    formatted_text = messages.favorable_and_unfavorable.format(
+    formatted_text = messages.FAVORABLE_AND_UNFAVORABLE.format(
         favorably=favorably, unfavorably=unfavorably
     )
 
@@ -206,25 +206,25 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
             second_half_moon_events_formatted is None
             and first_half_moon_events_formatted is None
         ):
-            formatted_date_str = messages.prediction_text_formatted_date.format(
+            formatted_date_str = messages.PREDICTION_TEXT_FORMATTED_DATE.format(
                 formatted_date=formatted_date
             )
 
             texts = [
                 formatted_date_str,
-                messages.prediction_text_neutral_background_today,
-                messages.use_other_function_for_correct_planning,
+                messages.PREDICTION_TEXT_NEUTRAL_BACKGROUND_TODAY,
+                messages.USE_OTHER_FUNCTION_FOR_CORRECT_PLANNING,
             ]
         else:
-            formatted_date_str = messages.prediction_text_formatted_date.format(
+            formatted_date_str = messages.PREDICTION_TEXT_FORMATTED_DATE.format(
                 formatted_date=formatted_date
             )
             default_moon_sign_text = (
-                messages.prediction_text_neutral_background
+                messages.PREDICTION_TEXT_NEUTRAL_BACKGROUND
                 + "\n\n"
-                + messages.use_other_function_for_correct_planning
+                + messages.USE_OTHER_FUNCTION_FOR_CORRECT_PLANNING
             )
-            moon_events = messages.prediction_text_moon_events.format(
+            moon_events = messages.PREDICTION_TEXT_MOON_EVENTS.format(
                 first_half_moon_events=first_half_moon_events_formatted
                 or default_moon_sign_text,
                 second_half_moon_events=second_half_moon_events_formatted
@@ -237,24 +237,24 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
             second_half_moon_events_formatted is None
             and first_half_moon_events_formatted is None
         ):
-            formatted_date_str = messages.prediction_text_formatted_date.format(
+            formatted_date_str = messages.PREDICTION_TEXT_FORMATTED_DATE.format(
                 formatted_date=formatted_date
             )
 
             texts = [
                 formatted_date_str,
                 day_events_formatted,
-                messages.use_other_function_for_correct_planning,
+                messages.USE_OTHER_FUNCTION_FOR_CORRECT_PLANNING,
             ]
         else:
-            formatted_date_str = messages.prediction_text_formatted_date.format(
+            formatted_date_str = messages.PREDICTION_TEXT_FORMATTED_DATE.format(
                 formatted_date=formatted_date
             )
-            moon_events = messages.prediction_text_moon_events.format(
+            moon_events = messages.PREDICTION_TEXT_MOON_EVENTS.format(
                 first_half_moon_events=first_half_moon_events_formatted
-                or messages.neutral_background,
+                or messages.NEUTRAL_BACKGROUND,
                 second_half_moon_events=second_half_moon_events_formatted
-                or messages.neutral_background,
+                or messages.NEUTRAL_BACKGROUND,
             )
 
             texts = [formatted_date_str, day_events_formatted, moon_events]
@@ -264,7 +264,7 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
     return formatted_text
 
 
-async def get_prediction_text(date: datetime, database: Database, user_id: int) -> str:
+async def get_prediction_text(date: datetime, database, user_id: int) -> str:
     user = database.get_user(user_id=user_id)
     birth_location = database.get_location(user.birth_location_id)
     current_location = database.get_location(user.current_location_id)

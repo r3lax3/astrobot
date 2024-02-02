@@ -27,7 +27,7 @@ async def create_distribution(
     callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
 ):
     del_message = await callback.message.answer(
-        messages.get_message_for_broadcast, reply_markup=keyboards.back_to_adminpanel
+        messages.GET_MESSAGE_FOR_BROADCAST, reply_markup=keyboards.back_to_adminpanel
     )
     await state.update_data(del_messages=[del_message.message_id])
     await state.set_state(AdminStates.broadcast_get_message)
@@ -46,14 +46,14 @@ async def get_distribution_message(
 
     if photo_file_id is None and text is not None:
         del_message = await message.answer(
-            messages.broadcast_message_type_not_supported,
+            messages.BROADCAST_MESSAGE_TYPE_NOT_SUPPORTED,
             reply_markup=keyboards.back_to_adminpanel,
         )
         await state.update_data(del_messages=[del_message.message_id])
     else:
         del_message1 = await message.answer_photo(photo=photo_file_id, caption=text)
         del_message2 = await message.answer(
-            messages.broadcast_msg_confirm, reply_markup=keyboards.confirm
+            messages.BROADCAST_MSG_CONFIRM, reply_markup=keyboards.confirm
         )
 
         await state.update_data(
@@ -74,10 +74,10 @@ async def sending_distribution_confirmed(
     state: FSMContext,
     bot: Bot,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
 ):
     del_message = await callback.message.answer(
-        messages.broadcast_started, reply_markup=keyboards.back_to_adminpanel
+        messages.BROADCAST_STARTED, reply_markup=keyboards.back_to_adminpanel
     )
     await state.update_data(del_messages=[del_message.message_id])
     await state.set_state(AdminStates.action_end)
@@ -105,7 +105,7 @@ async def sending_distribution_confirmed(
     broadcast_end_date_Moskow = str(now_in_Moskow.strftime(datetime_format))
 
     await callback.message.answer(
-        text=messages.broadcast_statistic.format(
+        text=messages.BROADCAST_STATISTIC.format(
             dead_users=dead_users,
             active_users=active_users,
             broadcast_start_date_Moskow=broadcast_start_date_Moskow,

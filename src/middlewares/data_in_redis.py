@@ -18,7 +18,7 @@ class AddDataInRedis(BaseMiddleware):
         state = data["state"]
         state_data = await state.get_data()
 
-        database: Database = data["database"]
+        database = data["database"]
 
         missing_keys = []
 

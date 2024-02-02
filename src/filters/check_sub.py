@@ -9,7 +9,7 @@ class IsNotSub(BaseFilter):
         self,
         event: types.TelegramObject,
         event_from_user: types.User,
-        database: Database,
+        database,
         bot: Bot,
     ):
         channels = database.get_mandatory_channels()

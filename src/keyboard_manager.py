@@ -3,9 +3,9 @@ from typing import List, Tuple, Union
 
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import (
-    InlineKeyboardButton, 
+    InlineKeyboardButton,
     InlineKeyboardMarkup,
-    KeyboardButton, 
+    KeyboardButton,
     ReplyKeyboardMarkup
 )
 
@@ -22,11 +22,13 @@ buttons_text: dict = {
     "back_to_adminpanel": "Назад в админ-панель",
     "decline": "Нет, вернуться назад ❎",
     "confirm": "Подтверждаю ☑",
+
     # Time of day
     "night": "Ночь",
     "morning": "Утро",
     "day": "День",
     "evening": "Вечер",
+
     # Predictions
     "prediction": "🔮Прогноз",
     "prediction_no_access": "🔓Прогноз",
@@ -34,6 +36,7 @@ buttons_text: dict = {
     "prediction_for_today": "Прогноз на сегодня",
     "daily_prediction": "⌚️ Ежедневный прогноз",
     "check_another_date": "Проверить другую дату",
+
     # Subscription
     "subscription": "🌟Подписка",
     "buy_subscription": "Купить подписку",
@@ -50,6 +53,7 @@ buttons_text: dict = {
     "enter_promocode": "Ввести промокод",
     "activate_promocode": "Активировать промокод",
     "try_in_deal": "Испытать в деле",
+
     # Profile settings
     "profile_settings": "⚙️Настройки профиля",
     "change_timezone": "✈️Смена часового пояса",
@@ -58,18 +62,23 @@ buttons_text: dict = {
     "gender": "👤 Пол",
     "male": "🙋‍♂️Мужчина",
     "female": "🙋‍♀️Женщина",
+
     # Card of day
     "card_of_day": "🃏Карта Дня",
+
     # Moon in sign
     "moon_in_sign": "🌗 Луна в знаке",
     "favorable": "🟢 Благоприятно",
     "unfavorable": "🔴 Неблагоприятно",
-    "general": "Общий",
+    "blank_moon": "🌒 Холостая луна",
+    'general': "Общий",
+
     # General predictions
     "general_predictions": "🌒 Общие прогнозы",
     "prediction_on_day": "🗓️ Общий прогноз на день",
     "prediction_on_week": "📆 Общий прогноз на неделю",
     "prediction_on_month": "📅 Общий прогноз на месяц",
+
     # Admin
     "add_card_of_day": "Добавить карту дня",
     "user_settings": "Настройки пользователя",
@@ -78,6 +87,7 @@ buttons_text: dict = {
     "change_user_subscription_end": "Изменить дату окончания подписки",
     "statistics": "Статистика",
     "broadcast": "Рассылка",
+
     # Misc
     "dreams": "💫 Сны",
     "about_bot": "🤔 О боте",
@@ -91,15 +101,15 @@ from_text_to_bt: dict = {v: k for k, v in buttons_text.items()}
 
 
 class KeyboardManager:
-    def __init__(self, database: Database):
+    def __init__(self, database):
         self.database = database
 
         # Birth data
 
-        self.enter_birth_data = self.build_keyboard_from_structure(
+        self.enter_birth_data = self.build(
             [[bt.enter_birth_data]], is_inline=True
         )
-        self.choose_time = self.build_keyboard_from_structure(
+        self.choose_time = self.build(
             [
                 [(bt.night, "1:00"), (bt.morning, "7:00")],
                 [(bt.day, "13:00"), (bt.evening, "19:00")],
@@ -110,30 +120,30 @@ class KeyboardManager:
 
         # User info
 
-        self.get_gender = self.build_keyboard_from_structure(
+        self.get_gender = self.build(
             [
                 [bt.male, bt.female],
                 [bt.back]
-            ], 
+            ],
             is_inline=True
         )
 
         # Main Menu
 
-        self.main_menu = self.build_keyboard_from_structure(
+        self.main_menu = self.build(
             [
                 [bt.subscription, bt.prediction],
-                [bt.card_of_day],  # + bt.dreams
+                [bt.card_of_day],
                 [bt.general_predictions, bt.moon_in_sign],
                 [bt.compatibility, bt.dreams],
                 [bt.profile_settings],
                 [bt.about_bot, bt.support],
             ]
         )
-        self.main_menu_prediction_no_access = self.build_keyboard_from_structure(
+        self.main_menu_prediction_no_access = self.build(
             [
                 [bt.subscription, bt.prediction_no_access],
-                [bt.card_of_day],  # + bt.dreams
+                [bt.card_of_day],
                 [bt.general_predictions, bt.moon_in_sign],
                 [bt.compatibility, bt.dreams],
                 [bt.profile_settings],
@@ -143,21 +153,21 @@ class KeyboardManager:
 
         # Prediction
 
-        self.prediction_access_denied = self.build_keyboard_from_structure(
+        self.prediction_access_denied = self.build(
             [
                 [bt.subscription],
                 [bt.main_menu]
-            ], 
+            ],
             is_inline=True
         )
-        self.predict_choose_action = self.build_keyboard_from_structure(
+        self.predict_choose_action = self.build(
             [
-                [bt.prediction_for_date], 
+                [bt.prediction_for_date],
                 [bt.daily_prediction],
                 [bt.main_menu]
             ]
         )
-        self.predict_completed = self.build_keyboard_from_structure(
+        self.predict_completed = self.build(
             [
                 [bt.check_another_date],
                 [bt.moon_in_sign, bt.general_predictions],
@@ -168,7 +178,7 @@ class KeyboardManager:
 
         # Subscription
 
-        self.buy_subscription = self.build_keyboard_from_structure(
+        self.buy_subscription = self.build(
             [
                 [
                     (bt.one_month, SubscriptionPeriod(months=1)),
@@ -185,52 +195,52 @@ class KeyboardManager:
             ],
             is_inline=True,
         )
-        self.payment_methods = self.build_keyboard_from_structure(
+        self.payment_methods = self.build(
             [
                 [bt.yookassa],
                 [bt.back]
-            ], 
+            ],
             is_inline=True
         )
-        self.payment_succeess = self.build_keyboard_from_structure(
+        self.payment_success = self.build(
             [
                 [bt.use_this_promocode],
                 [bt.back_to_menu]
-            ], 
+            ],
             is_inline=True
         )
-        self.payment_canceled = self.build_keyboard_from_structure(
+        self.payment_canceled = self.build(
             [
                 [bt.try_again],
                 [bt.back_to_menu]
-            ], 
+            ],
             is_inline=True
         )
-        self.subscription = self.build_keyboard_from_structure(
+        self.subscription = self.build(
             [
                 [bt.buy_subscription, bt.enter_promocode],
                 [bt.main_menu]
-            ], 
+            ],
             is_inline=True
         )
-        self.get_activate_promocode_confirm = self.build_keyboard_from_structure(
+        self.get_activate_promocode_confirm = self.build(
             [
-                [bt.activate_promocode], 
+                [bt.activate_promocode],
                 [bt.back]
-            ], 
+            ],
             is_inline=True
         )
-        self.promocode_activated = self.build_keyboard_from_structure(
+        self.promocode_activated = self.build(
             [
                 [bt.try_in_deal],
                 [bt.back_to_menu]
-            ], 
+            ],
             is_inline=True
         )
 
         # Compatibility
 
-        self.gender_not_choosen = self.build_keyboard_from_structure(
+        self.gender_not_choosen = self.build(
             [
                 [bt.profile_settings],
                 [bt.main_menu]
@@ -239,7 +249,7 @@ class KeyboardManager:
 
         # Profile Settings
 
-        self.profile_settings = self.build_keyboard_from_structure(
+        self.profile_settings = self.build(
             [
                 [bt.change_timezone],
                 [bt.gender, bt.name],
@@ -248,7 +258,7 @@ class KeyboardManager:
             ],
             is_inline=True,
         )
-        self.choose_gender = self.build_keyboard_from_structure(
+        self.choose_gender = self.build(
             [
                 [bt.male, bt.female],
                 [bt.back]
@@ -257,7 +267,7 @@ class KeyboardManager:
 
         # General Predictions
 
-        self.user_gen_pred_type = self.build_keyboard_from_structure(
+        self.user_gen_pred_type = self.build(
             [
                 [bt.prediction_on_day],
                 [bt.prediction_on_week],
@@ -269,9 +279,9 @@ class KeyboardManager:
 
         # Moon in sign
 
-        self.moon_in_sign_menu = self.build_keyboard_from_structure(
+        self.moon_in_sign_menu = self.build(
             [
-                [bt.general],
+                [bt.blank_moon],
                 [bt.favorable, bt.unfavorable],
                 [bt.main_menu]
             ],
@@ -280,26 +290,26 @@ class KeyboardManager:
 
         # No category
 
-        self.confirm = self.build_keyboard_from_structure(
+        self.confirm = self.build(
             [
                 [bt.confirm],
                 [bt.decline]
             ], is_inline=True
         )
-        self.back = self.build_keyboard_from_structure(
+        self.back = self.build(
             [
                 [bt.back]
             ],
             is_inline=True
         )
-        self.to_main_menu = self.build_keyboard_from_structure(
+        self.to_main_menu = self.build(
             [
                 [bt.main_menu]
             ],
             is_inline=True
         )
 
-        self.reply_back = self.build_keyboard_from_structure(
+        self.reply_back = self.build(
             [
                 [bt.back]
             ]
@@ -307,7 +317,7 @@ class KeyboardManager:
 
         # ADMIN
 
-        self.adminpanel = self.build_keyboard_from_structure(
+        self.adminpanel = self.build(
             [
                 [bt.general_predictions_add],
                 [bt.user_settings],
@@ -317,7 +327,7 @@ class KeyboardManager:
             ],
             is_inline=True,
         )
-        self.choose_general_prediction_type = self.build_keyboard_from_structure(
+        self.choose_general_prediction_type = self.build(
             [
                 [bt.prediction_on_day],
                 [bt.prediction_on_week],
@@ -326,18 +336,18 @@ class KeyboardManager:
             ],
             is_inline=True,
         )
-        self.back_to_adminpanel = self.build_keyboard_from_structure(
+        self.back_to_adminpanel = self.build(
             [
                 [bt.back_to_adminpanel]
             ], is_inline=True
         )
-        self.user_info_menu = self.build_keyboard_from_structure(
+        self.user_info_menu = self.build(
             [
                 [bt.change_user_subscription_end],
                 [bt.back_to_adminpanel]
             ], is_inline=True
         )
-        self.change_user_subscription_end = self.build_keyboard_from_structure(
+        self.change_user_subscription_end = self.build(
             [
                 [bt.delete_user_subscription],
                 [bt.back_to_adminpanel]
@@ -345,7 +355,7 @@ class KeyboardManager:
         )
 
     def predict_choose_date(self, date: str) -> InlineKeyboardMarkup:
-        return self.build_keyboard_from_structure(
+        return self.build(
             [
                 [(date, "null")],
                 [
@@ -371,7 +381,7 @@ class KeyboardManager:
         redirect_url: str,
         # offer_url: str
     ):
-        return self.build_keyboard_from_structure(
+        return self.build(
             [
                 [
                     (bt.redirect_button_text, redirect_url)
@@ -410,8 +420,7 @@ class KeyboardManager:
             f"buttons, but received '{type(item).__name__}'."
         )
 
-
-    def build_keyboard_from_structure(
+    def build(
         self,
         structure: List[List[str | tuple]],
         is_inline=False

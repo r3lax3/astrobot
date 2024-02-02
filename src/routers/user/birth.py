@@ -30,7 +30,7 @@ async def get_name_success(
 
     bot_message = await message.answer_photo(
         photo=HELLO_IMAGE,
-        caption=messages.hello.format(name=name),
+        caption=messages.HELLO.format(name=name),
         reply_markup=keyboards.enter_birth_data,
     )
     await state.update_data(del_messages=[bot_message.message_id], name=name)
@@ -39,19 +39,19 @@ async def get_name_success(
 
 @r.message(MainMenu.get_name, F.text, F.text.len() > 20)
 async def get_name_max_length_error(message: Message, state: FSMContext):
-    bot_message = await message.answer(messages.get_name_max_length_error)
+    bot_message = await message.answer(messages.GET_NAME_MAX_LENGTH_ERROR)
     await state.update_data(del_messages=[bot_message.message_id])
 
 
 @r.message(MainMenu.get_name)
 async def get_name_no_text_error(message: Message, state: FSMContext):
-    bot_message = await message.answer(messages.get_name_no_text_error)
+    bot_message = await message.answer(messages.GET_NAME_NO_TEXT_ERROR)
     await state.update_data(del_messages=[bot_message.message_id])
 
 
 @r.callback_query(MainMenu.enter_birth_date, F.data == bt.enter_birth_data)
 async def enter_birth_date_handler(callback: CallbackQuery, state: FSMContext):
-    bot_message = await callback.message.answer(messages.enter_birth_date)
+    bot_message = await callback.message.answer(messages.ENTER_BIRTH_DATE)
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(GetBirthData.date)
 
@@ -60,7 +60,7 @@ async def enter_birth_date(
     message: Message,
     state: FSMContext,
 ):
-    bot_message = await message.answer(messages.enter_birth_date)
+    bot_message = await message.answer(messages.ENTER_BIRTH_DATE)
     await state.update_data(del_messages=[bot_message.message_id, message.message_id])
     await state.set_state(GetBirthData.date)
 
@@ -93,7 +93,7 @@ async def get_birth_date(
 
 @r.message(GetBirthData.date)
 async def get_birth_date_error(message: Message, state: FSMContext):
-    bot_message = await message.answer(messages.not_birth_date)
+    bot_message = await message.answer(messages.NOT_BIRTH_DATE)
     await enter_birth_date(bot_message, state)
 
 
@@ -129,7 +129,7 @@ async def get_birth_time_error(
     state: FSMContext,
     keyboards: KeyboardManager,
 ):
-    bot_message = await message.answer(messages.not_birth_time)
+    bot_message = await message.answer(messages.NOT_BIRTH_TIME)
     await enter_birth_time(bot_message, state, keyboards)
 
 
@@ -140,12 +140,12 @@ async def enter_birth_time(
     date_str = data["date"]
 
     current_data_message = await message.answer(
-        messages.current_birth_data.format(
+        messages.CURRENT_BIRTH_DATA.format(
             date=date_str, time="___", birth_location="___"
         )
     )
     enter_time_message = await message.answer(
-        messages.enter_birth_time, reply_markup=keyboards.choose_time
+        messages.ENTER_BIRTH_TIME, reply_markup=keyboards.choose_time
     )
 
     await state.update_data(
@@ -169,7 +169,7 @@ async def enter_birth_geopos(
     time_str = data["time"]
 
     current_data_message = await message.answer(
-        messages.current_birth_data.format(
+        messages.CURRENT_BIRTH_DATA.format(
             date=date_str, time=time_str, birth_location="___"
         )
     )
@@ -177,7 +177,7 @@ async def enter_birth_geopos(
         [InputMediaPhoto(media=file_id) for file_id in GUIDE_SEND_GEOPOS_IMAGES]
     )
     bot_message = await message.answer(
-        messages.enter_birth_geopos, reply_markup=keyboards.back
+        messages.ENTER_BIRTH_GEOPOS, reply_markup=keyboards.back
     )
 
     await state.update_data(
@@ -214,7 +214,7 @@ async def get_birth_geopos(
 async def get_birth_geopos_error(
     message: Message, state: FSMContext, keyboards: KeyboardManager
 ):
-    bot_message = await message.answer(messages.not_location)
+    bot_message = await message.answer(messages.NOT_LOCATION)
     await enter_birth_geopos(bot_message, state, keyboards)
 
 
@@ -242,7 +242,7 @@ async def enter_birth_data_confirm(
 
     birth_location_title = get_location_by_coords(longitude, latitude)
     birth_data_confirm_message = await message.answer(
-        messages.birth_data_confirm.format(
+        messages.BIRTH_DATA_CONFIRM.format(
             name=data["name"],
             birth_datetime=f"{date_str} {time_str}",
             birth_location_title=birth_location_title,
@@ -265,7 +265,7 @@ async def get_birth_data_confirm(
     state: FSMContext,
 ):
     bot_message = await callback.message.answer_photo(
-        photo=BIRTH_DATA_CONFIRMED_IMAGE, caption=messages.birth_data_confirmed
+        photo=BIRTH_DATA_CONFIRMED_IMAGE, caption=messages.BIRTH_DATA_CONFIRMED
     )
     await state.update_data(del_messages=[bot_message.message_id], first_time=True)
     await state.set_state(ProfileSettings.get_current_location)

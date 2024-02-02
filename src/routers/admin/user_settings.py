@@ -33,7 +33,7 @@ async def user_settings_menu(
     callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
 ):
     bot_message = await callback.message.answer(
-        messages.send_user_message_for_identification,
+        messages.SEND_USER_MESSAGE_FOR_IDENTIFICATION,
         reply_markup=keyboards.back_to_adminpanel,
     )
     await state.update_data(del_messages=[bot_message.message_id])
@@ -42,7 +42,7 @@ async def user_settings_menu(
 
 @r.message(AdminStates.get_user_message, F.forward_from)
 async def get_user_message(
-    message: Message, state: FSMContext, keyboards: KeyboardManager, database: Database
+    message: Message, state: FSMContext, keyboards: KeyboardManager, database
 ):
     await state.update_data(user_id=message.forward_from.id)
     await get_user_info_menu(message, state, keyboards, database)
@@ -53,13 +53,13 @@ async def get_user_info_menu_callback_handler(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
 ):
     await get_user_info_menu(callback.message, state, keyboards, database)
 
 
 async def get_user_info_menu(
-    message: Message, state: FSMContext, keyboards: KeyboardManager, database: Database
+    message: Message, state: FSMContext, keyboards: KeyboardManager, database
 ):
     data = await state.get_data()
     user_id = data["user_id"]
@@ -67,7 +67,7 @@ async def get_user_info_menu(
     if user:
         unused_predictions = database.get_unviewed_predictions_count(user_id=user_id)
         bot_message = await message.answer(
-            messages.user_info.format(
+            messages.USER_INFO.format(
                 subscription_end=user.subscription_end_date,
                 unused_predictions=unused_predictions,
             ),
@@ -75,7 +75,7 @@ async def get_user_info_menu(
         )
     else:
         bot_message = await message.answer(
-            messages.user_not_found, reply_markup=keyboards.back_to_adminpanel
+            messages.USER_NOT_FOUND, reply_markup=keyboards.back_to_adminpanel
         )
     await state.update_data(
         del_messages=[bot_message.message_id],
@@ -89,7 +89,7 @@ async def change_user_subscription_end_menu(
     callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
 ):
     bot_message = await callback.message.answer(
-        messages.enter_new_subscription_end_date,
+        messages.ENTER_NEW_SUBSCRIPTION_END_DATE,
         reply_markup=keyboards.change_user_subscription_end,
     )
     await state.update_data(del_messages=[bot_message.message_id])
@@ -103,7 +103,7 @@ async def delete_user_subscription(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     scheduler,
     bot: Bot,
 ):
@@ -120,7 +120,7 @@ async def get_user_subscription_end_date(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     scheduler,
     bot: Bot,
 ):
@@ -134,7 +134,7 @@ async def change_user_subscription_end_date(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     scheduler,
 ):
     data = await state.get_data()
@@ -147,7 +147,7 @@ async def change_user_subscription_end_date(
     user = database.get_user(user_id=data["user_id"])
 
     bot_message = await message.answer(
-        messages.changed_subscription_end_date.format(
+        messages.CHANGED_SUBSCRIPTION_END_DATE.format(
             past_sub_end_date=data["past_sub_end_date"],
             changed_date=user.subscription_end_date,
             unused_predictions=database.get_unviewed_predictions_count(

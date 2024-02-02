@@ -23,13 +23,13 @@ async def every_day_prediction(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
 ):
     user = database.get_user(event_from_user.id)
 
     bot_message = await message.answer(
-        messages.every_day_prediction_activated.format(
+        messages.EVERY_DAY_PREDICTION_ACTIVATED.format(
             send_time=user.every_day_prediction_time
         ),
         reply_markup=keyboards.back,
@@ -42,7 +42,7 @@ async def every_day_prediction(
 @r.message(MainMenu.prediction_every_day_enter_time, F.text, IsTime())
 async def enter_prediction_time(
     message: Message,
-    database: Database,
+    database,
     state: FSMContext,
     keyboards: KeyboardManager,
     scheduler,

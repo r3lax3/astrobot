@@ -10,6 +10,7 @@ from src.filters.is_date import IsDate, IsDatetime, IsTime
 from src.filters.role import AdminFilter, UserFilter
 from src.filters.state_flag_filters import FSMFlagChecker
 
+
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 
 
@@ -21,7 +22,8 @@ class HasPredictionAccess(Filter):
 
         subscription_end_date_str = data["subscription_end_date"]
         subscription_end_date = datetime.strptime(
-            subscription_end_date_str, DATETIME_FORMAT
+            subscription_end_date_str,
+            DATETIME_FORMAT
         )
 
         return now < subscription_end_date
@@ -29,7 +31,10 @@ class HasPredictionAccess(Filter):
 
 class UserInDatabase(BaseFilter):
     async def __call__(
-        self, obj: Message | CallbackQuery, database: Database, event_from_user: User
+        self,
+        obj: Message | CallbackQuery,
+        database,
+        event_from_user: User
     ):
         user = database.get_user(event_from_user.id)
         return user is not None

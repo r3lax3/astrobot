@@ -48,7 +48,7 @@ async def general_predictions_menu(
 ):
     bot_message = await message.answer_photo(
         photo=GENERAL_PREDICTION_IMAGE,
-        caption=messages.user_choose_general_prediction_type,
+        caption=messages.USER_CHOOSE_GENERAL_PREDICTION_TYPE,
         reply_markup=keyboards.user_gen_pred_type,
     )
     await state.update_data(del_messages=[bot_message.message_id])
@@ -60,7 +60,7 @@ async def get_prediction_type(
     callback: CallbackQuery,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
 ):
     prediction_type = CALLBACK_DATA_TO_GENERAL_PREDICTION_TYPE[callback.data]
     format = PRED_TYPE_TO_DATE_FMT[prediction_type]
@@ -70,7 +70,7 @@ async def get_prediction_type(
     prediction_text = database.get_general_prediction(date_str)
 
     if prediction_text is None:
-        prediction_text = messages.general_prediction_not_added
+        prediction_text = messages.GENERAL_PREDICTION_NOT_ADDED
 
     await callback.message.answer_photo(
         photo=GENERAL_PREDICTION_IMAGE

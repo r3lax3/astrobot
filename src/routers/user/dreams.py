@@ -27,7 +27,7 @@ async def dreams_menu(
     message: Message,
     state: FSMContext,
     keyboards: KeyboardManager,
-    database: Database,
+    database,
     event_from_user: User,
 ):
     user = database.get_user(event_from_user.id)

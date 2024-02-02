@@ -25,7 +25,7 @@ async def adminpane_callback_query_handler(
 @r.message(Command(commands=["admin"]), F.from_user.id.in_(admins))
 async def adminpanel(message: Message, state: FSMContext, keyboards: KeyboardManager):
     bot_message = await message.answer(
-        messages.admin_menu, reply_markup=keyboards.adminpanel
+        messages.ADMIN_MENU, reply_markup=keyboards.adminpanel
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.choose_action)

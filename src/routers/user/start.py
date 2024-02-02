@@ -5,7 +5,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, User
 
 from src import config, messages
-from src.database import Database
 from src.filters import AdminFilter, UserFilter, UserInDatabase
 from src.keyboard_manager import KeyboardManager
 from src.routers.states import MainMenu
@@ -13,13 +12,17 @@ from src.routers.states import MainMenu
 from .main_menu import main_menu
 
 r = Router()
-start_video: str = config.get("files.start_video")
+START_VIDEO: str = config.get("files.start_video")
 
 
 # Handler for '/start' command for admin user
 @r.message(CommandStart(), AdminFilter())
 @r.message(Command(commands=["menu"]), ~UserInDatabase(), AdminFilter())
-async def user_command_start_handler(message: Message, state: FSMContext, bot: Bot):
+async def user_command_start_handler(
+    message: Message,
+    state: FSMContext,
+    bot: Bot
+):
     await start(message, state, bot)
 
 
@@ -29,7 +32,7 @@ async def admin_command_start_handler(
     message: Message,
     state: FSMContext,
     bot: Bot,
-    database: Database,
+    database,
     event_from_user: User,
     keyboards: KeyboardManager,
 ):
@@ -55,12 +58,13 @@ async def start(message: Message, state: FSMContext, bot: Bot):
             pass
 
     start_message = await message.answer_video(
-        video=start_video, caption=messages.start
+        video=START_VIDEO,
+        caption=messages.START
     )
-    bot_message = await message.answer(messages.enter_your_name)
+    bot_message = await message.answer(messages.ENTER_YOUR_NAME)
     await state.update_data(
         main_menu_message_id=start_message.message_id,
         start_message_id=start_message.message_id,
-        del_messages=[bot_message.message_id],
+        del_messages=[bot_message.message_id]
     )
     await state.set_state(MainMenu.get_name)
