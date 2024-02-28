@@ -535,10 +535,10 @@ FAVORABLE_AND_UNFAVORABLE = """\
 PREDICTION_TEXT_FORMATTED_DATE = """
 <b>{formatted_date}</b>
 """
-PREDICTION_TEXT_NEUTRAL_BACKGROUND_TODAY = """
-<b>Сегодня у Вас действует общий фон.</b>
+PREDICTION_TEXT_NEUTRAL_BACKGROUND_TODAY = """\
+<b>Сегодня у Вас действует общий фон.</b>\
 """
-PREDICTION_TEXT_NEUTRAL_BACKGROUND = """
+PREDICTION_TEXT_NEUTRAL_BACKGROUND = """\
 <b>Нейтральный фон. Событийность зависит от Ваших собственных действий.</b>\
 """
 USE_OTHER_FUNCTION_FOR_CORRECT_PLANNING = """\
