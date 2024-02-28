@@ -183,7 +183,7 @@ def get_blank_moon_caption(
     if start_yesterday:
         start_time_str = '00:00'
 
-    end_time_str = '23:59'
+    end_time_str = '00:00'
     if end_today:
         end_time_str = blank_moon_period.end.strftime(TIME_FORMAT)
 
