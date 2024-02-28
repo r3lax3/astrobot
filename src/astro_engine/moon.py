@@ -41,7 +41,7 @@ ISO_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 TIME_FORMAT: str = config.get("database.time_format")
 DATETIME_FORMAT = "%Y-%m-%d %H:%M"
 
-LOGGER = logging.getlogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def get_juliday(utcdate: datetime) -> float:

@@ -27,7 +27,7 @@ TIME_FORMAT: str = config.get("database.time_format")
 
 MOON_IN_SIGNS_INTERPRETATIONS = get_moon_in_signs_interpretations()
 
-LOGGER = logging.getlogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def get_interpretation(
