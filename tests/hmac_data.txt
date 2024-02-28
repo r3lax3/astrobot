@@ -1,0 +1,1 @@
+{"acquiring":"sbrf","do":"link","link_expired":"2024-02-29 18:30","order_id":"c470959b510d0ee015e26633bdce953c4f2324ad","paid_content":"https:\/\/t.me\/AstroPulse_bot","products":[{"name":"Подписка на Астропульс, 12 месяцев","paymentMethod":"4","paymentObject":"4","price":"5400","quantity":"1"}],"sys":""}
