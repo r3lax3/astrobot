@@ -41,7 +41,7 @@ async def admin_command_start_handler(
     if user is None:
         await start(message, state, bot)
     else:
-        await main_menu(message, state, keyboards, bot)
+        await main_menu(message, state, bot)
 
 
 # Function to initiate the bot interaction, sending welcome video and message
