@@ -18,7 +18,7 @@ def get_subscription_status_text(user: User):
 
     utcnow = datetime.utcnow()
     if utcnow > user_subscription_end_datetime:
-        return SUBSCRIPTION_STATUS_NOT_ACTIVE
+        return messages.SUBSCRIPTION_STATUS_NOT_ACTIVE
     else:
         timezone_offset = timedelta(hours=user.timezone_offset)
 
