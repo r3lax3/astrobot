@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, User
 
 from src import config, messages
-from src.database import Database
+from src.database import Database, crud
 from src.database.models import Location
 from src.database.models import User as DBUser
 from src.enums import Gender, LocationType
@@ -38,24 +38,18 @@ async def profile_settings_menu_callback_handler(
 async def profile_settings_menu(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager
+    keyboards: KeyboardManager,
+    event_from_user: User
 ):
-    data = await state.get_data()
-
-    name = data["name"]
-
-    current_location_title = data["current_location_title"]
-
-    birth_datetime = data["birth_datetime"]
-    birth_location_title = data["birth_location_title"]
+    user = crud.get_user(event_from_user.id)
 
     bot_message = await message.answer_photo(
         photo=PROFILE_IMAGE,
         caption=messages.PROFILE_SETTINGS.format(
-            name=name,
-            current_location_title=current_location_title,
-            birth_datetime=birth_datetime,
-            birth_location_title=birth_location_title,
+            name=user.name,
+            current_location_title=user.current_location.title,
+            birth_datetime=user.birth_datetime,
+            birth_location_title=user.birth_location.title,
         ),
         reply_markup=keyboards.profile_settings,
     )
