@@ -68,7 +68,8 @@ async def change_name(
 ):
     user = database.get_user(event_from_user.id)
     bot_message = await callback.message.answer(
-        messages.CHANGE_NAME.format(name=user.name), reply_markup=keyboards.back
+        messages.CHANGE_NAME.format(name=user.name),
+        reply_markup=keyboards.back
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(ProfileSettings.get_new_name)
@@ -105,7 +106,10 @@ async def gender_is_male(
     keyboards: KeyboardManager,
     database,
 ):
-    database.change_user_gender(gender=Gender.male.value, user_id=callback.from_user.id)
+    database.change_user_gender(
+        gender=Gender.male.value,
+        user_id=callback.from_user.id
+    )
     await choose_gender(callback, state, keyboards, database)
 
 
@@ -116,7 +120,10 @@ async def gender_is_female(
     keyboards: KeyboardManager,
     database,
 ):
-    database.change_user_gender(gender=Gender.male.value, user_id=callback.from_user.id)
+    database.change_user_gender(
+        gender=Gender.female.value,
+        user_id=callback.from_user.id
+    )
     await choose_gender(callback, state, keyboards, database)
 
 
@@ -129,7 +136,9 @@ async def change_timezone(
 
 
 async def enter_current_location(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     data = await state.get_data()
 
@@ -137,7 +146,8 @@ async def enter_current_location(
 
     if not first_time:
         bot_message = await message.answer(
-            messages.ENTER_NEW_CURRENT_LOCATION, reply_markup=keyboards.to_main_menu
+            messages.ENTER_NEW_CURRENT_LOCATION,
+            reply_markup=keyboards.to_main_menu
         )
     else:
         bot_message = await message.answer(messages.ENTER_CURRENT_LOCATION)
@@ -155,7 +165,7 @@ async def get_current_location(
     longitude = message.location.longitude
     latitude = message.location.latitude
     current_location_title = get_location_by_coords(
-        longitude=longitude, 
+        longitude=longitude,
         latitude=latitude
     )
 
@@ -258,7 +268,8 @@ async def get_current_location_confirmed(
             ),
         )
         database.update_user(
-            event_from_user.id, timezone_offset=get_timezone_offset(**current_location)
+            event_from_user.id,
+            timezone_offset=get_timezone_offset(**current_location)
         )
         bot_message = await callback.message.answer(
             messages.CURRENT_LOCATION_CHANGED_SUCCESS

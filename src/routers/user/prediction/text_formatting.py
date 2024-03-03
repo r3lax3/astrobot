@@ -7,11 +7,11 @@ from typing import List
 import swisseph as swe
 
 from src import config, messages
+from src.dicts import PLANET_ID_TO_NAME_RU
 from src.astro_engine.models import AstroEvent
 from src.astro_engine.models import Location as PredictionLocation
 from src.astro_engine.models import User as PredictionUser
 from src.astro_engine.predictions import get_astro_events_from_period
-from src.database import Database
 from src.routers.user.prediction.models import Interpretation
 
 
@@ -62,18 +62,7 @@ MONTHS = [
 
 interpretations_dict = get_interpretations_dict()
 
-PLANET_ID_TO_NAME_RU = {
-    0: "Солнце",
-    1: "Луна",
-    2: "Меркурий",
-    3: "Венера",
-    4: "Марс",
-    5: "Юпитер",
-    6: "Сатурн",
-    7: "Уран",
-    8: "Нептун",
-    9: "Плутон",
-}
+
 
 
 def formatted_general_events(events: List[AstroEvent]) -> str:

@@ -176,4 +176,15 @@ def get_astro_events_from_period(
     # Преобразование словаря обратно в список
     unique_events = list(unique_events_dict.values())
 
-    return unique_events
+    unique_sorted_events = sort_astro_events(unique_events)
+    return unique_sorted_events
+
+
+def sort_astro_events(events):
+
+    events_with_peak = [event for event in events if event.peak_at is not None]
+    events_without_peak = [event for event in events if event.peak_at is not None]
+
+    sorted_events_with_peak = sorted(events_with_peak, key=lambda x: x.peak_at)
+
+    return events_without_peak + sorted_events_with_peak
