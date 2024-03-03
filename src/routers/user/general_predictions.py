@@ -66,7 +66,6 @@ async def get_prediction_type(
     format = PRED_TYPE_TO_DATE_FMT[prediction_type]
 
     date_str = datetime.now().strftime(format)
-    print(f'{date_str = }')
     prediction_text = database.get_general_prediction(date_str)
 
     if prediction_text is None:
@@ -78,7 +77,8 @@ async def get_prediction_type(
     bot_message = await callback.message.answer(
         text=prediction_text,
         reply_markup=keyboards.to_main_menu,
-        parse_mode='html'
+        parse_mode='html',
+        disable_web_page_preview=True
     )
     await state.update_data(delete_keyboard_message_id=bot_message.message_id)
     await state.set_state(MainMenu.end_action)

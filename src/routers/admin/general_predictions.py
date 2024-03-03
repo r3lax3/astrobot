@@ -92,7 +92,7 @@ async def enter_general_prediction_date(
 
     bot_message = await message.answer(
         messages.ENTER_GENERAL_PREDICTION_DATE.format(
-            type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[predictions_type], 
+            type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[predictions_type],
             format=PRED_TYPE_TO_EXAMPLE[predictions_type]
         ),
         reply_markup=keyboards.back,
@@ -103,13 +103,13 @@ async def enter_general_prediction_date(
 
 @r.message(AdminStates.get_general_prediction_date, F.text)
 async def get_general_prediction_date(
-    message: Message, 
+    message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager, 
+    keyboards: KeyboardManager,
     database
 ):
     data = await state.get_data()
-    
+
     prediction_type = GeneralPredictionType(data["general_predictions_type"])
     prediction_format = PRED_TYPE_TO_DATE_FMT[prediction_type]
 
@@ -119,7 +119,7 @@ async def get_general_prediction_date(
             text = message.text + "-1"
             format = FROM_WEEK_STR_FORMAT
             print(f'{text = }, {format = }')
-            datetime.strptime(message.text + "-1", FROM_WEEK_STR_FORMAT)  
+            datetime.strptime(message.text + "-1", FROM_WEEK_STR_FORMAT)
         else:
             datetime.strptime(message.text, prediction_format)
 
@@ -143,7 +143,7 @@ async def get_general_prediction_date(
 
         if prediction_type == GeneralPredictionType.week:
             formatted_date = datetime.strptime(
-                message.text + "-1", 
+                message.text + "-1",
                 FROM_WEEK_STR_FORMAT
             ).strftime(WEEK_FORMAT)
         else:
@@ -159,7 +159,7 @@ async def get_general_prediction_date(
 async def enter_general_prediction_text(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager, 
+    keyboards: KeyboardManager,
     database
 ):
     data = await state.get_data()
@@ -169,7 +169,6 @@ async def enter_general_prediction_text(
     )
 
     prediction_type = GeneralPredictionType(data["general_predictions_type"])
-
 
     if general_prediction is not None:
         bot_message = await message.answer(
@@ -197,7 +196,7 @@ async def enter_general_prediction_text(
 async def get_general_prediction_text(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager, 
+    keyboards: KeyboardManager,
     database
 ):
     data = await state.get_data()
@@ -215,7 +214,7 @@ async def get_general_prediction_text(
         ),
         reply_markup=keyboards.back_to_adminpanel,
         parse_mode="html",
+        disable_web_page_preview=True
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.action_end)
-
