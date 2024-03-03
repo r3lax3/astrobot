@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DatabaseError
 
 from src import config
 from src.enums import PaymentStatus
@@ -277,9 +277,9 @@ def add_general_prediction(date: str, prediction: str):
     with Session() as session:
         try:
             general_prediction = GeneralPrediction(date=date, prediction=prediction)
-            session.add(general_prediction)
+            session.merge(general_prediction)
             session.commit()
-        except IntegrityError:
+        except DatabaseError:
             session.rollback()
 
 

@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery, Message
 
 from src import config, messages
 from src.enums import GeneralPredictionType
-from src.database import Database
+from src.database import Database, crud
 from src.keyboard_manager import KeyboardManager, bt
 from src.routers.states import AdminStates
 
@@ -204,7 +204,7 @@ async def get_general_prediction_text(
     prediction_type = GeneralPredictionType(data["general_predictions_type"])
     prediction_date = data["general_prediction_date"]
 
-    database.add_general_prediction(date=prediction_date, prediction=message.html_text)
+    crud.add_general_prediction(date=prediction_date, prediction=message.html_text)
 
     bot_message = await message.answer(
         messages.GENERAL_PREDICTION_ADDED.format(

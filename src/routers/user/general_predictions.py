@@ -42,7 +42,7 @@ async def general_predictions_menu_callback_handler(
 
 @r.message(F.text, F.text == bt.general_predictions)
 async def general_predictions_menu(
-    message: Message, 
+    message: Message,
     state: FSMContext,
     keyboards: KeyboardManager
 ):
