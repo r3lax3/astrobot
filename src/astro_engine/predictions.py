@@ -174,7 +174,7 @@ def get_astro_events_from_period(
     }
 
     # Преобразование словаря обратно в список
-    unique_events = set(list(unique_events_dict.values()))
+    unique_events = remove_duplicates(list(unique_events_dict.values()))
 
     unique_sorted_events = sort_astro_events(unique_events)
     return unique_sorted_events
@@ -188,3 +188,20 @@ def sort_astro_events(events):
     sorted_events_with_peak = sorted(events_with_peak, key=lambda x: x.peak_at)
 
     return events_without_peak + sorted_events_with_peak
+
+
+def remove_duplicates(events: List[AstroEvent]) -> List[AstroEvent]:
+    unique_events_set = set()
+    unique_events_list = []
+    for event in events:
+        # Конвертируем datetime в timestamp для хеширования, если peak_at не None
+        event_key = (
+            event.natal_planet,
+            event.transit_planet,
+            event.aspect,
+            event.peak_at.timestamp() if event.peak_at else None
+        )
+        if event_key not in unique_events_set:
+            unique_events_set.add(event_key)
+            unique_events_list.append(event)
+    return unique_events_list
