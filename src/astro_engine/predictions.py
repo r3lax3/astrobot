@@ -174,7 +174,7 @@ def get_astro_events_from_period(
     }
 
     # Преобразование словаря обратно в список
-    unique_events = list(unique_events_dict.values())
+    unique_events = set(list(unique_events_dict.values()))
 
     unique_sorted_events = sort_astro_events(unique_events)
     return unique_sorted_events
