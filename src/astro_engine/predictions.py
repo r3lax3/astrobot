@@ -183,7 +183,7 @@ def get_astro_events_from_period(
 def sort_astro_events(events):
 
     events_with_peak = remove_duplicates(
-        [event for event in events if event.peak_at is not None]
+        [event for event in events if event.peak_at is None]
     )
     events_without_peak = remove_duplicates(
         [event for event in events if event.peak_at is not None]
