@@ -191,17 +191,14 @@ def sort_astro_events(events):
 
 
 def remove_duplicates(events: List[AstroEvent]) -> List[AstroEvent]:
-    unique_events_set = set()
     unique_events_list = []
     for event in events:
         # Конвертируем datetime в timestamp для хеширования, если peak_at не None
         event_key = (
             event.natal_planet,
             event.transit_planet,
-            event.aspect,
-            event.peak_at.timestamp() if event.peak_at else None
+            event.aspect
         )
-        if event_key not in unique_events_set:
-            unique_events_set.add(event_key)
+        if event_key not in unique_events_list:
             unique_events_list.append(event)
     return unique_events_list
