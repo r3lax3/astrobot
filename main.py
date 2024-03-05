@@ -26,7 +26,6 @@ from src.utils import logger_settings
 from src.payments import ProdamusPaymentService
 
 
-
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 
@@ -45,6 +44,7 @@ async def on_startup(bot: Bot, scheduler: EveryDayPredictionScheduler) -> None:
         f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}",
         allowed_updates=['message', 'callback_query']
     )
+    scheduler.start()
     await scheduler.check_users_and_schedule()
 
     if DO_BACKUP:
@@ -56,8 +56,7 @@ async def on_shutdown(bot: Bot):
 
 
 def main():
-    scheduler = EveryDayPredictionScheduler(Database, bot)
-    scheduler.start()
+    scheduler = EveryDayPredictionScheduler(bot)
 
     dp = Dispatcher(
         storage=RedisStorage.from_url('redis://localhost:6379'),
