@@ -43,8 +43,8 @@ def get_users():
         return session.query(User).all()
 
 
-def get_user(user_id: int) -> User:
-    return global_session.query(User).filter_by(user_id=user_id).first()
+def get_user(user_id: int, session: Session = global_session) -> User:
+    return session.query(User).filter_by(user_id=user_id).first()
 
 
 def update_user(user_id: int, **kwargs):
@@ -87,7 +87,9 @@ def update_user(user_id: int, **kwargs):
 
 
 def update_user_every_day_prediction_time(
-    user_id: int, hour: int, minute: int
+    user_id: int,
+    hour: int,
+    minute: int
 ):
     with Session() as session:
         user = session.query(User).filter_by(user_id=user_id).first()

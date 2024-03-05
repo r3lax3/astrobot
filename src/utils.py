@@ -120,6 +120,15 @@ def get_timezone_str_from_coords(longitude: float, latitude: float) -> str:
         )
 
 
+def get_timezone_str_from_offset(timezone_offset: int) -> str:
+    for tz in pytz.all_timezones:
+        timezone = pytz.timezone(tz)
+        now = datetime.now(timezone)
+        offset = now.utcoffset().total_seconds() / 3600
+        if round(offset) == timezone_offset:
+            return tz
+
+
 def convert_to_utc(dt: datetime, offset: int) -> datetime:
     return dt - timedelta(hours=offset)
 
@@ -222,7 +231,7 @@ def in_range(value: Any, start: Any, end: Any) -> bool:
 
 def logger_settings():
     logging.basicConfig(level=logging.INFO, stream=sys.stdout, encoding="utf-8")
-    logging.getLogger('apscheduler').setLevel(logging.WARNING)
+    logging.getLogger('apscheduler').setLevel(logging.INFO)
     logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
 
 
@@ -247,3 +256,37 @@ async def delete_message(message: Message):
         await message.delete()
     except TelegramBadRequest:
         pass
+
+
+def format_time_delta(delta_time: timedelta) -> str:
+    """
+    Форматирует объект timedelta в строку, отображающую оставшееся время.
+
+    Если какая-либо часть времени (дни, часы, минуты) равна нулю, она не включается в итоговую строку.
+    Например, "1 д. 3 ч." или "2 ч. 15 мин.", или "Меньше минуты" для очень малых значений.
+
+    Args:
+    -----
+    delta_time (timedelta): Разница во времени, которую необходимо форматировать.
+
+    Returns:
+    --------
+    str: Строка, представляющая оставшееся время в формате "х д. х ч. х мин." или "Меньше минуты".
+    """
+
+    # Извлекаем дни, часы и минуты из delta_time
+    days = delta_time.days
+    hours, remainder = divmod(delta_time.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+
+    # Собираем строку, исключая нулевые значения
+    time_parts = []
+    if days > 0:
+        time_parts.append(f"{days} д.")
+    if hours > 0:
+        time_parts.append(f"{hours} ч.")
+    if minutes > 0:
+        time_parts.append(f"{minutes} мин.")
+
+    # Возвращаем сформированную строку или "Меньше минуты" при отсутствии значительного оставшегося времени
+    return ' '.join(time_parts) if time_parts else "Меньше минуты"

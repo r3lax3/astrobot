@@ -5,9 +5,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, User
 
 from src import config, messages
-from src.database import Database
+from src.database import crud, Session
 from src.filters import IsTime
-from src.keyboard_manager import KeyboardManager, bt
+from src.keyboards import keyboards, bt
 from src.routers.states import MainMenu
 
 database_datetime_format: str = config.get("database.datetime_format")
@@ -22,17 +22,16 @@ r = Router()
 async def every_day_prediction(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
-    database,
     event_from_user: User,
 ):
-    user = database.get_user(event_from_user.id)
+    with Session() as session:
+        user = crud.get_user(event_from_user.id, session)
 
     bot_message = await message.answer(
         messages.EVERY_DAY_PREDICTION_ACTIVATED.format(
             send_time=user.every_day_prediction_time
         ),
-        reply_markup=keyboards.back,
+        reply_markup=keyboards.back(),
     )
 
     await state.update_data(del_messages=[bot_message.message_id, message.message_id])
@@ -42,17 +41,15 @@ async def every_day_prediction(
 @r.message(MainMenu.prediction_every_day_enter_time, F.text, IsTime())
 async def enter_prediction_time(
     message: Message,
-    database,
     state: FSMContext,
-    keyboards: KeyboardManager,
     scheduler,
     event_from_user: User,
 ):
     time = datetime.strptime(message.text, TIME_FORMAT)
 
-    database.update_user_every_day_prediction_time(
+    crud.update_user_every_day_prediction_time(
         event_from_user.id, hour=time.hour, minute=time.minute
     )
     await scheduler.set_all_jobs(user_id=event_from_user.id)
 
-    await every_day_prediction(message, state, keyboards, database, event_from_user)
+    await every_day_prediction(message, state, event_from_user)
