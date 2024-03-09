@@ -118,7 +118,7 @@ async def get_general_prediction_date(
         if prediction_type == GeneralPredictionType.week:
             text = message.text + "-1"
             format = FROM_WEEK_STR_FORMAT
-            print(f'{text = }, {format = }')
+            # print(f'{text = }, {format = }')
             datetime.strptime(message.text + "-1", FROM_WEEK_STR_FORMAT)
         else:
             datetime.strptime(message.text, prediction_format)

@@ -4,19 +4,20 @@ import logging
 import hashlib
 import hmac
 import json
-import ephem
 import pytz
 import yaml
+import pandas as pd
 
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, List
+from dataclasses import is_dataclass, asdict
 
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
-from aiogram import Bot
 from aiogram.types import Message
 from aiogram.exceptions import TelegramBadRequest
 
+from src import messages
 from src.exceptions import PathDoesNotExistError
 
 
@@ -187,7 +188,7 @@ def get_location_by_coords(longitude: float, latitude: float) -> str:
         else:
             return country
 
-    return "Ошибка. Напишите @mrAx3 насчет этого если увидите этот текст. Что-то сломалось."
+    return messages.ERROR_MESSAGE
 
 
 def path_validation(path: str) -> None:
@@ -195,41 +196,14 @@ def path_validation(path: str) -> None:
         raise PathDoesNotExistError(f"Путь не существует: {path}")
 
 
-async def get_lunar_day(date: datetime, latitude: float, longitude: float):
-    """
-    Calculate the lunar day for a given date and location.
-
-    Parameters:
-    date (str): The date for which to calculate the lunar day, formatted as 'YYYY/MM/DD'.
-    latitude (str): The latitude of the location, formatted as a string (e.g., '48.8566').
-    longitude (str): The longitude of the location, formatted as a string (e.g., '2.3522').
-
-    Returns:
-    int: The lunar day number.
-    """
-    # Set up an observer at the given latitude and longitude
-    observer = ephem.Observer()
-    observer.lat, observer.lon = str(latitude), str(longitude)
-
-    # Calculate the next and previous new moons relative to the given date
-    next_new_moon = ephem.next_new_moon(date)
-    last_new_moon = ephem.previous_new_moon(date)
-
-    # Calculate the lunation as a fraction of the lunar month
-    lunation = (observer.date - last_new_moon) / (next_new_moon - last_new_moon)
-
-    # Calculate the lunar day, noting there are approximately 29.53 days in a lunar month
-    lunar_day = lunation * 29.53
-
-    # Return the lunar day as an integer, adding 1 since lunar days start at 1
-    return int(lunar_day) + 1
-
-
 def in_range(value: Any, start: Any, end: Any) -> bool:
     return start <= value < end
 
 
 def logger_settings():
+    """
+    Настройки логгирования, вызывается только в ~/main.py
+    """
     logging.basicConfig(level=logging.INFO, stream=sys.stdout, encoding="utf-8")
     logging.getLogger('apscheduler').setLevel(logging.INFO)
     logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
@@ -252,6 +226,9 @@ def generate_random_sha1_key() -> str:
 
 
 async def delete_message(message: Message):
+    """
+    Удаляет сообщение без возвращения ошибки
+    """
     try:
         await message.delete()
     except TelegramBadRequest:
@@ -290,3 +267,32 @@ def format_time_delta(delta_time: timedelta) -> str:
 
     # Возвращаем сформированную строку или "Меньше минуты" при отсутствии значительного оставшегося времени
     return ' '.join(time_parts) if time_parts else "Меньше минуты"
+
+
+def print_items_dict_as_table(items: list[Any], file=None) -> None:
+    if len(items) == 0:
+        print('No data to print!')
+
+    if is_dataclass(items[0]):
+        items = [asdict(item) for item in items]
+
+    if not isinstance(items[0], dict):
+        print("Can't print not dict-like objects")
+        return
+
+    # Создание DataFrame из списка словарей
+    df = pd.DataFrame(items)
+
+    # Вывод DataFrame в формате Markdown с помощью fancy_grid
+    print(df.to_markdown(index=False), file=file)
+
+
+def get_average_datetime(datetimes: List[datetime]) -> datetime:
+    """Возвращает средний арифметический datetime из списка."""
+    if len(datetimes) == 0:
+        return
+
+    timestamps = [dt.timestamp() for dt in datetimes]
+    average_timestamp = sum(timestamps) / len(timestamps)
+
+    return datetime.fromtimestamp(average_timestamp)

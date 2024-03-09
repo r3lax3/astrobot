@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from src.enums import SwissEphPlanet
+
 
 @dataclass
 class Location:
@@ -21,6 +23,14 @@ class AstroEvent:
     transit_planet: int
     aspect: int
     peak_at: datetime | None
+
+
+@dataclass
+class MonoAstroEvent:
+    first_planet: SwissEphPlanet
+    second_planet: SwissEphPlanet
+    aspect: int
+    peak: datetime
 
 
 @dataclass

@@ -61,7 +61,7 @@ def calculate_moon_degrees_ut(juliday: float, location: Location):
     swe.set_topo(location.longitude, location.latitude, 0)
 
     flag = swe.FLG_SWIEPH + swe.FLG_SPEED + swe.FLG_TOPOCTR
-    return swe.calc(juliday, SwissEphPlanet.MOON.value, flag)[0][0]
+    return swe.calc(juliday, SwissEphPlanet.MOON, flag)[0][0]
 
 
 def calculate_moon_sign(moon_degrees: float) -> ZodiacSign:
@@ -299,16 +299,7 @@ def get_main_lunar_day_at_date(
         # Вычисляем временную метку для каждого часа
         time_point = utcdate + timedelta(hours=hour)
 
-        # Получаем номер лунного дня для каждого часа
-        lunar_day_number = get_lunar_day_number(time_point, longitude, latitude)
-        lunar_day_start = get_lunar_day_start(time_point, longitude, latitude)
-        lunar_day_end = get_lunar_day_end(time_point, longitude, latitude)
-
-        lunar_day = LunarDay(
-            number=lunar_day_number,
-            start=lunar_day_start,
-            end=lunar_day_end
-        )
+        lunar_day = get_lunar_day(time_point)
         lunar_days.append(lunar_day)
 
     # Сопоставление каждого лунного дня с его продолжительностью
@@ -418,112 +409,3 @@ def get_blank_moon_period(
         end = moon_sign_period.end + timezone_timedelta
 
     return TimePeriod(start, end)
-
-
-def get_latest_event_peak(
-    moon_sign_period: TimePeriod,
-    user
-) -> datetime | None:
-    astro_events = get_astro_events_from_period(
-        moon_sign_period.start,
-        moon_sign_period.end,
-        user
-    )
-
-    astro_events_with_peaks = (
-        event
-        for event in astro_events
-        if event.peak_at is not None
-    )
-
-    filtered_and_sorted_events = sorted(
-        astro_events_with_peaks,
-        key=lambda x: x.peak_at
-    )
-
-    if not filtered_and_sorted_events:
-        return None
-
-    latest_event_peak = filtered_and_sorted_events[-1].peak_at
-    return latest_event_peak
-
-
-def get_moon_sign_period(
-    utcdate: datetime,
-    user: User
-) -> TimePeriod:
-
-    start_time = find_moon_sign_start(utcdate, user)
-    end_time = find_moon_sign_end(utcdate, user)
-
-    return TimePeriod(start=start_time, end=end_time)
-
-
-def find_moon_sign_start(utcdate: datetime, user: User) -> datetime:
-    current_sign = get_moon_sign(utcdate, user.current_location)
-
-    search_time = utcdate
-    previous_sign = current_sign
-
-    # Идем назад по времени до смены знака
-    while previous_sign == current_sign:
-        search_time -= timedelta(hours=1)
-        previous_sign = get_moon_sign(search_time, user.current_location)
-
-    return binary_search_for_sign_change(
-        search_time,
-        search_time + timedelta(hours=1),
-        previous_sign,
-        user,
-        seeking='start'
-    )
-
-
-def find_moon_sign_end(utcdate: datetime, user: User) -> datetime:
-    current_sign = get_moon_sign(utcdate, user.current_location)
-
-    search_time = utcdate
-    next_sign = current_sign
-
-    # Идем вперед по времени до смены знака
-    while next_sign == current_sign:
-        search_time += timedelta(hours=1)
-        next_sign = get_moon_sign(search_time, user.current_location)
-
-    # Точное определение конца знака с помощью бинарного поиска
-    return binary_search_for_sign_change(
-        utcdate,
-        search_time,
-        current_sign,
-        user,
-        seeking='end'
-    )
-
-
-def binary_search_for_sign_change(
-    start_time: datetime,
-    end_time: datetime,
-    current_sign: str,
-    user: User,
-    seeking: Literal['start', 'end']
-) -> datetime:
-    while end_time - start_time > timedelta(minutes=1):
-        middle_time = start_time + (end_time - start_time) // 2
-        middle_sign = get_moon_sign(middle_time, user.current_location)
-
-        if seeking == 'start':
-            if middle_sign == current_sign:
-                # Если средняя точка все еще в текущем знаке, сдвигаем начало интервала вперед
-                start_time = middle_time
-            else:
-                # Если средняя точка уже в другом знаке, сдвигаем конец интервала назад
-                end_time = middle_time
-        else:  # seeking == 'end'
-            if middle_sign == current_sign:
-                # Если средняя точка все еще в текущем знаке, сдвигаем начало интервала вперед
-                start_time = middle_time
-            else:
-                # Если средняя точка уже в другом знаке, сдвигаем конец интервала назад
-                end_time = middle_time
-
-    return start_time if seeking == 'start' else end_time

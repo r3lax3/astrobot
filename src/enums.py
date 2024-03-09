@@ -95,7 +95,7 @@ class ZodiacSign(Enum):
     PISCES = "Pisces"
 
 
-class SwissEphPlanet(Enum):
+class SwissEphPlanet(int, Enum):
     SUN = 0
     MOON = 1
     MERCURY = 2
