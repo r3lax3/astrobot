@@ -94,7 +94,7 @@ def get_mono_astro_event_at_time(
         for planet in SwissEphPlanet
     }
 
-    logging.info(planets_data)
+    # logging.info(planets_data)
 
     moon_data = planets_data.pop(SwissEphPlanet.MOON)
     moon_pos = moon_data[0][0]
