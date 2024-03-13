@@ -167,24 +167,25 @@ def get_blank_moon_caption(
     )
 
     today = datetime_obj.date()
-    yesterday = today - timedelta(days=1)
 
     start_date = blank_moon_period.start.date()
 
     start_today = start_date == today
-    start_yesterday = start_date == yesterday
+    start_yesterday_or_before = start_date < today
 
     end_today = today == blank_moon_period.end.date()
 
-    if not (start_today or start_yesterday):
+    if not (start_today or start_yesterday_or_before):
         return 'Холостая луна сегодня отсутствует'
 
-    start_time_str = blank_moon_period.start.strftime(TIME_FORMAT)
-    if start_yesterday:
+    if start_yesterday_or_before:
         start_time_str = '00:00'
+    else:
+        start_time_str = blank_moon_period.start.strftime(TIME_FORMAT)
 
-    end_time_str = '00:00'
     if end_today:
         end_time_str = blank_moon_period.end.strftime(TIME_FORMAT)
+    else:
+        end_time_str = '24:00'
 
     return f'Холостая луна {start_time_str} - {end_time_str}'

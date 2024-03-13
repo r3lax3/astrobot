@@ -6,7 +6,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import BufferedInputFile, CallbackQuery, Message, User
 
 from src import config, messages
-from src.database import Database
 from src.enums import FileName
 from src.filters import HasPredictionAccess
 from src.image_processing import get_image_with_astrodata
