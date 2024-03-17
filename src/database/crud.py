@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, DatabaseError
 
 from src import config
@@ -443,9 +444,12 @@ def update_payment(payment_id: int, **kwargs):
         session.commit()
 
 
-def get_payments(**filters) -> List[Payment]:
-    with Session() as session:
-        return session.query(Payment).filter_by(**filters).all()
+def get_payments(session: Session, **filters) -> List[Payment]:
+    return session.query(Payment).filter_by(**filters).all()
+
+
+def get_all_payments(session: Session, **filters) -> List[Payment]:
+    return session.query(Payment).all()
 
 
 def get_payment(payment_id: str) -> Payment:
@@ -547,3 +551,17 @@ def get_payment_status(payment_id: str) -> PaymentStatus:
             return PaymentStatus.FAILED
 
         return actual_payment_status
+
+
+def get_all_users(session: Session) -> List[User]:
+    return session.query(User).all()
+
+
+def get_clients(session: Session) -> int:
+    users_with_payments = session.query(Payment.user_id).distinct().subquery()
+
+    users_with_payments_select = select(users_with_payments.c.user_id)
+
+    return session.query(User).filter(
+        User.user_id.in_(users_with_payments_select)
+    ).count()

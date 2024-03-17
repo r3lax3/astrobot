@@ -1,81 +1,85 @@
 from datetime import datetime
-from typing import Tuple
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from sqlalchemy import select
+
 
 from src import config, messages
-from src.database import Database
+from src.database import crud, Session
 from src.database.models import Payment, Promocode, User
 from src.enums import Gender, PaymentStatus
-from src.keyboard_manager import KeyboardManager, bt
+from src.keyboards import keyboards, bt
 from src.routers.states import AdminStates
+from src.dicts import MONTHS_TO_RUB_PRICE
 
 r = Router()
-months_to_rub_price = {1: 400.00, 2: 750.00, 3: 1050.00, 6: 2000.00, 12: 3800.00}
-
-# "%d.%m.%Y %H:%M" at default
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 
 
 @r.callback_query(F.data == bt.statistics)
-async def statistics(
-    callback: CallbackQuery,
-    state: FSMContext,
-    keyboards: KeyboardManager,
-    database,
-):
-    all_users = count_all_users(database)
-    clients = count_clients(database)
+async def statistics(callback: CallbackQuery, state: FSMContext):
+    with Session() as session:
+        users = crud.get_all_users(session)
 
-    mens, womens = genders(database)
+        users_count = len(users)
+        clients_count = crud.get_clients(session)
 
-    trial_users = 0
-    active_clients = 0
-    free_users = 0
+        mens = len([user for user in users if user.gender == Gender.male])
+        womens = len([user for user in users if user.gender == Gender.female])
 
-    ages = []
+        trial_users_count = 0
+        active_clients_count = 0
+        free_users_count = 0
 
-    now = datetime.utcnow()
+        ages = []
 
-    # Кусок кода вынесен сюда ради оптимизации
-    users = database.session.query(User).all()
+        now = datetime.utcnow()
 
-    for user in users:
-        end_date = datetime.strptime(user.subscription_end_date, DATETIME_FORMAT)
-        payments = database.get_payments(user_id=user.user_id)
+        for user in users:
+            end_date = datetime.strptime(
+                user.subscription_end_date,
+                DATETIME_FORMAT
+            )
+            payments = crud.get_payments(session, user_id=user.user_id)
 
-        # Подсчет активных клиентов
-        if payments and now < end_date:
-            active_clients += 1
+            user_is_active_client = payments and now < end_date
+            user_is_on_trial = not payments and now < end_date
+            user_is_free = not payments and now > end_date
 
-        elif not payments and now < end_date:
-            trial_users += 1
+            if user_is_active_client:
+                active_clients_count += 1
 
-        # Подсчет "бесплатников"
-        elif not payments and now > end_date:
-            free_users += 1
+            elif user_is_on_trial:
+                trial_users_count += 1
 
-        birth_datetime = datetime.strptime(user.birth_datetime, DATETIME_FORMAT)
-        ages.append((now - birth_datetime).days / 365)
-    average_age = int(sum(ages) / len(ages)) if ages else 0
+            elif user_is_free:
+                free_users_count += 1
 
-    subscriptions = count_subscriptions(database)
-    total_revenue_val = total_revenue(database)
+            birth_datetime = datetime.strptime(
+                user.birth_datetime,
+                DATETIME_FORMAT
+            )
+            ages.append((now - birth_datetime).days / 365)
 
-    total_transactions = count_total_transactions(database)
-    successful_transactions = count_successful_transactions(database)
-    declined_transactions = total_transactions - successful_transactions
+        average_age = sum(ages) / len(ages)
+        average_age_str = round(average_age, 1) if ages else "Нет данных"
+
+        subscriptions = count_subscriptions(session)
+        total_revenue = get_total_revenue(session)
+
+        total_transactions = count_total_transactions(session)
+        successful_transactions = count_successful_transactions(session)
+
+        declined_transactions = total_transactions - successful_transactions
 
     text = messages.ADMIN_STATISTICS.format(
-        all_users=all_users,
-        trial_users=trial_users,
-        clients=clients,
-        active_clients=active_clients,
-        free_users=free_users,
-        average_age=average_age,
+        users_count=users_count,
+        trial_users_count=trial_users_count,
+        clients_count=clients_count,
+        active_clients_count=active_clients_count,
+        free_users_count=free_users_count,
+        average_age=average_age_str,
         percentage_men=mens,
         percentage_women=womens,
         subscription_1_month=subscriptions[1],
@@ -86,11 +90,12 @@ async def statistics(
         total_transctions=total_transactions,
         successful_transactions=successful_transactions,
         declined_transactions=declined_transactions,
-        total_revenue=total_revenue_val,
+        total_revenue=total_revenue,
     )
 
     bot_message = await callback.message.answer(
-        text, reply_markup=keyboards.back_to_adminpanel
+        text,
+        reply_markup=keyboards.back_to_adminpanel()
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.action_end)
@@ -100,69 +105,38 @@ def count_all_users(database) -> int:
     return database.session.query(User).count()
 
 
-def count_clients(database) -> int:
-    users_with_payments = database.session.query(Payment.user_id).distinct().subquery()
-
-    users_with_payments_select = select(users_with_payments.c.user_id)
-
-    return (
-        database.session.query(User)
-        .filter(User.user_id.in_(users_with_payments_select))
-        .count()
-    )
-
-
-def genders(database) -> Tuple[float, float]:
-    male_count = (
-        database.session.query(User).filter_by(gender=Gender.male.value).count()
-    )
-
-    female_count = (
-        database.session.query(User).filter_by(gender=Gender.female.value).count()
-    )
-
-    return male_count, female_count
-
-
-def count_subscriptions(database) -> dict:
+def count_subscriptions(session: Session) -> dict:
     subscription_counts = {1: 0, 2: 0, 3: 0, 6: 0, 12: 0}
-    payments = database.session.query(Promocode)
+    # TODO
+    # Переписать тут фильтрацию на платежи, а не на промокоды
+    promocodes = session.query(Promocode).all()
 
-    for payment in payments:
-        subscription_counts[payment.period] += 1
+    for promocode in promocodes:
+        subscription_counts[promocode.period] += 1
 
     return subscription_counts
 
 
-def total_revenue(database) -> float:
-    payments = database.get_payments(status=PaymentStatus.SUCCESS.value)
-    total = 0.0
+def get_total_revenue(session: Session) -> float:
+    payments = crud.get_payments(session, status=PaymentStatus.SUCCESS.value)
+    payments_prices = [float(payment.price) for payment in payments]
 
-    for payment in payments:
-        total += months_to_rub_price[payment.period]
-
-    return total
+    return sum(payments_prices)
 
 
-def count_total_transactions(database) -> int:
-    return (
-        database.session.query(Payment)
-        .filter(Payment.status != PaymentStatus.PENDING.value)
-        .count()
-    )
+def count_total_transactions(session: Session) -> int:
+    return session.query(Payment).filter(
+        Payment.status != PaymentStatus.PENDING.value
+    ).count()
 
 
-def count_successful_transactions(database) -> int:
-    return (
-        database.session.query(Payment)
-        .filter_by(status=PaymentStatus.SUCCESS.value)
-        .count()
-    )
+def count_successful_transactions(session: Session) -> int:
+    return session.query(Payment).filter(
+        Payment.status == PaymentStatus.SUCCESS.value
+    ).count()
 
 
-def count_failed_transactions(database) -> int:
-    return (
-        database.session.query(Payment)
-        .filter_by(status=PaymentStatus.FAILED.value)
-        .count()
-    )
+def count_failed_transactions(session: Session) -> int:
+    return session.query(Payment).filter(
+        Payment.status == PaymentStatus.FAILED.value
+    ).count()

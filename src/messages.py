@@ -454,19 +454,19 @@ ADMIN_STATISTICS = """
 
 <b>Пользователи</b>
 
-Всего: {all_users}
+Всего: {users_count}
 
-Триальщики: {trial_users}
-Клиенты: {clients}
-Активные клиенты: {active_clients}
-Пользуются бесплатно: {free_users}
+Триальщики: {trial_users_count}
+Клиенты: {clients_count}
+Активные клиенты: {active_clients_count}
+Пользуются бесплатно: {free_users_count}
 
 Средний возраст: {average_age} лет
 
 Женщин: {percentage_women}
 Мужчин: {percentage_men}
 
-<b>Подписка</b>
+<b>Купленно подписок</b>
 
 1 мес. : {subscription_1_month} шт.
 2 мес. : {subscription_2_month} шт.
