@@ -560,7 +560,11 @@ def get_all_users(session: Session) -> List[User]:
 
 
 def get_clients(session: Session) -> int:
-    users_with_payments = session.query(Payment.user_id).distinct().subquery()
+    users_with_payments = session.query(
+        Payment.user_id
+    ).filter(
+        Payment.status == "success"
+    ).distinct().subquery()
 
     users_with_payments_select = select(users_with_payments.c.user_id)
 

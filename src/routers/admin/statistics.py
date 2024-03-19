@@ -119,7 +119,11 @@ def count_subscriptions(session: Session) -> dict:
 
 def get_total_revenue(session: Session) -> float:
     payments = crud.get_payments(session, status=PaymentStatus.SUCCESS.value)
-    payments_prices = [float(payment.price) for payment in payments]
+    payments_prices = [
+        float(payment.price)
+        for payment in payments
+        if payment.price
+    ]
 
     return sum(payments_prices)
 
