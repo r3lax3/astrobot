@@ -324,7 +324,7 @@ def payment_redirect(redirect_url: str):
     return KeyboardBuilder.build(
         [
             [
-                (bt.redirect_button_text, redirect_url)
+                (bt.redirect_button_text, redirect_url),
                 (bt.offer, OFFER_URL)
             ],
             [bt.back]
