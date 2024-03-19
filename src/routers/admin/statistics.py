@@ -51,7 +51,8 @@ async def statistics(callback: CallbackQuery, state: FSMContext):
 
             if user_is_active_client:
                 active_clients_count += 1
-                clients_count += 1
+                if user_is_client:
+                    clients_count += 1
 
             elif user_is_client:
                 clients_count += 1
