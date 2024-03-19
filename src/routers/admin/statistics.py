@@ -42,7 +42,11 @@ async def statistics(callback: CallbackQuery, state: FSMContext):
                 user.subscription_end_date,
                 DATETIME_FORMAT
             )
-            payments = crud.get_payments(session, user_id=user.user_id)
+            payments = crud.get_payments(
+                session,
+                user_id=user.user_id,
+                status=PaymentStatus.SUCCESS.value
+            )
 
             user_is_active_client = payments and now < end_date
             user_is_on_trial = not payments and now < end_date
