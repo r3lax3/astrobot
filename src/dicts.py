@@ -9,8 +9,8 @@ MONTHS_TO_STR_MONTHS = {
 MONTHS_TO_RUB_PRICE = {
     1: 590,
     2: 1100,
-    3: 1500,
-    6: 2850,
+    3: 1550,
+    6: 2900,
     12: 5400
 }
 

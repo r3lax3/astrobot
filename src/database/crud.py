@@ -433,7 +433,9 @@ def add_payment(payment: Payment):
 
 def update_payment(payment_id: int, **kwargs):
     with Session() as session:
-        payment = session.query(Payment).filter_by(payment_id=payment_id).first()
+        payment = session.query(Payment).filter_by(
+            payment_id=payment_id
+        ).first()
         if not payment:
             raise ValueError(f"No payment found with id {payment_id}")
 
