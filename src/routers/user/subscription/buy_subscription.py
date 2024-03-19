@@ -22,7 +22,6 @@ DATETIME_FORMAT = config.get("database.datetime_format")
 DATE_FORMAT = config.get("database.date_format")
 
 BOT_USERNAME = config.get("bot.username")
-OFFER_URL = config.get("payments.offer_url")
 
 PROMOCODE_IMAGE: str = config.get("files.promocode")
 

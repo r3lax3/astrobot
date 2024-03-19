@@ -376,11 +376,7 @@ class KeyboardManager:
             is_inline=True,
         )
 
-    def payment_redirect(
-        self,
-        redirect_url: str,
-        # offer_url: str
-    ):
+    def payment_redirect(self, redirect_url: str):
         return self.build(
             [
                 [

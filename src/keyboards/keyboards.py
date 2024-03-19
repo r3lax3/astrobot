@@ -1,8 +1,13 @@
 from typing import Optional
 
+from src import config
+
 from .callback_data import SubscriptionPeriod, Payment, Promocode
 from .builder import KeyboardBuilder
 from .buttons import bt
+
+
+OFFER_URL = config.get("payments.offer_url")
 
 
 # Birth data
@@ -315,15 +320,12 @@ def change_user_subscription_end():
     )
 
 
-def payment_redirect(
-    redirect_url: str,
-    offer_url: Optional[str] = None
-):
+def payment_redirect(redirect_url: str):
     return KeyboardBuilder.build(
         [
             [
                 (bt.redirect_button_text, redirect_url)
-                # (bt.offer, offer_url)
+                (bt.offer, OFFER_URL)
             ],
             [bt.back]
         ],
