@@ -13,6 +13,7 @@ from src.keyboards import keyboards, bt
 from src.routers.states import AdminStates
 from src.dicts import MONTHS_TO_RUB_PRICE
 
+
 r = Router()
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 
@@ -23,7 +24,6 @@ async def statistics(callback: CallbackQuery, state: FSMContext):
         users = crud.get_all_users(session)
 
         users_count = len(users)
-        clients_count = crud.get_clients(session)
 
         mens = len([user for user in users if user.gender == Gender.male])
         womens = len([user for user in users if user.gender == Gender.female])
@@ -31,6 +31,7 @@ async def statistics(callback: CallbackQuery, state: FSMContext):
         trial_users_count = 0
         active_clients_count = 0
         free_users_count = 0
+        clients_count = 0
 
         ages = []
 
@@ -46,9 +47,14 @@ async def statistics(callback: CallbackQuery, state: FSMContext):
             user_is_active_client = payments and now < end_date
             user_is_on_trial = not payments and now < end_date
             user_is_free = not payments and now > end_date
+            user_is_client = bool(payments)
 
             if user_is_active_client:
                 active_clients_count += 1
+                clients_count += 1
+
+            elif user_is_client:
+                clients_count += 1
 
             elif user_is_on_trial:
                 trial_users_count += 1
