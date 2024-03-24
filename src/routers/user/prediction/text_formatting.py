@@ -63,8 +63,6 @@ MONTHS = [
 interpretations_dict = get_interpretations_dict()
 
 
-
-
 def formatted_general_events(events: List[AstroEvent]) -> str:
     interpretations = []
     for event in events:
