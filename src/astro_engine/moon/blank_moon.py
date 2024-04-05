@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from typing import List, Optional
 
+from src import config
 from src.enums import SwissEphPlanet
 
 from .sign import get_moon_sign_period
@@ -12,7 +13,8 @@ from ..utils import get_juliday, get_planet_data
 # Константы
 LOGGER = logging.getLogger(__name__)
 ORBIS = 0.1
-ASPECTS = [0, 60, 90, 120, 180]
+ASPECTS = [0, 60, 90, 120, 180, 240, 270, 300]
+DATETIME_FORMAT = config.get("database.datetime_format")
 
 
 def get_blank_moon_period(
@@ -99,15 +101,15 @@ def get_mono_astro_event_at_time(
     moon_data = planets_data.pop(SwissEphPlanet.MOON)
     moon_pos = moon_data[0][0]
 
-    for planet, planet_data in planets_data.items():
-        second_planet_pos = planet_data[0][0]
+    for target_planet, planet_data in planets_data.items():
+        target_planet_pos = planet_data[0][0]
 
-        aspect_value = calculate_aspect(moon_pos, second_planet_pos)
+        aspect_value = calculate_aspect(moon_pos, target_planet_pos)
         if aspect_value is not None:
             events.append(
                 MonoAstroEvent(
                     first_planet=SwissEphPlanet.MOON,
-                    second_planet=planet,
+                    second_planet=target_planet,
                     aspect=aspect_value,
                     peak=utcdate,
                 )
@@ -132,7 +134,7 @@ def get_astro_events_from_period(
     Возвращает список уникальных и отсортированных событий (List[MonoAstroEvent]).
     """
 
-    step = timedelta(minutes=10)
+    step = timedelta(minutes=5)
     current_time = start
 
     all_events = []
@@ -147,7 +149,9 @@ def get_astro_events_from_period(
 
     unique_events = remove_duplicates(all_events)
     unique_sorted_events = sort_mono_astro_events(unique_events)
+
     return unique_sorted_events
+    # return all_events
 
 
 def sort_mono_astro_events(events: List[MonoAstroEvent]):
@@ -206,9 +210,11 @@ def calculate_average_peak(
 
     Возвращает список событий с усреднённым временем пика для близко происходящих событий.
 
-    P.S.
-    Не трогай работает при помощи магии и заговора тибетского шамана Абуарубубдрара
-    дрочил эту хрень почти 20 часов
+    п. А.
+
+    Не трогай
+
+    Работает при помощи магии и заговора тибетского шамана Абуарубубдрара
     """
     temp_group_for_same_events = [events[0]] if events else []
     return_events_list = []
