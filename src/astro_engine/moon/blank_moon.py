@@ -134,7 +134,7 @@ def get_astro_events_from_period(
     Возвращает список уникальных и отсортированных событий (List[MonoAstroEvent]).
     """
 
-    step = timedelta(minutes=5)
+    step = timedelta(minutes=10)
     current_time = start
 
     all_events = []
