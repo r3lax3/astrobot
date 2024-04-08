@@ -45,13 +45,16 @@ def get_main_lunar_day_at_date(
         next_midnight_lunar_day.number == noon_lunar_day.number
     )
     if one_lunar_day_from_midnight_to_noon:
+        # LOGGER.info('Возвращаем лунный день 00:00 - 12:00')
         return midnight_lunar_day
 
     elif one_lunar_day_from_noon_to_next_midnight:
+        # LOGGER.info('Возвращаем лунный день 12:00 - 24:00')
         return noon_lunar_day
 
     else:
-        _get_main_lunar_day_when_3_lunar_days_at_date(utcdate, longitude, latitude)
+        # LOGGER.info('Возвращаем лунный день, который занимает наибольшее кол-во часов в сутках')
+        return _get_main_lunar_day_when_3_lunar_days_at_date(utcdate, longitude, latitude)
 
 
 def _get_main_lunar_day_when_3_lunar_days_at_date(
@@ -69,17 +72,16 @@ def _get_main_lunar_day_when_3_lunar_days_at_date(
         lunar_day = _get_lunar_day(time_point, longitude, latitude)
         lunar_days.append(lunar_day)
 
-    # Сопоставление каждого лунного дня с его продолжительностью
     lunar_day_durations = {}
+
     for ld in lunar_days:
-        if ld.number in lunar_day_durations:
-            lunar_day_durations[
-                ld.number
-            ] += 1  # Увеличиваем продолжительность на единицу (час)
+        # Увеличиваем продолжительность на единицу (час)
+        lunar_day_number_already_in_dict = ld.number in lunar_day_durations
+        if lunar_day_number_already_in_dict:
+            lunar_day_durations[ld.number] += 1
         else:
             lunar_day_durations[ld.number] = 1
 
-    # Находим лунный день с максимальной продолжительностью
     most_common_lunar_day_number = max(
         lunar_day_durations,
         key=lunar_day_durations.get
@@ -91,26 +93,25 @@ def _get_main_lunar_day_when_3_lunar_days_at_date(
             return ld
 
 
-def _get_lunar_day_end(utcdate: datetime, longitude: float, latitude: float) -> datetime:
+def _get_lunar_day_end(
+    utcdate: datetime,
+    longitude: float,
+    latitude: float
+) -> datetime:
     """
-    Bычисляет время следующего восхода Луны или следующего новолуния после заданной даты и времени.
+    Bычисляет время следующего восхода Луны или следующего новолуния
+    после заданной даты и времени.
     """
-    # Создаем объект Observer для заданных координат и времени
     observer = ephem.Observer()
-    observer.lat = str(latitude)  # Преобразование широты в строку
-    observer.lon = str(longitude)  # Преобразование долготы в строку
-    observer.date = utcdate  # Установка начальной даты и времени для расчетов
+    observer.lat = str(latitude)
+    observer.lon = str(longitude)
+    observer.date = utcdate
 
-    # Получение объекта Луны для расчетов
     moon = ephem.Moon(observer)
-    # Расчет времени следующего восхода Луны
     moon_rise = observer.next_rising(moon).datetime().replace(tzinfo=None)
 
-    # Расчет времени следующего новолуния
     next_new_moon = ephem.next_new_moon(utcdate).datetime()
 
-    # Возвращаем время следующего восхода Луны, если оно раньше времени следующего новолуния
-    # В противном случае возвращаем время следующего новолуния
     return moon_rise if moon_rise < next_new_moon else next_new_moon
 
 
@@ -121,25 +122,17 @@ def _get_lunar_day_start(
 ) -> datetime:
     """
     Вычисляет время следующего восхода Луны или следующего новолуния после заданной даты и времени.
-
-    Функция использует библиотеку `ephem` для расчета астрономических событий, таких как восходы Луны.
     """
-    # Создаем объект Observer для заданных координат и времени
     observer = ephem.Observer()
-    observer.lat = str(latitude)  # Преобразование широты в строку
-    observer.lon = str(longitude)  # Преобразование долготы в строку
-    observer.date = utcdate  # Установка начальной даты и времени для расчетов
+    observer.lat = str(latitude)
+    observer.lon = str(longitude)
+    observer.date = utcdate
 
-    # Получение объекта Луны для расчетов
     moon = ephem.Moon(observer)
-    # Расчет времени следующего восхода Луны
     moon_rise = observer.previous_rising(moon).datetime().replace(tzinfo=None)
 
-    # Расчет времени следующего новолуния
     previous_new_moon = ephem.previous_new_moon(utcdate).datetime()
 
-    # Возвращаем время следующего восхода Луны, если оно раньше времени следующего новолуния
-    # В противном случае возвращаем время следующего новолуния
     return moon_rise if moon_rise < previous_new_moon else previous_new_moon
 
 
@@ -155,15 +148,12 @@ def _get_lunar_day_number(
     затем вычисляет последовательность восходов Луны после этого новолуния до заданной даты.
     Номер лунного дня определяется как количество этих восходов.
     """
-    # Нахождение времени последнего новолуния до заданной даты
     previous_new_moon = ephem.previous_new_moon(utcdate).datetime()
 
-    # Создаем объект Observer для заданных координат и времени
     observer = ephem.Observer()
     observer.lat = str(latitude)
     observer.lon = str(longitude)
 
-    # Инициализация счетчика восходов Луны
     lunar_day_count = 1
     current_time = previous_new_moon
 
