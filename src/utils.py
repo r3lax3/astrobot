@@ -204,7 +204,11 @@ def logger_settings():
     """
     Настройки логгирования, вызывается только в ~/main.py
     """
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout, encoding="utf-8")
+    logging.basicConfig(
+        level=logging.INFO,
+        handlers=[logging.StreamHandler(sys.stdout)],
+        encoding="utf-8"
+    )
     logging.getLogger('apscheduler').setLevel(logging.INFO)
     logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
 
