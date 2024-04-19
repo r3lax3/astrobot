@@ -26,13 +26,13 @@ def get_main_lunar_day_at_date(
     Определяет лунный день, который занимает наибольшее количество
     времени в течение указанной даты.
     """
-    midnight_lunar_day = _get_lunar_day(utcdate, longitude, latitude)
-    noon_lunar_day = _get_lunar_day(
+    midnight_lunar_day = get_lunar_day(utcdate, longitude, latitude)
+    noon_lunar_day = get_lunar_day(
         utcdate + timedelta(hours=12),
         longitude,
         latitude
     )
-    next_midnight_lunar_day = _get_lunar_day(
+    next_midnight_lunar_day = get_lunar_day(
         utcdate + timedelta(hours=24),
         longitude,
         latitude
@@ -69,7 +69,7 @@ def _get_main_lunar_day_when_3_lunar_days_at_date(
     for hour in range(25):
         time_point = utcdate + timedelta(hours=hour)
 
-        lunar_day = _get_lunar_day(time_point, longitude, latitude)
+        lunar_day = get_lunar_day(time_point, longitude, latitude)
         lunar_days.append(lunar_day)
 
     lunar_day_durations = {}
@@ -93,7 +93,7 @@ def _get_main_lunar_day_when_3_lunar_days_at_date(
             return ld
 
 
-def _get_lunar_day_end(
+def get_lunar_day_end(
     utcdate: datetime,
     longitude: float,
     latitude: float
@@ -115,7 +115,7 @@ def _get_lunar_day_end(
     return moon_rise if moon_rise < next_new_moon else next_new_moon
 
 
-def _get_lunar_day_start(
+def get_lunar_day_start(
     utcdate: datetime,
     longitude: float,
     latitude: float
@@ -133,10 +133,10 @@ def _get_lunar_day_start(
 
     previous_new_moon = ephem.previous_new_moon(utcdate).datetime()
 
-    return moon_rise if moon_rise < previous_new_moon else previous_new_moon
+    return moon_rise if moon_rise > previous_new_moon else previous_new_moon
 
 
-def _get_lunar_day_number(
+def get_lunar_day_number(
     utcdate: datetime,
     longitude: float,
     latitude: float
@@ -172,7 +172,7 @@ def _get_lunar_day_number(
     return lunar_day_count
 
 
-def _get_lunar_day(
+def get_lunar_day(
     time_point: datetime,
     longitude: float,
     latitude: float
@@ -180,9 +180,9 @@ def _get_lunar_day(
     """
     Возвращает лунный день, который соответствует временной точке которую передали
     """
-    lunar_day_number = _get_lunar_day_number(time_point, longitude, latitude)
-    lunar_day_start = _get_lunar_day_start(time_point, longitude, latitude)
-    lunar_day_end = _get_lunar_day_end(time_point, longitude, latitude)
+    lunar_day_number = get_lunar_day_number(time_point, longitude, latitude)
+    lunar_day_start = get_lunar_day_start(time_point, longitude, latitude)
+    lunar_day_end = get_lunar_day_end(time_point, longitude, latitude)
 
     lunar_day = LunarDay(
         number=lunar_day_number,
@@ -201,7 +201,7 @@ def get_next_lunar_day(
     Определяет следующий лунный день после заданного.
     """
     next_lunar_day_start = lunar_day.end + timedelta(minutes=10)
-    lunar_day = _get_lunar_day(next_lunar_day_start, longitude, latitude)
+    lunar_day = get_lunar_day(next_lunar_day_start, longitude, latitude)
     return lunar_day
 
 
@@ -214,5 +214,5 @@ def get_previous_lunar_day(
     # Находим начало предыдущего лунного дня, которое является началом текущего минус одна минута
     previous_lunar_day_end = lunar_day.start - timedelta(minutes=10)
 
-    lunar_day = _get_lunar_day(previous_lunar_day_end, longitude, latitude)
+    lunar_day = get_lunar_day(previous_lunar_day_end, longitude, latitude)
     return lunar_day

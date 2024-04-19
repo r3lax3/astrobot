@@ -95,12 +95,16 @@ class ProdamusPaymentService(PaymentService):
         if not payment_status == 'success':
             return web.Response(status=400)
 
-        crud.update_payment(payment_id=payment_id, status=payment_status)
+        crud.update_payment(
+            payment_id=payment_id,
+            status=payment_status,
+            status_change_timestamp=datetime.utcnow().strftime(DEFAULT_DATETIME_FORMAT)
+        )
 
         payment = crud.get_payment(payment_id)
         months = SubscriptionItem.unpack(payment.item).months
 
-        promocode = crud.get_not_occupied_promocode()
+        promocode = payment_id
         crud.add_promocode(
             Promocode(
                 promocode=promocode,

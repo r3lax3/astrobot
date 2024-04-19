@@ -55,27 +55,22 @@ def get_moon_phase_caption(
 ) -> str:
     """
     Генерирует описание фазы Луны для заданного времени и местоположения.
-
-    Эта функция вычисляет текущий и следующий лунные дни, а также
-    описание фазы Луны и форматирует эти данные в текст.
     """
     utcdate = datetime(utcdate.year, utcdate.month, utcdate.day)
 
     current_lunar_day = get_main_lunar_day_at_date(utcdate, longitude, latitude)
     next_lunar_day = get_next_lunar_day(current_lunar_day, longitude, latitude)
 
-    moon_phase = get_moon_phase(utcdate, longitude, latitude)
-    # print(f'Фаза в описании: {moon_phase}')
-    moon_phase_str = MOON_PHASE_RU_TRANSLATIONS.get(moon_phase, "Неизвестная фаза")
-
-    next_lunar_day_start_time_str = (
-        next_lunar_day.start + timedelta(hours=timezone_offset)
-    ).strftime(TIME_FORMAT)
+    next_lunar_day_start = next_lunar_day.start + timedelta(hours=timezone_offset)
+    next_lunar_day_start_time_str = next_lunar_day_start.strftime(TIME_FORMAT)
 
     if utcdate + timedelta(hours=24) < next_lunar_day.start:
         next_lunar_day_start_str = f"{next_lunar_day_start_time_str} след. дня"
     else:
         next_lunar_day_start_str = next_lunar_day_start_time_str
+
+    moon_phase = get_moon_phase(utcdate, longitude, latitude)
+    moon_phase_str = MOON_PHASE_RU_TRANSLATIONS.get(moon_phase, "Неизвестная фаза")
 
     text = messages.MOON_PHASE_CAPTION.format(
         current_lunar_day_number=current_lunar_day.number,
@@ -109,9 +104,8 @@ async def get_image_with_astrodata(
 
     timezone_offset = user.timezone_offset
 
-    current_user_location = user.current_location
-    longitude = current_user_location.longitude
-    latitude = current_user_location.latitude
+    longitude = user.current_location.longitude
+    latitude = user.current_location.latitude
 
     moon_phase = get_moon_phase(date, longitude, latitude)
 

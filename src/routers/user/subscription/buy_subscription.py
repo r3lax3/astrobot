@@ -108,9 +108,7 @@ async def create_payment(
             user_id=event_from_user.id,
             status="pending",
             created_at=datetime.utcnow().strftime(DATETIME_FORMAT),
-            item=SubscriptionItem(
-                months=months,
-            ).pack(),
+            item=SubscriptionItem(months=months).pack(),
             price=payment.price
         )
     )
