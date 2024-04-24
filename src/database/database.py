@@ -20,6 +20,7 @@ from src.database.models import (
 )
 from src.utils import get_timezone_offset, generate_random_sha1_key
 
+
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
 

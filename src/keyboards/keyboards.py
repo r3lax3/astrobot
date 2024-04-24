@@ -282,7 +282,7 @@ def adminpanel():
 def choose_general_prediction_type():
     return KeyboardBuilder.build(
         [
-            [bt.prediction_on_day],
+            # [bt.prediction_on_day],
             [bt.prediction_on_week],
             [bt.prediction_on_month],
             [bt.back_to_adminpanel],
