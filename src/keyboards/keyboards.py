@@ -208,7 +208,7 @@ def choose_gender():
 def user_gen_pred_type():
     return KeyboardBuilder.build(
         [
-            [bt.prediction_on_day],
+            # [bt.prediction_on_day],
             [bt.prediction_on_week],
             [bt.prediction_on_month],
             [bt.main_menu],

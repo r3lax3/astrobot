@@ -231,6 +231,7 @@ async def get_current_location_confirmed(
         test_period_end = now + timedelta(days=SUBSCRIPTION_TEST_PERIOD)
         with Session() as session:
             crud.add_user(
+                session,
                 DBUser(
                     user_id=event_from_user.id,
                     name=name,
