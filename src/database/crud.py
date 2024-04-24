@@ -25,17 +25,19 @@ from .models import (
 
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
-
+ADMIN_LIST: list[int] = config.get("admins.ids")
 
 global_session = Session()
 
 
-def add_user(user: User):
-    with Session() as session:
-        try:
-            session.add(user)
-            session.commit()
-        except IntegrityError:
+def add_user(session: Session, user: User):
+    try:
+        session.add(user)
+        session.commit()
+    except IntegrityError:
+        if user.user_id in ADMIN_LIST:
+            session.merge(user)
+        else:
             session.rollback()
 
 

@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, User
 
 from src import config, messages
-from src.database import Database, crud
+from src.database import Database, crud, Session
 from src.database.models import Location
 from src.database.models import User as DBUser
 from src.enums import Gender, LocationType
@@ -229,28 +229,29 @@ async def get_current_location_confirmed(
 
         now = datetime.utcnow()
         test_period_end = now + timedelta(days=SUBSCRIPTION_TEST_PERIOD)
-        database.add_user(
-            DBUser(
-                user_id=event_from_user.id,
-                name=name,
-                birth_datetime=birth_datetime,
-                birth_location=Location(
-                    type=LocationType.birth.value,
-                    **birth_location,
-                    title=current_location_title
-                ),
-                current_location=Location(
-                    type=LocationType.current.value,
-                    **current_location,
-                    title=birth_location_title
-                ),
-                subscription_end_date=test_period_end.strftime(
-                    DATETIME_FORMAT
-                ),
-                timezone_offset=get_timezone_offset(**current_location),
-                every_day_prediction_time="7:30",
+        with Session() as session:
+            crud.add_user(
+                DBUser(
+                    user_id=event_from_user.id,
+                    name=name,
+                    birth_datetime=birth_datetime,
+                    birth_location=Location(
+                        type=LocationType.birth.value,
+                        **birth_location,
+                        title=birth_location_title
+                    ),
+                    current_location=Location(
+                        type=LocationType.current.value,
+                        **current_location,
+                        title=current_location_title
+                    ),
+                    subscription_end_date=test_period_end.strftime(
+                        DATETIME_FORMAT
+                    ),
+                    timezone_offset=get_timezone_offset(**current_location),
+                    every_day_prediction_time="7:30",
+                )
             )
-        )
         await scheduler.set_all_jobs(user_id=event_from_user.id)
         await state.update_data(
             prediction_access=True,
