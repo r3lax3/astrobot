@@ -163,7 +163,9 @@ def split_list(input_list: list, sublist_len: int = 2):
 
 def get_location_by_coords(longitude: float, latitude: float) -> str:
     location = geolocator.reverse(
-        (latitude, longitude), language="ru", exactly_one=True
+        (latitude, longitude),
+        language="ru",
+        exactly_one=True
     )
 
     if location and "address" in location.raw:

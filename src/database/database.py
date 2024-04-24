@@ -35,7 +35,6 @@ Session = sessionmaker(bind=engine)
 
 
 class Database:
-
     def add_user(self, user: User):
         with Session() as session:
             try:

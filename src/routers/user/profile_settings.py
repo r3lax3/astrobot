@@ -246,7 +246,7 @@ async def get_current_location_confirmed(
                         DATETIME_FORMAT
                     ),
                     timezone_offset=get_timezone_offset(**current_location),
-                    every_day_prediction_time="7:30",
+                    every_day_prediction_time="8:30",
                 )
             )
 
