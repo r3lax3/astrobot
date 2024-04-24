@@ -235,7 +235,8 @@ def confirm():
         [
             [bt.confirm],
             [bt.decline]
-        ], is_inline=True
+        ],
+        is_inline=True
     )
 
 

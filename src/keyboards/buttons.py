@@ -5,7 +5,7 @@ class Buttons:
     main_menu = "В главное меню"
     back_to_menu = "Вернуться в меню"
     back_to_adminpanel = "Назад в админ-панель"
-    decline = "Нет вернуться назад ❎",
+    decline = "Нет вернуться назад ❎"
     confirm = "Подтверждаю ☑"
     # Time of day
     night = "Ночь"
