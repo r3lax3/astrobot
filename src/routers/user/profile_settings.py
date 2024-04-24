@@ -164,6 +164,7 @@ async def get_current_location(
 
     longitude = message.location.longitude
     latitude = message.location.latitude
+
     current_location_title = get_location_by_coords(
         longitude=longitude,
         latitude=latitude
@@ -176,6 +177,7 @@ async def get_current_location(
             ),
             reply_markup=keyboards.confirm,
         )
+
     else:
         bot_message = await message.answer(
             messages.GET_CURRENT_LOCATION_CONFIRM.format(
@@ -183,6 +185,7 @@ async def get_current_location(
             ),
             reply_markup=keyboards.confirm,
         )
+
     await state.update_data(
         del_messages=[bot_message.message_id, message.message_id],
         current_location={"latitude": latitude, "longitude": longitude},
@@ -221,15 +224,15 @@ async def get_current_location_confirmed(
     name = data["name"]
     current_location = data["current_location"]
     current_location_title = data["current_location_title"]
+    with Session() as session:
+        if data["first_time"]:
+            birth_datetime = data["birth_datetime"]
+            birth_location = data["birth_location"]
+            birth_location_title = data["birth_location_title"]
 
-    if data["first_time"]:
-        birth_datetime = data["birth_datetime"]
-        birth_location = data["birth_location"]
-        birth_location_title = data["birth_location_title"]
+            now = datetime.utcnow()
+            test_period_end = now + timedelta(days=SUBSCRIPTION_TEST_PERIOD)
 
-        now = datetime.utcnow()
-        test_period_end = now + timedelta(days=SUBSCRIPTION_TEST_PERIOD)
-        with Session() as session:
             crud.add_user(
                 session,
                 DBUser(
@@ -253,28 +256,34 @@ async def get_current_location_confirmed(
                     every_day_prediction_time="7:30",
                 )
             )
-        await scheduler.set_all_jobs(user_id=event_from_user.id)
-        await state.update_data(
-            prediction_access=True,
-            subscription_end_date=test_period_end.strftime(DATETIME_FORMAT),
-            timezone_offset=get_timezone_offset(**current_location),
-        )
-        await main_menu(callback.message, state, bot)
-    else:
-        database.update_user_current_location(
-            event_from_user.id,
-            Location(
-                type=LocationType.current.value,
-                **current_location,
-                title=get_location_by_coords(**current_location)
-            ),
-        )
-        database.update_user(
-            event_from_user.id,
-            timezone_offset=get_timezone_offset(**current_location)
-        )
-        bot_message = await callback.message.answer(
-            messages.CURRENT_LOCATION_CHANGED_SUCCESS
-        )
-        await main_menu(bot_message, state, keyboards, bot)
-        await scheduler.set_all_jobs(user_id=event_from_user.id)
+
+            await scheduler.set_all_jobs(user_id=event_from_user.id)
+
+            await state.update_data(
+                prediction_access=True,
+                subscription_end_date=test_period_end.strftime(DATETIME_FORMAT),
+                timezone_offset=get_timezone_offset(**current_location),
+            )
+
+            await main_menu(callback.message, state, bot)
+
+        else:
+            crud.update_user_current_location(
+                session,
+                event_from_user.id,
+                Location(
+                    type=LocationType.current.value,
+                    **current_location,
+                    title=get_location_by_coords(**current_location)
+                ),
+            )
+            crud.update_user(
+                session,
+                event_from_user.id,
+                timezone_offset=get_timezone_offset(**current_location)
+            )
+            bot_message = await callback.message.answer(
+                messages.CURRENT_LOCATION_CHANGED_SUCCESS
+            )
+            await main_menu(bot_message, state, keyboards, bot)
+            await scheduler.set_all_jobs(user_id=event_from_user.id)

@@ -101,28 +101,32 @@ def update_user_every_day_prediction_time(
             session.commit()
 
 
-def update_user_current_location(user_id: int, new_location: Location):
-    with Session() as session:
-        user = session.query(User).filter_by(user_id=user_id).first()
-        if user:
-            old_location_id = user.current_location_id
+def update_user_current_location(
+    session: Session,
+    user_id: int,
+    new_location: Location
+):
+    user = session.query(User).filter_by(user_id=user_id).first()
 
-            # Добавляем новое местоположение и получаем его ID
-            new_location_id = add_location(new_location)
+    if user:
+        old_location_id = user.current_location_id
 
-            # Обновляем ID текущего местоположения пользователя
-            user.current_location_id = new_location_id
+        # Добавляем новое местоположение и получаем его ID
+        new_location_id = add_location(new_location)
 
-            # Удаляем старое местоположение
-            old_location = (
-                session.query(Location).filter_by(id=old_location_id).first()
-            )
-            if old_location:
-                session.delete(old_location)
+        # Обновляем ID текущего местоположения пользователя
+        user.current_location_id = new_location_id
 
-            session.commit()
-        else:
-            logging.info(f"User with ID {user_id} not found.")
+        # Удаляем старое местоположение
+        old_location = session.query(Location).filter_by(id=old_location_id).first()
+
+        if old_location:
+            session.delete(old_location)
+
+        session.commit()
+
+    else:
+        logging.info(f"User with ID {user_id} not found.")
 
 
 def update_user_card_of_day(
