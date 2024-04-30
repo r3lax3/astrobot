@@ -102,7 +102,7 @@ async def moon_in_sign_menu(
     )
     photo_bytes = await get_image_with_astrodata(user=user, moon_signs=moon_signs)
 
-    interpretation_type_str = data["interpretation_type"]
+    interpretation_type_str = data.get("interpretation_type", bt.blank_moon)
     if interpretation_type_str == bt.blank_moon:
         text = messages.BLANK_MOON_TEXT
 

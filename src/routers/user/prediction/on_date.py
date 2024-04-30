@@ -242,15 +242,18 @@ async def prediction_on_date_get_prediction(
 
 
 # Updating date
-@r.callback_query(MainMenu.prediction_choose_date)
+@r.callback_query(MainMenu.prediction_choose_date, DateModifier.filter())
 async def prediction_update_date_callback_handler(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    callback_data: DateModifier
 ):
     data = await state.get_data()
 
     date = data["date"]
     date = datetime.strptime(date, DATE_FORMAT)
-    modified_date = date + timedelta(days=DateModifier.unpack(callback.data).modifier)
+    modified_date = date + timedelta(days=callback_data.modifier)
 
     await state.update_data(date=modified_date.strftime(DATE_FORMAT))
     await update_prediction_date(callback.message, state, keyboards)

@@ -116,14 +116,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                 DATETIME_FORMAT
             )
 
-            LOGGER.info(
-                f'Начинаем подготовку ежедневного прогноза для пользователя {user.name}'
-            )
             if datetime.utcnow() < subscription_end_datetime:
-                LOGGER.info(
-                    f'Начинаем подготовку ежедневного прогноза '
-                    f'для пользователя {user.name}'
-                )
                 text = await get_prediction_text(
                     date=target_date,
                     database=crud,
@@ -140,8 +133,8 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                 await self.bot.send_photo(chat_id=user_id, photo=photo)
 
             LOGGER.info(
-                f'Пользователь {user.name} получил ежедневный прогноз '
-                f'в {target_datetime.strftime(DATETIME_FORMAT)}'
+                f'User {user.name} getted every day prediction '
+                f'at {target_datetime.strftime(DATETIME_FORMAT)}'
             )
 
     async def send_renewal_reminder(self, user_id: int):
