@@ -30,7 +30,9 @@ pred_type_to_date_fmt = {
 
 @r.callback_query(AdminStates.choose_action, F.data == bt.user_settings)
 async def user_settings_menu(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     bot_message = await callback.message.answer(
         messages.SEND_USER_MESSAGE_FOR_IDENTIFICATION,
@@ -41,8 +43,12 @@ async def user_settings_menu(
 
 
 @r.message(AdminStates.get_user_message, F.forward_from)
+@r.message(AdminStates.user_info_menu, F.forward_from)
 async def get_user_message(
-    message: Message, state: FSMContext, keyboards: KeyboardManager, database
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database
 ):
     await state.update_data(user_id=message.forward_from.id)
     await get_user_info_menu(message, state, keyboards, database)
@@ -59,7 +65,10 @@ async def get_user_info_menu_callback_handler(
 
 
 async def get_user_info_menu(
-    message: Message, state: FSMContext, keyboards: KeyboardManager, database
+    message: Message,
+    state: FSMContext,
+    keyboards: KeyboardManager,
+    database
 ):
     data = await state.get_data()
     user_id = data["user_id"]
@@ -84,9 +93,14 @@ async def get_user_info_menu(
     await state.set_state(AdminStates.user_info_menu)
 
 
-@r.callback_query(AdminStates.user_info_menu, F.data == bt.change_user_subscription_end)
+@r.callback_query(
+    AdminStates.user_info_menu,
+    F.data == bt.change_user_subscription_end
+)
 async def change_user_subscription_end_menu(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery,
+    state: FSMContext,
+    keyboards: KeyboardManager
 ):
     bot_message = await callback.message.answer(
         messages.ENTER_NEW_SUBSCRIPTION_END_DATE,
