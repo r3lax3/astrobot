@@ -1,6 +1,8 @@
+import logging
+
 from datetime import datetime
 
-from aiogram import Bot, F, Router
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, User
 
@@ -13,6 +15,7 @@ from src.routers.states import MainMenu
 database_datetime_format: str = config.get("database.datetime_format")
 date_format: str = config.get("database.date_format")
 TIME_FORMAT: str = config.get("database.time_format")
+LOGGER = logging.getLogger(__name__)
 
 r = Router()
 
@@ -48,8 +51,15 @@ async def enter_prediction_time(
     time = datetime.strptime(message.text, TIME_FORMAT)
 
     crud.update_user_every_day_prediction_time(
-        event_from_user.id, hour=time.hour, minute=time.minute
+        event_from_user.id,
+        hour=time.hour,
+        minute=time.minute
     )
     await scheduler.set_all_jobs(user_id=event_from_user.id)
+
+    LOGGER.info(
+        f'Пользователь {event_from_user.full_name} обновил время ежедневногo '
+        f'прогноза: {message.text}'
+    )
 
     await every_day_prediction(message, state, event_from_user)

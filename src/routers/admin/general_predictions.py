@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery, Message
 
 from src import config, messages
 from src.enums import GeneralPredictionType
-from src.database import Database, crud
+from src.database import crud
 from src.keyboard_manager import KeyboardManager, bt
 from src.routers.states import AdminStates
 
@@ -48,8 +48,8 @@ PRED_TYPE_TO_EXAMPLE = {
 @r.callback_query(AdminStates.get_general_prediction_date, F.data == bt.back)
 @r.callback_query(AdminStates.choose_action, F.data == bt.general_predictions_add)
 async def general_predictions_add_menu(
-    callback: CallbackQuery, 
-    state: FSMContext, 
+    callback: CallbackQuery,
+    state: FSMContext,
     keyboards: KeyboardManager
 ):
     bot_message = await callback.message.answer(
@@ -63,7 +63,7 @@ async def general_predictions_add_menu(
 @r.callback_query(AdminStates.choose_general_prediction_type)
 async def get_general_prediction_date_menu(
     callback: CallbackQuery,
-    state: FSMContext, 
+    state: FSMContext,
     keyboards: KeyboardManager
 ):
     await state.update_data(
@@ -75,7 +75,7 @@ async def get_general_prediction_date_menu(
 @r.callback_query(AdminStates.get_general_prediction_text, F.data == bt.back)
 async def enter_general_prediction_date_callback_handler(
     callback: CallbackQuery,
-    state: FSMContext, 
+    state: FSMContext,
     keyboards: KeyboardManager
 ):
     await enter_general_prediction_date(callback.message, state, keyboards)
@@ -134,7 +134,7 @@ async def get_general_prediction_date(
         )
         await state.update_data(
             del_messages=[
-                bot_message1.message_id, 
+                bot_message1.message_id,
                 bot_message2.message_id
             ]
         )
@@ -203,18 +203,21 @@ async def get_general_prediction_text(
 
     prediction_type = GeneralPredictionType(data["general_predictions_type"])
     prediction_date = data["general_prediction_date"]
+    text = message.html_text
 
-    crud.add_general_prediction(date=prediction_date, prediction=message.html_text)
+    crud.add_general_prediction(date=prediction_date, prediction=text)
 
-    bot_message = await message.answer(
+    bot_message1 = await message.answer(
         messages.GENERAL_PREDICTION_ADDED.format(
             type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[prediction_type],
             date=data["general_prediction_date"],
-            text=message.html_text,
         ),
         reply_markup=keyboards.back_to_adminpanel,
         parse_mode="html",
         disable_web_page_preview=True
     )
-    await state.update_data(del_messages=[bot_message.message_id])
+    bot_message2 = await message.answer(text)
+    await state.update_data(
+        del_messages=[bot_message1.message_id, bot_message2.message_id]
+    )
     await state.set_state(AdminStates.action_end)

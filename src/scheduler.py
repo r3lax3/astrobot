@@ -74,10 +74,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
         with Session() as session:
             user = crud.get_user(user_id=user_id, session=session)
-            LOGGER.info(
-                f'Пользователь {user.name} обновил время ежедневногo '
-                f'прогноза: {user.every_day_prediction_time}'
-            )
+
             await self.add_send_message_job(user)
             await self.add_reminder_jobs(user)
 
