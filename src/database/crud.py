@@ -335,61 +335,51 @@ def get_viewed_predictions_by_user(user_id: int) -> list:
         return [(p.prediction_date, p.view_timestamp) for p in predictions]
 
 
-def get_unviewed_predictions_count(user_id: int) -> int:
-    with Session() as session:
-        # Получаем пользователя и его детали.
-        user = session.query(User).filter_by(user_id=user_id).first()
-        if not user:
-            return 0  # Пользователь не найден.
+def get_unviewed_predictions_count(session: Session, user_id: int) -> int:
+    user = session.query(User).filter_by(user_id=user_id).first()
 
-        current_location = session.query(
-            Location
-        ).filter_by(id=user.current_location_id).first()
+    if not user:
+        return 0
 
-        if not current_location:
-            return 0  # Местоположение пользователя не найдено.
+    current_location = session.query(
+        Location
+    ).filter_by(id=user.current_location_id).first()
 
-        # Вычисляем текущую дату с учетом часового пояса пользователя.
-        time_offset: int = get_timezone_offset(
-            current_location.latitude, current_location.longitude
-        )
-        now = datetime.utcnow() + timedelta(hours=time_offset)
+    if not current_location:
+        return 0
 
-        # Проверяем, не истекла ли подписка.
-        subscription_end_date = datetime.strptime(
-            user.subscription_end_date, DATETIME_FORMAT  # str
-        )
-        if subscription_end_date < now:
-            return 0  # Подписка истекла.
+    time_offset: int = get_timezone_offset(
+        current_location.latitude, current_location.longitude
+    )
+    now = datetime.utcnow() + timedelta(hours=time_offset)
 
-        # Вычисляем общее количество дней от текущей даты до окончания подписки.
-        days_left = (
-            subscription_end_date - now
-        ).days + 1  # "+1" чтобы включить начальную дату.
+    subscription_end_date = datetime.strptime(
+        user.subscription_end_date,
+        DATETIME_FORMAT
+    )
+    subscription_expired = subscription_end_date < now
+    if subscription_expired:
+        return 0
 
-        # Получаем все даты прогнозов для данного пользователя.
-        viewed_dates_strings = (
-            session.query(ViewedPrediction.prediction_date)
-            .filter(ViewedPrediction.user_id == user_id)
-            .all()
-        )
+    days_left = (
+        subscription_end_date - now
+    ).days + 1
 
-        # Преобразуем строки дат в объекты datetime.
-        viewed_dates = [
-            datetime.strptime(date[0], "%d.%m.%Y")
-            for date in viewed_dates_strings
-        ]
+    viewed_dates_strings = session.query(
+        ViewedPrediction.prediction_date
+    ).filter(ViewedPrediction.user_id == user_id).all()
 
-        # Фильтруем даты, которые больше или равны текущей дате.
-        viewed_dates_after_now = [date for date in viewed_dates if date >= now]
+    viewed_dates = [
+        datetime.strptime(date[0], "%d.%m.%Y")
+        for date in viewed_dates_strings
+    ]
 
-        viewed_dates_count = len(viewed_dates_after_now)
+    viewed_dates_after_now = [date for date in viewed_dates if date >= now]
 
-        # Возвращаем количество непросмотренных прогнозов.
-        unviewed_predictions = days_left - viewed_dates_count
-        return max(
-            0, unviewed_predictions
-        )  # Убеждаемся, что результат неотрицательный.
+    viewed_dates_count = len(viewed_dates_after_now)
+
+    unviewed_predictions = days_left - viewed_dates_count
+    return max(0, unviewed_predictions)
 
 
 def delete_viewed_prediction(user_id: int, prediction_date: str):
