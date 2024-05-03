@@ -79,6 +79,10 @@ def get_moon_phase_caption(
         next_lunar_day_number=next_lunar_day.number,
     )
 
+    LOGGER.info('Astrodata')
+    LOGGER.info(f'{utcdate = }')
+    LOGGER.info(f'{next_lunar_day_start = }')
+
     return text
 
 

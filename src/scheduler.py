@@ -57,8 +57,8 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         self.add_job(
             function,
             trigger,
-            misfire_grace_time=None,
-            max_instances=None,
+            misfire_grace_time=100000,
+            max_instances=100000,
             id=self._task_id_str(task_id),
             **kwargs
         )
