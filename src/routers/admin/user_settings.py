@@ -103,7 +103,7 @@ async def change_user_subscription_end_menu(
 ):
     bot_message = await callback.message.answer(
         messages.ENTER_NEW_SUBSCRIPTION_END_DATE,
-        reply_markup=keyboards.change_user_subscription_end,
+        reply_markup=keyboards.change_user_subscription_end(),
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.user_get_subscription_end_date)
@@ -167,7 +167,7 @@ async def change_user_subscription_end_date(
             changed_date=user.subscription_end_date,
             unused_predictions=unused_predictions_count,
         ),
-        reply_markup=keyboards.user_info_menu,
+        reply_markup=keyboards.user_info_menu(),
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.user_info_menu)
