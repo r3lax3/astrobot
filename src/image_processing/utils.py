@@ -64,7 +64,7 @@ def get_moon_phase_caption(
     next_lunar_day_start = next_lunar_day.start + timedelta(hours=timezone_offset)
     next_lunar_day_start_time_str = next_lunar_day_start.strftime(TIME_FORMAT)
 
-    if utcdate + timedelta(hours=24) < next_lunar_day.start:
+    if utcdate.day != next_lunar_day_start.day:
         next_lunar_day_start_str = f"{next_lunar_day_start_time_str} след. дня"
     else:
         next_lunar_day_start_str = next_lunar_day_start_time_str

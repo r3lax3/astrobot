@@ -57,7 +57,10 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         self.add_job(
             function,
             trigger,
-            id=self._task_id_str(task_id), **kwargs
+            misfire_grace_time=None,
+            max_instances=None,
+            id=self._task_id_str(task_id),
+            **kwargs
         )
 
     def remove_task(self, task_id: TaskID):
@@ -119,7 +122,11 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                     database=crud,
                     user_id=user_id
                 )
-                await self.bot.send_photo(chat_id=user_id, photo=photo)
+                await self.bot.send_photo(
+                    chat_id=user_id,
+                    photo=photo,
+                    reply_markup=keyboards.main_menu()
+                )
                 await self.bot.send_message(
                     chat_id=user_id,
                     text=text,
@@ -127,7 +134,11 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                 )
 
             else:
-                await self.bot.send_photo(chat_id=user_id, photo=photo)
+                await self.bot.send_photo(
+                    chat_id=user_id,
+                    photo=photo,
+                    reply_markup=keyboards.main_menu()
+                )
 
             LOGGER.info(
                 f'User {user.name} getted every day prediction '
@@ -167,9 +178,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         now = datetime.now(pytz.timezone(timezone_str))
         delta = job.next_run_time - now
 
-        LOGGER.info(
-            f'До отправки {format_time_delta(delta)}'
-        )
+        LOGGER.info(f'До отправки {format_time_delta(delta)}')
 
     async def add_reminder_jobs(self, user: User):
         subscription_end_datetime = datetime.strptime(

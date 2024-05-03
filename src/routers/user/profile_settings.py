@@ -47,6 +47,7 @@ async def profile_settings_menu(
         photo=PROFILE_IMAGE,
         caption=messages.PROFILE_SETTINGS.format(
             name=user.name,
+            user_id=event_from_user.id,
             current_location_title=user.current_location.title,
             birth_datetime=user.birth_datetime,
             birth_location_title=user.birth_location.title,
