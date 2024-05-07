@@ -1,5 +1,6 @@
 import logging
 import ephem
+from ephem import AlwaysUpError, NeverUpError
 
 from datetime import datetime, timedelta
 
@@ -158,9 +159,7 @@ def get_lunar_day_number(
     current_time = previous_new_moon
 
     while current_time <= utcdate:
-        observer.date = current_time
-        moon = ephem.Moon(observer)
-        next_moon_rise = observer.next_rising(moon).datetime().replace(tzinfo=None)
+        next_moon_rise = find_next_moon_rise(observer, current_time)
 
         # Проверяем, не вышла ли следующая дата восхода за пределы заданной даты
         if next_moon_rise > utcdate:
@@ -211,8 +210,29 @@ def get_previous_lunar_day(
     """
     Определяет предыдущий лунный день до заданного.
     """
-    # Находим начало предыдущего лунного дня, которое является началом текущего минус одна минута
+    # Находим начало предыдущего лунного дня,
+    # которое является началом текущего минус 10 минут
     previous_lunar_day_end = lunar_day.start - timedelta(minutes=10)
 
     lunar_day = get_lunar_day(previous_lunar_day_end, longitude, latitude)
     return lunar_day
+
+
+def find_next_moon_rise(observer: ephem.Observer, time: datetime):
+    days_offset = 0
+    observer.date = time
+
+    while True:
+        moon = ephem.Moon(observer)
+
+        try:
+            next_moon_rise = observer.next_rising(moon).datetime().replace(tzinfo=None)
+
+        # если в течении 24 часов луна не восходит или не заходит
+        except (AlwaysUpError, NeverUpError):
+            observer.date = time + timedelta(days=days_offset)
+
+        else:
+            break
+
+    return next_moon_rise
