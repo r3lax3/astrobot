@@ -32,9 +32,9 @@ WEB_SERVER_PORT = config.get('webhook.web_server_port')
 
 BASE_WEBHOOK_DOMAIN = config.get('webhook.base_webhook_url')
 BASE_WEBHOOK_PATH = f"{BASE_WEBHOOK_DOMAIN}/astrobot"
-BOT_WEBHOOK_PATH = "/bot"
+BOT_WEBHOOK_PATH = "/astrobot/bot"
 
-PAYMENT_WEBHOOK_PATH = '/payments'
+PAYMENT_WEBHOOK_PATH = '/astrobot/payments'
 
 DO_BACKUP = config.get('database.do_backup')
 
