@@ -1,5 +1,4 @@
 import asyncio
-import dotenv
 import os
 
 from aiogram import Dispatcher, Bot
@@ -26,22 +25,23 @@ from src.utils import logger_settings
 from src.payments import ProdamusPaymentService
 
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 
 WEB_SERVER_HOST = config.get('webhook.web_server_host')
 WEB_SERVER_PORT = config.get('webhook.web_server_port')
-BASE_WEBHOOK_URL = config.get('webhook.base_webhook_url')
-WEBHOOK_PATH = f"/{BOT_TOKEN}"
 
-PAYMENT_WEBHOOK_PATH = '/payments_astropulse'
+BASE_WEBHOOK_DOMAIN = config.get('webhook.base_webhook_url')
+BASE_WEBHOOK_PATH = f"{BASE_WEBHOOK_DOMAIN}/astrobot"
+BOT_WEBHOOK_PATH = "/bot"
+
+PAYMENT_WEBHOOK_PATH = '/payments'
 
 DO_BACKUP = config.get('database.do_backup')
 
 
 async def on_startup(bot: Bot, scheduler: EveryDayPredictionScheduler) -> None:
     await bot.set_webhook(
-        f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}",
+        f"{BASE_WEBHOOK_PATH}/bot",
         allowed_updates=['message', 'callback_query']
     )
     scheduler.start()
@@ -52,7 +52,7 @@ async def on_startup(bot: Bot, scheduler: EveryDayPredictionScheduler) -> None:
 
 
 async def on_shutdown(bot: Bot):
-    await bot.delete_webhook(drop_pending_updates=True)
+    await bot.delete_webhook()
 
 
 def main():
@@ -103,7 +103,7 @@ def main():
     )
 
     # Register webhook handler on application
-    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
+    webhook_requests_handler.register(app, path=BOT_WEBHOOK_PATH)
 
     # Mount dispatcher startup and shutdown hooks to aiohttp application
     setup_application(app, dp, bot=bot)
