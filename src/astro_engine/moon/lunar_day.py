@@ -230,6 +230,7 @@ def find_next_moon_rise(observer: ephem.Observer, time: datetime):
 
         # если в течении 24 часов луна не восходит или не заходит
         except (AlwaysUpError, NeverUpError):
+            days_offset += 1
             observer.date = time + timedelta(days=days_offset)
 
         else:

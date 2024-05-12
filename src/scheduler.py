@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from typing import Union
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramForbiddenError
+
 from aiogram.types import BufferedInputFile
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -115,35 +117,39 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                 user.subscription_end_date,
                 DATETIME_FORMAT
             )
+            try:
+                if datetime.utcnow() < subscription_end_datetime:
+                    text = await get_prediction_text(
+                        date=target_date,
+                        database=crud,
+                        user_id=user_id
+                    )
+                    await self.bot.send_photo(
+                        chat_id=user_id,
+                        photo=photo,
+                        reply_markup=keyboards.main_menu()
+                    )
+                    await self.bot.send_message(
+                        chat_id=user_id,
+                        text=text,
+                        reply_markup=keyboards.main_menu()
+                    )
 
-            if datetime.utcnow() < subscription_end_datetime:
-                text = await get_prediction_text(
-                    date=target_date,
-                    database=crud,
-                    user_id=user_id
-                )
-                await self.bot.send_photo(
-                    chat_id=user_id,
-                    photo=photo,
-                    reply_markup=keyboards.main_menu()
-                )
-                await self.bot.send_message(
-                    chat_id=user_id,
-                    text=text,
-                    reply_markup=keyboards.main_menu()
-                )
+                else:
+                    await self.bot.send_photo(
+                        chat_id=user_id,
+                        photo=photo,
+                        reply_markup=keyboards.main_menu()
+                    )
+
+            except TelegramForbiddenError:
+                LOGGER.info(f'User {user.name} blocked bot')
 
             else:
-                await self.bot.send_photo(
-                    chat_id=user_id,
-                    photo=photo,
-                    reply_markup=keyboards.main_menu()
+                LOGGER.info(
+                    f'User {user.name} getted every day prediction '
+                    f'at {target_datetime.strftime(DATETIME_FORMAT)}'
                 )
-
-            LOGGER.info(
-                f'User {user.name} getted every day prediction '
-                f'at {target_datetime.strftime(DATETIME_FORMAT)}'
-            )
 
     async def send_renewal_reminder(self, user_id: int):
         """
