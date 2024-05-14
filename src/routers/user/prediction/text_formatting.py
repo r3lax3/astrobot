@@ -7,6 +7,7 @@ from typing import List
 import swisseph as swe
 
 from src import config, messages
+from src.database import crud
 from src.dicts import PLANET_ID_TO_NAME_RU
 from src.astro_engine.models import AstroEvent
 from src.astro_engine.models import Location as PredictionLocation
@@ -144,12 +145,24 @@ def format_date_russian(date: datetime) -> str:
     return f"{day_name}, {day_num} {month_name}"
 
 
-def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
+def filtered_and_formatted_prediction(user, date: date) -> str:
+    birth_location = crud.get_location(user.birth_location_id)
+    current_location = crud.get_location(user.current_location_id)
+
+    prediction_user = PredictionUser(
+        birth_datetime=datetime.strptime(user.birth_datetime, DATETIME_FORMAT),
+        birth_location=PredictionLocation(
+            longitude=birth_location.longitude, latitude=birth_location.latitude
+        ),
+        current_location=PredictionLocation(
+            longitude=current_location.longitude, latitude=current_location.latitude
+        ),
+    )
     date = datetime(date.year, date.month, date.day)
     astro_events = get_astro_events_from_period(
-        start=date + timedelta(hours=3),  # От 3:00 утра
-        finish=date + timedelta(hours=27),  # до 3:00 утра следующего дня,
-        user=user,
+        start=date + timedelta(hours=3),
+        finish=date + timedelta(hours=27),
+        user=prediction_user,
     )
 
     start_of_day = date + timedelta(hours=6, minutes=30)
@@ -188,6 +201,10 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
     formatted_date = format_date_russian(date)
     texts = []
 
+    recommendations_heading = messages.PREDICTION_RECOMENDATION_HEADING.format(
+        name=user.name
+    )
+
     if not day_events_formatted:
         if (
             second_half_moon_events_formatted is None
@@ -199,6 +216,7 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
 
             texts = [
                 formatted_date_str,
+                recommendations_heading,
                 messages.PREDICTION_TEXT_NEUTRAL_BACKGROUND_TODAY,
                 messages.USE_OTHER_FUNCTION_FOR_CORRECT_PLANNING,
             ]
@@ -218,7 +236,11 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
                 or default_moon_sign_text,
             )
 
-            texts = [formatted_date_str, moon_events]
+            texts = [
+                formatted_date_str,
+                recommendations_heading,
+                moon_events
+            ]
     else:
         if (
             second_half_moon_events_formatted is None
@@ -230,6 +252,7 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
 
             texts = [
                 formatted_date_str,
+                recommendations_heading,
                 day_events_formatted,
                 messages.USE_OTHER_FUNCTION_FOR_CORRECT_PLANNING,
             ]
@@ -244,7 +267,12 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
                 or messages.NEUTRAL_BACKGROUND,
             )
 
-            texts = [formatted_date_str, day_events_formatted, moon_events]
+            texts = [
+                formatted_date_str,
+                recommendations_heading,
+                day_events_formatted,
+                moon_events
+            ]
 
     formatted_text = "\n\n".join(texts)
 
@@ -252,27 +280,19 @@ def filtered_and_formatted_prediction(user: PredictionUser, date: date) -> str:
 
 
 async def get_prediction_text(date: datetime, database, user_id: int) -> str:
-    user = database.get_user(user_id=user_id)
-    birth_location = database.get_location(user.birth_location_id)
-    current_location = database.get_location(user.current_location_id)
-
-    prediction_user = PredictionUser(
-        birth_datetime=datetime.strptime(user.birth_datetime, DATETIME_FORMAT),
-        birth_location=PredictionLocation(
-            longitude=birth_location.longitude, latitude=birth_location.latitude
-        ),
-        current_location=PredictionLocation(
-            longitude=current_location.longitude, latitude=current_location.latitude
-        ),
-    )
+    user = crud.get_user(user_id=user_id)
 
     loop = asyncio.get_running_loop()
     future = loop.run_in_executor(
-        None, filtered_and_formatted_prediction, prediction_user, date
+        None,
+        filtered_and_formatted_prediction,
+        user,
+        date
     )
 
     text = await future
-    database.add_viewed_prediction(
-        user_id=user_id, prediction_date=date.strftime(DATE_FORMAT)
+    crud.add_viewed_prediction(
+        user_id=user_id,
+        prediction_date=date.strftime(DATE_FORMAT)
     )
     return text

@@ -527,6 +527,9 @@ FAVORABLE_AND_UNFAVORABLE = """\
 {unfavorably}\
 """
 PREDICTION_TEXT_FORMATTED_DATE = """<b>{formatted_date}</b>"""
+PREDICTION_RECOMENDATION_HEADING = """\
+<b>{name}</b>, для Вас сегодня актуальны следующие рекомендации:\
+"""
 PREDICTION_TEXT_NEUTRAL_BACKGROUND_TODAY = """\
 <b>Сегодня у Вас действует общий фон.</b>\
 """
