@@ -75,6 +75,34 @@ async def change_name(
     await state.set_state(ProfileSettings.get_new_name)
 
 
+@r.message(ProfileSettings.get_new_name, F.text)
+async def get_new_name(message: Message, state: FSMContext, event_from_user: User):
+    if len(message.text) > 20:
+        await new_name_is_too_long(message, state)
+        return
+
+    crud.update_user(event_from_user.id, name=message.text)
+
+    await profile_settings_menu(message, state, event_from_user)
+
+
+@r.message(ProfileSettings.get_new_name)
+async def get_new_name_error(message: Message, state: FSMContext):
+    bot_message = await message.answer(
+        messages.GET_NAME_NOT_TEXT_ERROR,
+        reply_markup=keyboards.to_main_menu()
+    )
+    await state.update_data(del_messages=[bot_message.message_id])
+
+
+async def new_name_is_too_long(message: Message, state: FSMContext):
+    bot_message = await message.answer(
+        messages.GET_NAME_MAX_LENGTH_ERROR,
+        reply_markup=keyboards.to_main_menu()
+    )
+    await state.update_data(del_messages=[bot_message.message_id])
+
+
 # Gender
 @r.callback_query(ProfileSettings.choose_option, F.data == bt.gender)
 async def choose_gender(
