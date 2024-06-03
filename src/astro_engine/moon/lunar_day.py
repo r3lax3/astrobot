@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from src import config
 from ..models import LunarDay
-
+from src.exceptions import InfinityCycleError
 
 # Константы
 SECONDS_IN_DAY = 24 * 60 * 60
@@ -55,7 +55,11 @@ def get_main_lunar_day_at_date(
 
     else:
         # LOGGER.info('Возвращаем лунный день, который занимает наибольшее кол-во часов в сутках')
-        return _get_main_lunar_day_when_3_lunar_days_at_date(utcdate, longitude, latitude)
+        return _get_main_lunar_day_when_3_lunar_days_at_date(
+            utcdate,
+            longitude,
+            latitude
+        )
 
 
 def _get_main_lunar_day_when_3_lunar_days_at_date(
@@ -122,7 +126,8 @@ def get_lunar_day_start(
     latitude: float
 ) -> datetime:
     """
-    Вычисляет время следующего восхода Луны или следующего новолуния после заданной даты и времени.
+    Вычисляет время следующего восхода Луны или следующего новолуния
+    после заданной даты и времени.
     """
     observer = ephem.Observer()
     observer.lat = str(latitude)
@@ -146,7 +151,9 @@ def get_lunar_day_number(
     Вычисляет лунный день для заданной даты и координат.
 
     Алгоритм работает следующим образом: он находит время последнего новолуния,
-    затем вычисляет последовательность восходов Луны после этого новолуния до заданной даты.
+    затем вычисляет последовательность восходов Луны после этого новолуния
+    до заданной даты.
+
     Номер лунного дня определяется как количество этих восходов.
     """
     previous_new_moon = ephem.previous_new_moon(utcdate).datetime()
@@ -161,7 +168,8 @@ def get_lunar_day_number(
     while current_time <= utcdate:
         next_moon_rise = find_next_moon_rise(observer, current_time)
 
-        # Проверяем, не вышла ли следующая дата восхода за пределы заданной даты
+        # Проверяем, не вышла ли следующая дата
+        # восхода за пределы заданной даты
         if next_moon_rise > utcdate:
             break
 
@@ -177,7 +185,8 @@ def get_lunar_day(
     latitude: float
 ) -> LunarDay:
     """
-    Возвращает лунный день, который соответствует временной точке которую передали
+    Возвращает лунный день, который соответствует временной
+    точке которую передали
     """
     lunar_day_number = get_lunar_day_number(time_point, longitude, latitude)
     lunar_day_start = get_lunar_day_start(time_point, longitude, latitude)
@@ -226,12 +235,25 @@ def find_next_moon_rise(observer: ephem.Observer, time: datetime):
         moon = ephem.Moon(observer)
 
         try:
-            next_moon_rise = observer.next_rising(moon).datetime().replace(tzinfo=None)
+            next_moon_rise = observer.next_rising(moon).datetime()
+            next_moon_rise = next_moon_rise.replace(tzinfo=None)
 
         # если в течении 24 часов луна не восходит или не заходит
         except (AlwaysUpError, NeverUpError):
             days_offset += 1
             observer.date = time + timedelta(days=days_offset)
+            LOGGER.info(
+                f"Adjusting date by {days_offset} days, "
+                f"new date: {observer.date}"
+            )
+            LOGGER.info(
+                f"Coordinates: "
+                f"lat={observer.lat}, lon={observer.lon}"
+            )
+
+            # Предположительно код ушёл в бесконечный цикл
+            if days_offset > 100:
+                raise InfinityCycleError()
 
         else:
             break
