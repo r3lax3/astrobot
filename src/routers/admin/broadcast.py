@@ -8,13 +8,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from src import config, messages
-from src.database import Database
-from src.keyboard_manager import KeyboardManager, bt
+from src.database import crud
+from src.keyboards import bt, keyboards
 from src.routers.states import AdminStates
-
-
-class NoBroadcastDataError(Exception):
-    pass
+from src.exceptions import NoBroadcastDataError
 
 
 r = Router()
@@ -24,48 +21,78 @@ datetime_format = config.get("database.datetime_format")
 @r.callback_query(AdminStates.choose_action, F.data == bt.broadcast)
 @r.callback_query(AdminStates.broadcast_get_confirm, F.data == bt.decline)
 async def create_distribution(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery,
+    state: FSMContext
 ):
     del_message = await callback.message.answer(
-        messages.GET_MESSAGE_FOR_BROADCAST, reply_markup=keyboards.back_to_adminpanel
+        messages.GET_MESSAGE_FOR_BROADCAST,
+        reply_markup=keyboards.back_to_adminpanel()
     )
     await state.update_data(del_messages=[del_message.message_id])
     await state.set_state(AdminStates.broadcast_get_message)
 
 
-@r.message(AdminStates.broadcast_get_message)
-async def get_distribution_message(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+@r.message(AdminStates.broadcast_get_message, F.photo)
+async def get_distribution_message_with_photo(
+    message: Message,
+    state: FSMContext
 ):
-    if message.photo:
-        photo_file_id = message.photo[-1].file_id
-        text = message.caption
-    else:
-        photo_file_id = None
-        text = message.text
+    photo_file_id = message.photo[-1].file_id
+    text = message.caption
 
-    if photo_file_id is None and text is not None:
-        del_message = await message.answer(
-            messages.BROADCAST_MESSAGE_TYPE_NOT_SUPPORTED,
-            reply_markup=keyboards.back_to_adminpanel,
-        )
-        await state.update_data(del_messages=[del_message.message_id])
-    else:
-        del_message1 = await message.answer_photo(photo=photo_file_id, caption=text)
-        del_message2 = await message.answer(
-            messages.BROADCAST_MSG_CONFIRM, reply_markup=keyboards.confirm
-        )
+    del_message1 = await message.answer_photo(
+        photo=photo_file_id,
+        caption=text
+    )
+    del_message2 = await message.answer(
+        messages.BROADCAST_MSG_CONFIRM,
+        reply_markup=keyboards.confirm()
+    )
 
-        await state.update_data(
-            broadcast_photo_file_id=photo_file_id,
-            broadcast_text=text,
-            del_messages=[
-                del_message1.message_id,
-                del_message2.message_id,
-                message.message_id,
-            ],
-        )
-        await state.set_state(AdminStates.broadcast_get_confirm)
+    await state.update_data(
+        broadcast_photo_file_id=photo_file_id,
+        broadcast_text=text,
+        del_messages=[
+            del_message1.message_id,
+            del_message2.message_id,
+            message.message_id,
+        ],
+    )
+    await state.set_state(AdminStates.broadcast_get_confirm)
+
+
+@r.message(AdminStates.broadcast_get_message, F.text)
+async def get_distribution_message_with_text(
+    message: Message,
+    state: FSMContext
+):
+    del_message1 = await message.answer(message.text)
+    del_message2 = await message.answer(
+        messages.BROADCAST_MSG_CONFIRM,
+        reply_markup=keyboards.confirm()
+    )
+
+    await state.update_data(
+        broadcast_text=message.text,
+        del_messages=[
+            del_message1.message_id,
+            del_message2.message_id,
+            message.message_id,
+        ],
+    )
+    await state.set_state(AdminStates.broadcast_get_confirm)
+
+
+@r.message(AdminStates.broadcast_get_message)
+async def get_distribution_message_error(
+    message: Message,
+    state: FSMContext
+):
+    del_message = await message.answer(
+        messages.BROADCAST_MESSAGE_TYPE_NOT_SUPPORTED,
+        reply_markup=keyboards.back_to_adminpanel(),
+    )
+    await state.update_data(del_messages=[del_message.message_id])
 
 
 @r.callback_query(AdminStates.broadcast_get_confirm, F.data == bt.confirm)
@@ -73,18 +100,17 @@ async def sending_distribution_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
     bot: Bot,
-    keyboards: KeyboardManager,
-    database,
 ):
     del_message = await callback.message.answer(
-        messages.BROADCAST_STARTED, reply_markup=keyboards.back_to_adminpanel
+        messages.BROADCAST_STARTED,
+        reply_markup=keyboards.back_to_adminpanel()
     )
     await state.update_data(del_messages=[del_message.message_id])
     await state.set_state(AdminStates.action_end)
 
     data = await state.get_data()
 
-    users_ids: list = [user.user_id for user in database.get_users()]
+    users_ids: list = [user.user_id for user in crud.get_users()]
 
     now = datetime.utcnow()
     now_in_Moskow = now + timedelta(hours=3)
@@ -114,8 +140,11 @@ async def sending_distribution_confirmed(
     )
 
 
-async def send_message(
-    bot: Bot, user_id: int, photo_file_id: Optional[str], text: Optional[str]
+async def send_broadcast_message(
+    bot: Bot,
+    user_id: int,
+    photo_file_id: Optional[str],
+    text: Optional[str]
 ) -> bool:
     if photo_file_id is None and text is None:
         raise NoBroadcastDataError()
@@ -123,14 +152,24 @@ async def send_message(
         if photo_file_id is None:
             await bot.send_message(chat_id=user_id, text=text)
         else:
-            await bot.send_photo(photo=photo_file_id, chat_id=user_id, caption=text)
+            await bot.send_photo(
+                photo=photo_file_id,
+                chat_id=user_id,
+                caption=text
+            )
 
     except exceptions.TelegramRetryAfter as e:
         logging.info(
-            f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.retry_after} seconds."
+            f"Target [ID:{user_id}]: Flood limit is exceeded. "
+            f"Sleep {e.retry_after} seconds."
         )
         await asyncio.sleep(e.retry_after)
-        await send_message(bot, user_id, photo_file_id, text)  # Recursive call
+        await send_broadcast_message(
+            bot,
+            user_id,
+            photo_file_id,
+            text
+        )  # Recursive call
     except (
         exceptions.TelegramAPIError,
         exceptions.TelegramForbiddenError,
@@ -144,12 +183,20 @@ async def send_message(
 
 
 async def broadcast(
-    bot: Bot, user_ids: list[int], photo_file_id: Optional[str], text: Optional[str]
+    bot: Bot,
+    user_ids: list[int],
+    photo_file_id: Optional[str],
+    text: Optional[str]
 ) -> int:
     successes_count = 0
     try:
         for user_id in user_ids:
-            if await send_message(bot, user_id, photo_file_id, text):
+            if await send_broadcast_message(
+                bot,
+                user_id,
+                photo_file_id,
+                text
+            ):
                 successes_count += 1
             await asyncio.sleep(
                 0.1
