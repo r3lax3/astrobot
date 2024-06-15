@@ -171,10 +171,12 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
     prediction_user = PredictionUser(
         birth_datetime=datetime.strptime(user.birth_datetime, DATETIME_FORMAT),
         birth_location=PredictionLocation(
-            longitude=birth_location.longitude, latitude=birth_location.latitude
+            longitude=birth_location.longitude,
+            latitude=birth_location.latitude
         ),
         current_location=PredictionLocation(
-            longitude=current_location.longitude, latitude=current_location.latitude
+            longitude=current_location.longitude,
+            latitude=current_location.latitude
         ),
     )
     date = datetime(date.year, date.month, date.day)
@@ -194,8 +196,8 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
     for event in astro_events:
         interpretation = interpretations_dict[
             (
-                event.natal_planet,
-                event.transit_planet,
+                PLANET_ID_TO_NAME_RU[event.natal_planet],
+                PLANET_ID_TO_NAME_RU[event.transit_planet],
                 event.aspect
             )
         ]
