@@ -188,32 +188,39 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
     middle_of_day = date + timedelta(hours=15, minutes=30)
     end_of_day = date + timedelta(hours=24, minutes=45)
 
-    day_events = [
-        event
-        for event in astro_events
-        if event.general
-    ]
-
-    # Day events
-    day_events_formatted = formatted_general_events(
-        day_events
-    ) if day_events else None
-
-    # Moon events
+    day_events = []
     first_half_moon_events = []
     second_half_moon_events = []
     for event in astro_events:
-        if not event.peak_at:
+        interpretation = interpretations_dict[
+            (
+                event.natal_planet,
+                event.transit_planet,
+                event.aspect
+            )
+        ]
+
+        # Day events
+        if interpretation.general:
+            day_events.append(event)
             continue
 
-        if event.favorably is None or event.unfavorably is None:
-            continue
+        have_favouraly_and_unfavourably_text = (
+            interpretation.favorably is not None
+            and
+            interpretation.unfavorably is not None
+        )
 
-        if start_of_day < event.peak_at < middle_of_day:
-            first_half_moon_events.append(event)
+        # Moon events
+        if have_favouraly_and_unfavourably_text:
+            if not event.peak_at:
+                continue
 
-        if middle_of_day < event.peak_at < end_of_day:
-            second_half_moon_events.append(event)
+            if start_of_day < event.peak_at < middle_of_day:
+                first_half_moon_events.append(event)
+
+            if middle_of_day < event.peak_at < end_of_day:
+                second_half_moon_events.append(event)
 
     first_half_moon_events_formatted = (
         formatted_moon_events(first_half_moon_events)
@@ -226,6 +233,10 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
         if second_half_moon_events
         else None
     )
+
+    day_events_formatted = formatted_general_events(
+        day_events
+    ) if day_events else None
 
     # Date
     formatted_date = format_date_russian(date)
