@@ -14,7 +14,12 @@ DATETIME_FORMAT: str = config.get("database.datetime_format")
 
 
 class HaveActiveSubscription(Filter):
-    async def __call__(self, obj: Message | CallbackQuery, state: FSMContext):
+    async def __call__(
+        self,
+        obj: Message | CallbackQuery,
+        state: FSMContext,
+        event_from_user: User
+    ):
         with Session() as session:
             user = crud.get_user(event_from_user.id, session)
 
