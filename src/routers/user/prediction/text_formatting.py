@@ -122,7 +122,7 @@ def formatted_moon_events(events: List[AstroEvent]):
         aspect = event.aspect
 
         interpretation = interpretations_dict.get(
-            (transit_planet, natal_planet, event.aspect), None
+            (natal_planet, transit_planet, event.aspect), None
         )
 
         if interpretation is None:
@@ -179,7 +179,7 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
             longitude=current_location.longitude,
             latitude=current_location.latitude
         ),
-    )natal_planet
+    )
     date = datetime(date.year, date.month, date.day)
     astro_events = get_astro_events_from_period(
         start=date + timedelta(hours=3),
