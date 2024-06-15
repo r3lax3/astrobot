@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 import swisseph as swe
 
 from src.astro_engine.models import AstroEvent, User
-from src.utils import convert_from_utc, convert_to_utc, get_timezone_offset
 from src.enums import SwissEphPlanet
-from .utils import get_juliday, sort_astro_events, remove_duplicates
+from .utils import get_juliday, sort_astro_events
+
 
 NATAL_PLANETS = [
     SwissEphPlanet.SUN,
@@ -145,12 +145,58 @@ def get_astro_events_from_period(
 
     # Удаление дубликатов на основе натальной планеты, транзитной планеты и аспекта
     unique_events_dict = {
-        (event.natal_planet, event.transit_planet, event.aspect): event
+        (
+            event.natal_planet,
+            event.transit_planet,
+            event.aspect
+        ): event
         for event in all_events
     }
 
     # Преобразование словаря обратно в список
     unique_events = list(unique_events_dict.values())
+
+    unique_sorted_events = sort_astro_events(unique_events)
+    return unique_sorted_events
+
+
+def get_astro_events_from_period_with_duplicates(
+    start: datetime,
+    finish: datetime,
+    user: User
+) -> List[AstroEvent]:
+    step = timedelta(minutes=10)
+    current_time = start
+    all_events = []
+
+    while current_time <= finish:
+        events_at_current_time = get_astro_event_at_time(current_time, user)
+        all_events.extend(events_at_current_time)
+        current_time += step
+
+    unique_events_dict: Dict[(int, int, int), List[List[AstroEvent]]] = {}
+    for event in all_events:
+        key = (event.natal_planet, event.transit_planet, event.aspect)
+        if key not in unique_events_dict:
+            unique_events_dict[key] = [[event]]
+        else:
+            if (
+                event.peak_at - unique_events_dict[key][-1][-1].peak_at
+            ) > timedelta(hours=2):
+                unique_events_dict[key][-1].append(event)
+            else:
+                unique_events_dict[key].append([event])
+
+    unique_events = []
+    for events_groups_list in unique_events_dict.values():
+        for events_group in events_groups_list:
+            avg_peak_time = sum(
+                (event.peak_at.timestamp() for event in events_group),
+                0
+            ) / len(events_group)
+            avg_event = events_group[0]
+            avg_event.peak_at = datetime.fromtimestamp(avg_peak_time)
+            unique_events.append(avg_event)
 
     unique_sorted_events = sort_astro_events(unique_events)
     return unique_sorted_events

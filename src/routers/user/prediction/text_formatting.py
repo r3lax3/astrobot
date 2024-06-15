@@ -1,11 +1,14 @@
 import asyncio
-from babel.dates import format_date
 import csv
 import logging
-from datetime import date, datetime, timedelta
+
+from collections import OrderedDict
+
 from typing import List
 
-import swisseph as swe
+from datetime import date, datetime, timedelta
+
+from babel.dates import format_date
 
 from src import config, messages
 from src.database import crud
@@ -14,7 +17,9 @@ from src.dicts import PLANET_ID_TO_NAME_RU, SWISSEPH_PLANET_TO_UNIVERSAL_PLANET
 from src.astro_engine.models import AstroEvent
 from src.astro_engine.models import Location as PredictionLocation
 from src.astro_engine.models import User as PredictionUser
-from src.astro_engine.predictions import get_astro_events_from_period
+from src.astro_engine.predictions import (
+    get_astro_events_from_period_with_duplicates
+)
 from src.routers.user.prediction.models import Interpretation
 from src.common import DAY_SELECTION_DATABASE
 from src.enums import SwissEphPlanet
@@ -355,7 +360,11 @@ def get_formatted_selected_days(category: str, action: str, user: DBUser) -> str
     start_timepoint = datetime(now.year, now.month, now.day)
 
     subscription_end += timedelta(hours=user.timezone_offset)
-    end_timepoint = datetime(subscription_end.year, subscription_end.month, subscription_end.day)
+    end_timepoint = datetime(
+        subscription_end.year,
+        subscription_end.month,
+        subscription_end.day
+    )
 
     prediction_user = PredictionUser(
         birth_datetime=datetime.strptime(user.birth_datetime, DATETIME_FORMAT),
@@ -368,7 +377,7 @@ def get_formatted_selected_days(category: str, action: str, user: DBUser) -> str
             latitude=user.current_location.latitude
         ),
     )
-    astro_events = get_astro_events_from_period(
+    astro_events = get_astro_events_from_period_with_duplicates(
         start=start_timepoint,
         finish=end_timepoint,
         user=prediction_user,
@@ -392,15 +401,23 @@ def get_formatted_selected_days(category: str, action: str, user: DBUser) -> str
                 for degree in aspect_group["degrees"]:
                     if astro_event.aspect == degree:
                         right_events.append(astro_event)
-    return ", ".join(
-        [
+
+    return ",\n".join(
+        remove_duplicates(
             format_event_date_for_day_selection(event, user.timezone_offset)
-            for event in right_events if event.peak_at is not None
-        ]
+            for event in right_events
+        )
     )
 
 
-def format_event_date_for_day_selection(event: AstroEvent, timezone_offset: int) -> str:
+def remove_duplicates(lst):
+    return list(OrderedDict.fromkeys(lst))
+
+
+def format_event_date_for_day_selection(
+    event: AstroEvent,
+    timezone_offset: int
+) -> str:
     local_peak_time = event.peak_at + timedelta(hours=timezone_offset)
     date = local_peak_time.date()
 

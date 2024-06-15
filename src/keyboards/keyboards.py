@@ -377,7 +377,8 @@ def predict_choose_date(date: str):
 def day_selection_success():
     return KeyboardBuilder.build(
         [
-            [bt.renew_subscription, bt.choose_another_action],
+            [bt.renew_subscription],
+            [bt.choose_another_action],
             [bt.main_menu]
         ],
         is_inline=True
@@ -387,7 +388,8 @@ def day_selection_success():
 def day_selection_failed():
     return KeyboardBuilder.build(
         [
-            [bt.renew_subscription, bt.choose_another_action],
+            [bt.renew_subscription],
+            [bt.choose_another_action],
             [bt.main_menu]
         ],
         is_inline=True

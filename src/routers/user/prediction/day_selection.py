@@ -1,6 +1,4 @@
-from datetime import datetime, timedelta
-
-from aiogram import Bot, F, Router, exceptions
+from aiogram import F, Router, exceptions
 from aiogram.types import Message, CallbackQuery, User
 from aiogram.fsm.context import FSMContext
 
@@ -14,23 +12,31 @@ from src.common import DAY_SELECTION_DATABASE
 from .text_formatting import get_formatted_selected_days
 
 
-r = Router()
+WAIT_STICKER = config.get("files.wait_sticker")
 DAY_SELECTION_ACTION_CATEGORIES = list(DAY_SELECTION_DATABASE.keys())
+
+r = Router()
 
 
 @r.message(F.text == bt.day_selection)
 async def day_selection_handler(
     message: Message,
-    state: FSMContext
+    state: FSMContext,
+    event_from_user: User
 ):
-    bot_message = await message.answer(
-        messages.CHOOSE_DAY_SELECTION_ACTION_CATEGORY,
-        reply_markup=keyboards.day_selection_categories(
-            DAY_SELECTION_ACTION_CATEGORIES
+    with Session() as session:
+        user = crud.get_user(event_from_user.id, session)
+
+        bot_message = await message.answer(
+            messages.CHOOSE_DAY_SELECTION_ACTION_CATEGORY.format(
+                name=user.name
+            ),
+            reply_markup=keyboards.day_selection_categories(
+                DAY_SELECTION_ACTION_CATEGORIES
+            )
         )
-    )
-    await state.update_data(del_messages=[bot_message.message_id])
-    await state.set_state(MainMenu.day_selection_get_category)
+        await state.update_data(del_messages=[bot_message.message_id])
+        await state.set_state(MainMenu.day_selection_get_category)
 
 
 @r.callback_query(MainMenu.day_selection_get_category)
@@ -89,8 +95,16 @@ async def day_selection_get_action(
         )
         is_user_client = len(activated_promocodes_list) > 0
 
+        wait_message = await callback.message.answer(messages.WAIT)
+        sticker_message = await callback.message.answer_sticker(WAIT_STICKER)
+
         selected_days = get_formatted_selected_days(category, action, user)
 
+        for msg in [wait_message, sticker_message]:
+            try:
+                await msg.delete()
+            except exceptions.TelegramBadRequest:
+                continue
         if selected_days:
             if favorably:
                 bot_message = await callback.message.answer(
