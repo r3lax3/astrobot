@@ -302,5 +302,5 @@ def get_average_datetime(datetimes: List[datetime]) -> datetime:
 
 
 def get_day_selection_database():
-    with open("day_selection.json", "r") as file:
+    with open("day_selection.json", "r", encoding='utf-8') as file:
         return json.load(file)
