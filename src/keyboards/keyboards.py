@@ -337,16 +337,16 @@ def payment_redirect(redirect_url: str):
     )
 
 
-def day_selection_action_categories(actions: list[str]):
+def day_selection_categories(categories: list[str]):
     return KeyboardBuilder.build(
-        split_list(actions, 2) + [[bt.main_menu]],
+        split_list(categories, 2) + [[bt.main_menu]],
         is_inline=True
     )
 
 
-def day_selection_get_category(categories: list[str]):
+def day_selection_actions(actions: list[str]):
     return KeyboardBuilder.build(
-        split_list(categories, 2) + [[bt.main_menu]],
+        split_list(actions, 1) + [[bt.main_menu]],
         is_inline=True
     )
 

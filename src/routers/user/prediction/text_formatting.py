@@ -22,18 +22,32 @@ from src.enums import SwissEphPlanet
 
 def get_interpretations_dict():
     with open(
-        file="interpretations.csv", mode="r", newline="", encoding="utf-8"
+        "interpretations.csv",
+        "r",
+        newline="",
+        encoding="utf-8"
     ) as file:
         interpretations = [row for row in csv.reader(file)]
-
         interpretations_dict = {}
         for interpretation in interpretations:
-            # key is tuple(transit_planet, natal_planet, event_aspect)
             interpretation[2] = int(interpretation[2])
             key = tuple(interpretation[:3])
 
-            interpretations_dict[key] = Interpretation(*interpretation)
+            natal_planet = interpretation[0]
+            transit_planet = interpretation[1]
+            aspect = int(interpretation[2])
+            general = interpretation[3]
+            favorably = interpretation[4].strip() if interpretation[4] else None
+            unfavorably = interpretation[5].strip() if interpretation[5] else None
 
+            interpretations_dict[key] = Interpretation(
+                natal_planet,
+                transit_planet,
+                aspect,
+                general,
+                favorably,
+                unfavorably
+            )
     return interpretations_dict
 
 
@@ -132,7 +146,8 @@ def formatted_moon_events(events: List[AstroEvent]):
     unfavorably = "\n".join(unfavorably)
 
     formatted_text = messages.FAVORABLE_AND_UNFAVORABLE.format(
-        favorably=favorably, unfavorably=unfavorably
+        favorably=favorably,
+        unfavorably=unfavorably
     )
 
     return formatted_text
@@ -173,28 +188,39 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
     middle_of_day = date + timedelta(hours=15, minutes=30)
     end_of_day = date + timedelta(hours=24, minutes=45)
 
-    day_events = [event for event in astro_events if event.transit_planet != swe.MOON]
-
-    # Day events
-    day_events_formatted = formatted_general_events(day_events) if day_events else None
-
-    # Moon events
-    first_half_moon_events = [
+    day_events = [
         event
         for event in astro_events
-        if event.peak_at and start_of_day < event.peak_at < middle_of_day
+        if event.general
     ]
+
+    # Day events
+    day_events_formatted = formatted_general_events(
+        day_events
+    ) if day_events else None
+
+    # Moon events
+    first_half_moon_events = []
+    second_half_moon_events = []
+    for event in astro_events:
+        if not event.peak_at:
+            continue
+
+        if event.favorably is None or event.unfavorably is None:
+            continue
+
+        if start_of_day < event.peak_at < middle_of_day:
+            first_half_moon_events.append(event)
+
+        if middle_of_day < event.peak_at < end_of_day:
+            second_half_moon_events.append(event)
+
     first_half_moon_events_formatted = (
         formatted_moon_events(first_half_moon_events)
         if first_half_moon_events
         else None
     )
 
-    second_half_moon_events = [
-        event
-        for event in astro_events
-        if event.peak_at and middle_of_day < event.peak_at < end_of_day
-    ]
     second_half_moon_events_formatted = (
         formatted_moon_events(second_half_moon_events)
         if second_half_moon_events

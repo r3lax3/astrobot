@@ -25,7 +25,7 @@ async def day_selection_handler(
 ):
     bot_message = await message.answer(
         messages.CHOOSE_DAY_SELECTION_ACTION_CATEGORY,
-        reply_markup=keyboards.day_selection_action_categories(
+        reply_markup=keyboards.day_selection_categories(
             DAY_SELECTION_ACTION_CATEGORIES
         )
     )
@@ -59,7 +59,7 @@ async def enter_day_selection_action(
 
         bot_message = await callback.message.answer(
             messages.DAY_SELECTION_CHOOSE_ACTION.format(name=user.name),
-            reply_markup=keyboards.day_selection_get_category(action_list)
+            reply_markup=keyboards.day_selection_actions(action_list)
         )
         await state.update_data(del_messages=[bot_message.message_id])
         await state.set_state(MainMenu.day_selection_get_action)
