@@ -5,7 +5,10 @@ from aiogram import Dispatcher, Bot
 from aiogram.fsm.storage.redis import RedisStorage
 
 from aiohttp import web
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiogram.webhook.aiohttp_server import (
+    SimpleRequestHandler,
+    setup_application
+)
 
 from src import config
 from src.common import bot

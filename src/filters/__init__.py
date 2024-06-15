@@ -5,28 +5,24 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, User
 
 from src import config
-from src.database import Database
+from src.database import crud, Session
 from src.filters.is_date import IsDate, IsDatetime, IsTime
 from src.filters.role import AdminFilter, UserFilter
 from src.filters.state_flag_filters import FSMFlagChecker
 
-
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 
 
-class HasPredictionAccess(Filter):
+class HaveActiveSubscription(Filter):
     async def __call__(self, obj: Message | CallbackQuery, state: FSMContext):
-        data = await state.get_data()
+        with Session() as session:
+            user = crud.get_user(event_from_user.id, session)
 
-        now = datetime.utcnow()
-
-        subscription_end_date_str = data["subscription_end_date"]
-        subscription_end_date = datetime.strptime(
-            subscription_end_date_str,
+        subscription_end = datetime.strptime(
+            user.subscription_end_date,
             DATETIME_FORMAT
         )
-
-        return now < subscription_end_date
+        return subscription_end > datetime.utcnow()
 
 
 class UserInDatabase(BaseFilter):

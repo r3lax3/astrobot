@@ -299,3 +299,8 @@ def get_average_datetime(datetimes: List[datetime]) -> datetime:
     average_timestamp = sum(timestamps) / len(timestamps)
 
     return datetime.fromtimestamp(average_timestamp)
+
+
+def get_day_selection_database():
+    with open("day_selection.json", "r") as file:
+        return json.load(file)

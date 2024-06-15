@@ -461,7 +461,13 @@ def get_payment(payment_id: str) -> Payment:
 
 def get_promocode(promocode_str: str) -> Promocode:
     with Session() as session:
-        return session.query(Promocode).filter_by(promocode=promocode_str).first()
+        return session.query(Promocode).filter_by(
+            promocode=promocode_str
+        ).first()
+
+
+def get_promocodes(session: Session, **filters) -> List[Promocode]:
+    return session.query(Promocode).filter_by(**filters).all()
 
 
 def add_promocode(promocode_obj: Promocode):

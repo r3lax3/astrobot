@@ -122,7 +122,7 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
                         natal_planet=natal_planet,
                         transit_planet=transit_planet,
                         aspect=aspect_value,
-                        peak_at=time if transit_planet == swe.MOON else None,
+                        peak_at=time
                     )
                 )
 

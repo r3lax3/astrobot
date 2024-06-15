@@ -108,6 +108,20 @@ class SwissEphPlanet(int, Enum):
     PLUTO = 9
 
 
+class Planets(str, Enum):
+    SUN = "Sun"
+    MOON = "Moon"
+    MERCURY = "Mercury"
+    VENUS = "Venus"
+    MARS = "Mars"
+    JUPITER = "Jupiter"
+    SATURN = "Saturn"
+    URANUS = "Uranus"
+    NEPTUNE = "Neptune"
+    PLUTO = "Pluto"
+    ERIS = "Eris"
+
+
 class PaymentStatus(Enum):
     SUCCESS = "success"
     FAILED = "failed"

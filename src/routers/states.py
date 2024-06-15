@@ -36,6 +36,9 @@ class MainMenu(StatesGroup):
 
     general_predictions_get_type = State()
 
+    day_selection_get_category = State()
+    day_selection_get_action = State()
+
     moon_in_sign = State()
 
     end_action = State()

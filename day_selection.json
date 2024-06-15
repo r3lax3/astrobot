@@ -1,0 +1,3426 @@
+{
+  "Работа": {
+    "Обращаться к руководству": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Выходить на работу": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Увольняться": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            90,
+            180,
+            270
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            90,
+            180,
+            270
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Sun",
+          "degrees": [
+            90,
+            180,
+            270
+          ]
+        }
+      ]
+    },
+    "Вступать в должность": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Рассылать резюме": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Проходить собеседования": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Презентовать проекты": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Повышать квалификацию": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Saturn",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  },
+  "Бизнес": {
+    "Проводить переговоры": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Давать рекламу": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Начинать бизнес": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Открывать магазин, кафе": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Начинать он-лайн-проекты": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Обращаться в госсструктуры": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Выступать на публику": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Регистрировать фирму": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Приобретать бизнес": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Заключать сделки": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Подписывать договора": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Решать юридические вопросы": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Участвовать в нетворкингах": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Набирать сотрудников": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  },
+  "Отношения": {
+    "Размещать анкету для знакомств": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Подавать заявление в ЗАГС": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Проявлять инициативу": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Начинать важный разговор": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Подавать судебные иски": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Устраивать свидания": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  },
+  "Семья": {
+    "Собирать родственников": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Moon",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Взаимодействовать с родителями": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Устраивать торжества": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Переезжать": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Moon",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Делать подарки": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Moon",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Общаться с подростками": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  },
+  "Быт": {
+    "Организовать генеральную уборку": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Moon",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Начинать ремонт, стройку": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Отдавать вещи в ремонт": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Покупать мебель, стройматериалы": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Давать объявления": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Moon",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Приобретать гаджеты, технику": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Устраивать шопинг": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Проходить ТО машины": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Поход к ветеринару": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Moon",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Moon",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  },
+  "Здоровье": {
+    "Посещать стоматолога": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Ставить зубные импланты": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Начинать активные тренировки": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Разгрузочный день, детокс": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Начинать курс лечения": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Медицинское обследование": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Наркоз": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        }
+      ]
+    },
+    "Удалять бородавки": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        }
+      ]
+    },
+    "Удалять зубы": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        }
+      ]
+    }
+  },
+  "Красота": {
+    "Начинать курс массажа": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Делать уколы красоты": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Обращаться к стилисту": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Посещать парикмахерскую": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Наращивание ресниц, волос": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Эпиляция": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        }
+      ]
+    }
+  },
+  "Путешествия": {
+    "Авиаперелет": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        }
+      ]
+    },
+    "Аварийноопасные дни": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        }
+      ]
+    },
+    "Трудности в пути": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        }
+      ]
+    },
+    "Отправляться в поездки": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Мониторить путевки": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Покупать билеты, туры": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Морские путешествия": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  },
+  "Финансы": {
+    "Брать в долг": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            90,
+            180
+          ]
+        }
+      ]
+    },
+    "Покупать абонемент в спортзал": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mars",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Приобретать недвижимость": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Решать финансовые вопросы": {
+      "favorably": false,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Покупка предметов искусства": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Sun",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Продавать недвижимость": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Сдавать недвижимость": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  },
+  "Обучение": {
+    "Старт обучения": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Покупка обучения": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Проходить комиссию": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Venus",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Venus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Сдавать экзамены, тесты": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Mercury",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Saturn",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  },
+  "Прочее": {
+    "Загадывать желания": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Mars",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Обращаться за консультацией": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Uranus",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Jupiter",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    },
+    "Начинать терапию с психологом": {
+      "favorably": true,
+      "aspects": [
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Sun",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Neptune",
+          "transit_planet": "Moon",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        },
+        {
+          "natal_planet": "Pluto",
+          "transit_planet": "Mercury",
+          "degrees": [
+            0,
+            60,
+            120,
+            240,
+            300
+          ]
+        }
+      ]
+    }
+  }
+}

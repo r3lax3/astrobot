@@ -31,7 +31,8 @@ r = Router()
 # BUY SUBSCRIPTION
 @r.callback_query(Subscription.payment_method, F.data == bt.back)
 @r.callback_query(Subscription.payment_ended, F.data == bt.back_to_menu)
-@r.callback_query(Subscription.chooose_action, F.data == bt.buy_subscription)
+@r.callback_query(F.data == bt.buy_subscription)
+@r.callback_query(F.data == bt.renew_subscription)
 async def buy_subscription_menu(
     callback: CallbackQuery,
     state: FSMContext,

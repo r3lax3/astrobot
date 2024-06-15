@@ -1,6 +1,8 @@
 from typing import Optional
 
 from src import config
+from src.utils import split_list
+from src.models import DateModifier
 
 from .callback_data import SubscriptionPeriod, Payment, Promocode
 from .builder import KeyboardBuilder
@@ -73,6 +75,7 @@ def predict_choose_action():
         [
             [bt.prediction_for_date],
             [bt.daily_prediction],
+            [bt.day_selection],
             [bt.main_menu]
         ]
     )
@@ -329,6 +332,73 @@ def payment_redirect(redirect_url: str):
                 (bt.offer, OFFER_URL)
             ],
             [bt.back]
+        ],
+        is_inline=True
+    )
+
+
+def day_selection_action_categories(actions: list[str]):
+    return KeyboardBuilder.build(
+        split_list(actions, 2) + [[bt.main_menu]],
+        is_inline=True
+    )
+
+
+def day_selection_get_category(categories: list[str]):
+    return KeyboardBuilder.build(
+        split_list(categories, 2) + [[bt.main_menu]],
+        is_inline=True
+    )
+
+
+def predict_choose_date(date: str):
+    return KeyboardBuilder.build(
+        [
+            [(date, "null")],
+            [
+                ("+1", DateModifier(modifier=1)),
+                ("+5", DateModifier(modifier=5)),
+                ("+10", DateModifier(modifier=10)),
+                ("+30", DateModifier(modifier=30)),
+            ],
+            [
+                ("-1", DateModifier(modifier=-1)),
+                ("-5", DateModifier(modifier=-5)),
+                ("-10", DateModifier(modifier=-10)),
+                ("-30", DateModifier(modifier=-30)),
+            ],
+            [bt.confirm],
+            [bt.decline],
+        ],
+        is_inline=True,
+    )
+
+
+def day_selection_success():
+    return KeyboardBuilder.build(
+        [
+            [bt.renew_subscription, bt.choose_another_action],
+            [bt.main_menu]
+        ],
+        is_inline=True
+    )
+
+
+def day_selection_failed():
+    return KeyboardBuilder.build(
+        [
+            [bt.renew_subscription, bt.choose_another_action],
+            [bt.main_menu]
+        ],
+        is_inline=True
+    )
+
+
+def day_selection_no_access():
+    return KeyboardBuilder.build(
+        [
+            [bt.buy_subscription],
+            [bt.main_menu]
         ],
         is_inline=True
     )

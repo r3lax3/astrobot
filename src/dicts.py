@@ -1,3 +1,5 @@
+from src.enums import Planets, SwissEphPlanet
+
 MONTHS_TO_STR_MONTHS = {
     1: "1 месяц",
     2: "2 месяца",
@@ -25,4 +27,17 @@ PLANET_ID_TO_NAME_RU = {
     7: "Уран",
     8: "Нептун",
     9: "Плутон",
+}
+
+SWISSEPH_PLANET_TO_UNIVERSAL_PLANET = {
+    SwissEphPlanet.SUN: Planets.SUN,
+    SwissEphPlanet.MOON: Planets.MOON,
+    SwissEphPlanet.MERCURY: Planets.MERCURY,
+    SwissEphPlanet.VENUS: Planets.VENUS,
+    SwissEphPlanet.MARS: Planets.MARS,
+    SwissEphPlanet.JUPITER: Planets.JUPITER,
+    SwissEphPlanet.SATURN: Planets.SATURN,
+    SwissEphPlanet.URANUS: Planets.URANUS,
+    SwissEphPlanet.NEPTUNE: Planets.NEPTUNE,
+    SwissEphPlanet.PLUTO: Planets.PLUTO,
 }

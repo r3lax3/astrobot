@@ -1,4 +1,5 @@
 import asyncio
+from babel.dates import format_date
 import csv
 import logging
 from datetime import date, datetime, timedelta
@@ -8,12 +9,15 @@ import swisseph as swe
 
 from src import config, messages
 from src.database import crud
-from src.dicts import PLANET_ID_TO_NAME_RU
+from src.database.models import User as DBUser
+from src.dicts import PLANET_ID_TO_NAME_RU, SWISSEPH_PLANET_TO_UNIVERSAL_PLANET
 from src.astro_engine.models import AstroEvent
 from src.astro_engine.models import Location as PredictionLocation
 from src.astro_engine.models import User as PredictionUser
 from src.astro_engine.predictions import get_astro_events_from_period
 from src.routers.user.prediction.models import Interpretation
+from src.common import DAY_SELECTION_DATABASE
+from src.enums import SwissEphPlanet
 
 
 def get_interpretations_dict():
@@ -279,7 +283,7 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
     return formatted_text
 
 
-async def get_prediction_text(date: datetime, database, user_id: int) -> str:
+async def get_prediction_text(date: datetime, user_id: int) -> str:
     user = crud.get_user(user_id=user_id)
 
     loop = asyncio.get_running_loop()
@@ -296,3 +300,79 @@ async def get_prediction_text(date: datetime, database, user_id: int) -> str:
         prediction_date=date.strftime(DATE_FORMAT)
     )
     return text
+
+
+def get_formatted_selected_days(category: str, action: str, user: DBUser) -> str:
+    selected_aspects: list[dict] = DAY_SELECTION_DATABASE[category][action]['aspects']
+
+    subscription_end = datetime.strptime(
+        user.subscription_end_date,
+        DATETIME_FORMAT
+    )
+
+    utcnow = datetime.utcnow()
+    now = utcnow + timedelta(hours=user.timezone_offset)
+    start_timepoint = datetime(now.year, now.month, now.day)
+
+    subscription_end += timedelta(hours=user.timezone_offset)
+    end_timepoint = datetime(subscription_end.year, subscription_end.month, subscription_end.day)
+
+    prediction_user = PredictionUser(
+        birth_datetime=datetime.strptime(user.birth_datetime, DATETIME_FORMAT),
+        birth_location=PredictionLocation(
+            longitude=user.birth_location.longitude,
+            latitude=user.birth_location.latitude
+        ),
+        current_location=PredictionLocation(
+            longitude=user.current_location.longitude,
+            latitude=user.current_location.latitude
+        ),
+    )
+    astro_events = get_astro_events_from_period(
+        start=start_timepoint,
+        finish=end_timepoint,
+        user=prediction_user,
+    )
+
+    right_events = []
+    for astro_event in astro_events:
+        astro_event_natal_planet = SWISSEPH_PLANET_TO_UNIVERSAL_PLANET[
+            astro_event.natal_planet
+        ]
+        astro_event_transit_planet = SWISSEPH_PLANET_TO_UNIVERSAL_PLANET[
+            astro_event.transit_planet
+        ]
+
+        for aspect_group in selected_aspects:
+            if (
+                astro_event_natal_planet == aspect_group["natal_planet"]
+                and
+                astro_event_transit_planet == aspect_group["transit_planet"]
+            ):
+                for degree in aspect_group["degrees"]:
+                    if astro_event.aspect == degree:
+                        right_events.append(astro_event)
+    return ", ".join(
+        [
+            format_event_date_for_day_selection(event, user.timezone_offset)
+            for event in right_events if event.peak_at is not None
+        ]
+    )
+
+
+def format_event_date_for_day_selection(event: AstroEvent, timezone_offset: int) -> str:
+    local_peak_time = event.peak_at + timedelta(hours=timezone_offset)
+    date = local_peak_time.date()
+
+    if event.transit_planet == SwissEphPlanet.MOON:
+        if local_peak_time.hour >= 12:
+            half_day = "(вторая половина дня)"
+        else:
+            half_day = "(первая половина дня)"
+
+        return f"{format_date(date, format='d MMMM', locale='ru')} {half_day}"
+
+    if local_peak_time.hour < 4:
+        date -= timedelta(days=1)
+
+    return format_date(date, format='d MMMM', locale='ru')

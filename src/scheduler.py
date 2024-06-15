@@ -121,7 +121,6 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                 if datetime.utcnow() < subscription_end_datetime:
                     text = await get_prediction_text(
                         date=target_date,
-                        database=crud,
                         user_id=user_id
                     )
                     await self.bot.send_photo(
