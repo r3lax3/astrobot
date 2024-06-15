@@ -32,8 +32,8 @@ def get_interpretations_dict():
         for interpretation in interpretations:
             interpretation[2] = int(interpretation[2])
 
-            natal_planet = interpretation[0]
-            transit_planet = interpretation[1]
+            transit_planet = interpretation[0]
+            natal_planet = interpretation[1]
             aspect = int(interpretation[2])
             general = interpretation[3]
             favorably = interpretation[4].strip() if interpretation[4] else None
