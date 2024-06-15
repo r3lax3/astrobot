@@ -41,8 +41,8 @@ def get_interpretations_dict():
             unfavorably = interpretation[5].strip() if interpretation[5] else None
 
             interpretations_dict[key] = Interpretation(
-                natal_planet,
                 transit_planet,
+                natal_planet,
                 aspect,
                 general,
                 favorably,
