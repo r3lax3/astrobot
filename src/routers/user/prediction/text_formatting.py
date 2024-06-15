@@ -31,7 +31,6 @@ def get_interpretations_dict():
         interpretations_dict = {}
         for interpretation in interpretations:
             interpretation[2] = int(interpretation[2])
-            key = tuple(interpretation[:3])
 
             natal_planet = interpretation[0]
             transit_planet = interpretation[1]
@@ -40,9 +39,10 @@ def get_interpretations_dict():
             favorably = interpretation[4].strip() if interpretation[4] else None
             unfavorably = interpretation[5].strip() if interpretation[5] else None
 
+            key = (natal_planet, transit_planet, aspect)
             interpretations_dict[key] = Interpretation(
-                transit_planet,
                 natal_planet,
+                transit_planet,
                 aspect,
                 general,
                 favorably,
@@ -87,15 +87,16 @@ def formatted_general_events(events: List[AstroEvent]) -> str:
     for event in events:
         transit_planet = PLANET_ID_TO_NAME_RU[event.transit_planet]
         natal_planet = PLANET_ID_TO_NAME_RU[event.natal_planet]
-        aspect = event.aspect
 
         interpretation = interpretations_dict.get(
-            (transit_planet, natal_planet, event.aspect), None
+            (natal_planet, transit_planet, event.aspect),
+            None
         )
 
         if interpretation is None:
             interpretation = interpretations_dict.get(
-                (natal_planet, transit_planet, event.aspect), None
+                (natal_planet, transit_planet, event.aspect),
+                None
             )
 
         if not interpretation:
@@ -103,7 +104,7 @@ def formatted_general_events(events: List[AstroEvent]) -> str:
                 messages.NO_INTERPRETATION.format(
                     transit_planet=transit_planet,
                     natal_planet=natal_planet,
-                    aspect=aspect,
+                    aspect=event.aspect,
                 )
             )
             continue
@@ -178,7 +179,7 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
             longitude=current_location.longitude,
             latitude=current_location.latitude
         ),
-    )
+    )natal_planet
     date = datetime(date.year, date.month, date.day)
     astro_events = get_astro_events_from_period(
         start=date + timedelta(hours=3),
