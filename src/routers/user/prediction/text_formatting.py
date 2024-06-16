@@ -18,6 +18,7 @@ from src.astro_engine.models import AstroEvent
 from src.astro_engine.models import Location as PredictionLocation
 from src.astro_engine.models import User as PredictionUser
 from src.astro_engine.predictions import (
+    get_astro_events_from_period,
     get_astro_events_from_period_with_duplicates
 )
 from src.routers.user.prediction.models import Interpretation
