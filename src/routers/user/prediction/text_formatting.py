@@ -463,7 +463,7 @@ def format_dates_list_for_day_selection(
                 completed_dates.append(target_date)
         elif counter[target_date] == 1:
             if suffix:
-                result.append(f"{date_str}{suffix}")
+                result.append(f"{date_str} {suffix}")
             else:
                 result.append(date_str)
 
