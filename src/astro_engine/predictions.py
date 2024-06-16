@@ -28,7 +28,7 @@ TRANSIT_PLANETS = [
     SwissEphPlanet.MARS
 ]
 
-ASPECTS = [0, 60, 90, 120, 180]
+ASPECTS = [0, 30, 60, 90, 120, 180, 240, 270, 300, 330, 360]
 ORBIS = 0.1
 ZODIAC_BOUNDS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360]
 
@@ -59,17 +59,17 @@ def find_peak_time(
 def calculate_aspect(
     transit_position: float,
     natal_position: float,
-    orbis: float
 ) -> Optional[int]:
     """
     Вычислить аспект между двумя планетами на основе их текущих позиций.
     """
-    diff = abs(transit_position - natal_position) % 360
+    diff = abs(transit_position - natal_position)
     for aspect in ASPECTS:
-        if abs(diff - aspect) <= orbis:
+        diff_with_aspect = abs(diff - aspect)
+        if diff_with_aspect < ORBIS:
+            if aspect > 180:
+                return 360 - aspect
             return aspect
-
-    return None  # Нет соответствующего аспекта
 
 
 def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
@@ -110,18 +110,17 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
             # Вычисление аспекта между
             # текущей позицией планеты и натальной позицией
 
-            aspect_value = calculate_aspect(
+            aspect = calculate_aspect(
                 transit_planet_position,
-                natal_planet_position,
-                orbis=ORBIS
+                natal_planet_position
             )
 
-            if aspect_value:  # Если аспект существует, добавляем событие в список
+            if aspect is not None:  # Если аспект существует, добавляем событие в список
                 events.append(
                     AstroEvent(
                         natal_planet=natal_planet,
                         transit_planet=transit_planet,
-                        aspect=aspect_value,
+                        aspect=aspect,
                         peak_at=time
                     )
                 )
@@ -180,23 +179,22 @@ def get_astro_events_from_period_with_duplicates(
         if key not in unique_events_dict:
             unique_events_dict[key] = [[event]]
         else:
-            if (
-                event.peak_at - unique_events_dict[key][-1][-1].peak_at
-            ) > timedelta(hours=2):
-                unique_events_dict[key][-1].append(event)
-            else:
+            last_group = unique_events_dict[key][-1]
+            if (event.peak_at - last_group[-1].peak_at) > timedelta(hours=2):
                 unique_events_dict[key].append([event])
+            else:
+                last_group.append(event)
 
     unique_events = []
     for events_groups_list in unique_events_dict.values():
         for events_group in events_groups_list:
             avg_peak_time = sum(
-                (event.peak_at.timestamp() for event in events_group),
-                0
+                (event.peak_at.timestamp() for event in events_group)
             ) / len(events_group)
+
             avg_event = events_group[0]
             avg_event.peak_at = datetime.fromtimestamp(avg_peak_time)
+
             unique_events.append(avg_event)
 
-    unique_sorted_events = sort_astro_events(unique_events)
-    return unique_sorted_events
+    return unique_events

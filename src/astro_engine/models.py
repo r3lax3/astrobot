@@ -22,7 +22,7 @@ class AstroEvent:
     natal_planet: int
     transit_planet: int
     aspect: int
-    peak_at: datetime | None
+    peak_at: datetime
 
 
 @dataclass

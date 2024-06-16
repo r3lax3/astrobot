@@ -95,7 +95,9 @@ async def day_selection_get_action(
         )
         is_user_client = len(activated_promocodes_list) > 0
 
-        wait_message = await callback.message.answer(messages.WAIT)
+        wait_message = await callback.message.answer(
+            messages.WAIT_DAY_SELECTION
+        )
         sticker_message = await callback.message.answer_sticker(WAIT_STICKER)
 
         selected_days = get_formatted_selected_days(category, action, user)
@@ -105,6 +107,7 @@ async def day_selection_get_action(
                 await msg.delete()
             except exceptions.TelegramBadRequest:
                 continue
+
         if selected_days:
             if favorably:
                 bot_message = await callback.message.answer(

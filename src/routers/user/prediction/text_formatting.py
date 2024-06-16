@@ -1,14 +1,13 @@
 import asyncio
 import csv
 import logging
+import datetime
 
-from collections import OrderedDict
-
-from typing import List
-
-from datetime import date, datetime, timedelta
+from typing import List, Optional
+from datetime import datetime, timedelta, date
 
 from babel.dates import format_date
+from sqlalchemy import lambda_stmt
 
 from src import config, messages
 from src.database import crud
@@ -59,6 +58,7 @@ def get_interpretations_dict():
 
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
+UNIVERSAL_DATE_FORMAT = "%Y-%m-%d"
 TIME_FORMAT: str = config.get("database.time_format")
 
 DAYS = [
@@ -403,34 +403,70 @@ def get_formatted_selected_days(category: str, action: str, user: DBUser) -> str
                     if astro_event.aspect == degree:
                         right_events.append(astro_event)
 
-    return ",\n".join(
-        remove_duplicates(
-            format_event_date_for_day_selection(event, user.timezone_offset)
-            for event in right_events
-        )
+    return format_astro_events_for_day_selection(
+        right_events,
+        user.timezone_offset
     )
 
 
-def remove_duplicates(lst):
-    return list(OrderedDict.fromkeys(lst))
-
-
-def format_event_date_for_day_selection(
-    event: AstroEvent,
+def format_astro_events_for_day_selection(
+    events: list[AstroEvent],
     timezone_offset: int
+):
+    dates: list[tuple[str, Optional[str]]] = []
+    for event in events:
+        local_peak_time = event.peak_at + timedelta(hours=timezone_offset)
+        target_date = local_peak_time.date()
+
+        if local_peak_time.hour < 4:
+            target_date -= timedelta(days=1)
+
+        half_day = None
+        if event.transit_planet == SwissEphPlanet.MOON:
+            if local_peak_time.hour >= 12:
+                half_day = "(вторая половина дня)"
+            else:
+                half_day = "(первая половина дня)"
+
+        date_str = target_date.strftime(UNIVERSAL_DATE_FORMAT)
+
+        dates.append((date_str, half_day))
+
+    return format_dates_list_for_day_selection(dates)
+
+
+def format_dates_list_for_day_selection(
+    dates: list[tuple[str, Optional[str]]]
 ) -> str:
-    local_peak_time = event.peak_at + timedelta(hours=timezone_offset)
-    date = local_peak_time.date()
-
-    if event.transit_planet == SwissEphPlanet.MOON:
-        if local_peak_time.hour >= 12:
-            half_day = "(вторая половина дня)"
+    counter = {}
+    for target_date, _ in dates:
+        if target_date in counter:
+            counter[target_date] += 1
         else:
-            half_day = "(первая половина дня)"
+            counter[target_date] = 1
 
-        return f"{format_date(date, format='d MMMM', locale='ru')} {half_day}"
+    # Создаем список для результата
+    result = []
+    completed_dates = []
 
-    if local_peak_time.hour < 4:
-        date -= timedelta(days=1)
+    dates = sorted(dates, key=lambda x: x[0])
 
-    return format_date(date, format='d MMMM', locale='ru')
+    # Формируем результат в зависимости от количества повторений дат
+    for target_date, suffix in dates:
+        target_date_datetime = datetime.strptime(target_date, UNIVERSAL_DATE_FORMAT)
+
+        date_str = format_date(target_date_datetime, format='d MMMM', locale='ru')
+
+        if counter[target_date] >= 2:
+            if target_date not in completed_dates:
+                result.append(f"🌟{date_str}")
+                completed_dates.append(target_date)
+        elif counter[target_date] == 1:
+            if suffix:
+                result.append(f"{date_str}{suffix}")
+            else:
+                result.append(date_str)
+
+            completed_dates.append(target_date)
+
+    return ",\n".join(result)

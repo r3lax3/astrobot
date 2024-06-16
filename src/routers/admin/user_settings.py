@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from aiogram import Bot, F, Router
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -56,7 +56,14 @@ async def get_user_id_from_message(message: Message, state: FSMContext):
     await get_user_info_menu(message, state)
 
 
-@r.callback_query(AdminStates.user_get_subscription_end_date, F.data == bt.back)
+@r.callback_query(
+    AdminStates.user_get_subscription_end_date,
+    F.data == bt.back
+)
+@r.callback_query(
+    AdminStates.user_get_birth_datetime,
+    F.data == bt.back
+)
 async def get_user_info_menu_callback_handler(
     callback: CallbackQuery,
     state: FSMContext
@@ -71,10 +78,14 @@ async def get_user_info_menu(message: Message, state: FSMContext):
         user = crud.get_user(user_id=user_id)
 
         if user:
-            unused_predictions = crud.get_unviewed_predictions_count(session, user_id=user_id)
+            unused_predictions = crud.get_unviewed_predictions_count(
+                session,
+                user_id=user_id
+            )
             bot_message = await message.answer(
                 messages.USER_INFO.format(
                     subscription_end=user.subscription_end_date,
+                    birth_datetime=user.birth_datetime,
                     unused_predictions=unused_predictions,
                 ),
                 reply_markup=keyboards.user_info_menu(),
@@ -117,7 +128,6 @@ async def delete_user_subscription(
     callback: CallbackQuery,
     state: FSMContext,
     scheduler,
-    bot: Bot,
 ):
     await state.update_data(
         new_subscription_end_date=datetime.utcnow().strftime(DATETIME_FORMAT)
@@ -134,11 +144,12 @@ async def get_user_subscription_end_date(
     message: Message,
     state: FSMContext,
     scheduler,
-    bot: Bot,
 ):
     await state.update_data(new_subscription_end_date=message.text)
     await change_user_subscription_end_date(
-        message, state, scheduler
+        message,
+        state,
+        scheduler
     )
 
 
@@ -152,22 +163,56 @@ async def change_user_subscription_end_date(
 
     crud.update_subscription_end_date(
         user_id=user_id,
-        date=datetime.strptime(data["new_subscription_end_date"], DATETIME_FORMAT),
+        date=datetime.strptime(
+            data["new_subscription_end_date"],
+            DATETIME_FORMAT
+        )
     )
 
-    with Session() as session:
-        await scheduler.set_all_jobs(user_id=user_id)
-        user = crud.get_user(user_id, session)
+    await scheduler.set_all_jobs(user_id=user_id)
 
-        unused_predictions_count = crud.get_unviewed_predictions_count(session, user_id)
+    await get_user_info_menu(message, state)
 
-    bot_message = await message.answer(
-        messages.CHANGED_SUBSCRIPTION_END_DATE.format(
-            past_sub_end_date=data["past_sub_end_date"],
-            changed_date=user.subscription_end_date,
-            unused_predictions=unused_predictions_count,
-        ),
-        reply_markup=keyboards.user_info_menu(),
+
+@r.callback_query(
+    AdminStates.user_info_menu,
+    F.data == bt.change_user_birth_datetime
+)
+async def change_user_birth_datetime_menu(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+    bot_message = await callback.message.answer(
+        messages.ENTER_USERS_NEW_BIRTH_DATETIME,
+        reply_markup=keyboards.back(),
     )
     await state.update_data(del_messages=[bot_message.message_id])
-    await state.set_state(AdminStates.user_info_menu)
+    await state.set_state(AdminStates.user_get_birth_datetime)
+
+
+@r.message(AdminStates.user_get_birth_datetime, F.text, IsDatetime())
+async def get_user_birth_datetime_date(
+    message: Message,
+    state: FSMContext,
+):
+    await state.update_data(new_user_birth_datetime=message.text)
+    await change_user_birth_datetime(
+        message,
+        state
+    )
+
+
+async def change_user_birth_datetime(
+    message: Message,
+    state: FSMContext,
+):
+    data = await state.get_data()
+    user_id = data["user_id"]
+    new_user_birth_datetime = data["new_user_birth_datetime"]
+
+    crud.update_user(
+        user_id=user_id,
+        birth_datetime=new_user_birth_datetime,
+    )
+
+    await get_user_info_menu(message, state)

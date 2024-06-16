@@ -68,6 +68,7 @@ class AdminStates(StatesGroup):
     get_user_message = State()
     user_info_menu = State()
     user_get_subscription_end_date = State()
+    user_get_birth_datetime = State()
 
     get_card_of_day = State()
 

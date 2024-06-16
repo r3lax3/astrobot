@@ -308,6 +308,7 @@ def user_info_menu():
     return KeyboardBuilder.build(
         [
             [bt.change_user_subscription_end],
+            [bt.change_user_birth_datetime],
             [bt.back_to_adminpanel]
         ],
         is_inline=True
@@ -318,7 +319,7 @@ def change_user_subscription_end():
     return KeyboardBuilder.build(
         [
             [bt.delete_user_subscription],
-            [bt.back_to_adminpanel]
+            [bt.back]
         ],
         is_inline=True
     )

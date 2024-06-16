@@ -18,7 +18,7 @@ class Buttons:
     prediction_for_date = "🕓 Прогноз на дату"
     prediction_for_today = "Прогноз на сегодня"
     daily_prediction = "⌚️ Ежедневный прогноз"
-    day_selection = "✅Подбор дня"
+    day_selection = "✅ Подбор дня"
     check_another_date = "Проверить другую дату"
     # Subscription
     subscription = "🌟Подписка"
@@ -64,6 +64,7 @@ class Buttons:
     delete_user_subscription = "Выключить подписку пользователя"
     general_predictions_add = "Добавление Общих Прогнозов"
     change_user_subscription_end = "Изменить дату окончания подписки"
+    change_user_birth_datetime = "Изменить дату рождения"
     statistics = "Статистика"
     broadcast = "Рассылка"
     # Misc
