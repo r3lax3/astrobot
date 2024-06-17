@@ -348,8 +348,14 @@ async def get_prediction_text(date: datetime, user_id: int) -> str:
     return text
 
 
-def get_formatted_selected_days(category: str, action: str, user: DBUser) -> str:
-    selected_aspects: list[dict] = DAY_SELECTION_DATABASE[category][action]['aspects']
+async def get_formatted_selected_days(
+    category: str,
+    action: str,
+    user: DBUser
+) -> str:
+    selected_aspects: list[dict] = DAY_SELECTION_DATABASE[
+        category
+    ][action]['aspects']
 
     subscription_end = datetime.strptime(
         user.subscription_end_date,
@@ -378,7 +384,7 @@ def get_formatted_selected_days(category: str, action: str, user: DBUser) -> str
             latitude=user.current_location.latitude
         ),
     )
-    astro_events = get_astro_events_from_period_with_duplicates(
+    astro_events = await get_astro_events_from_period_with_duplicates(
         start=start_timepoint,
         finish=end_timepoint,
         user=prediction_user,

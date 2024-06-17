@@ -100,7 +100,11 @@ async def day_selection_get_action(
         )
         sticker_message = await callback.message.answer_sticker(WAIT_STICKER)
 
-        selected_days = get_formatted_selected_days(category, action, user)
+        selected_days = await get_formatted_selected_days(
+            category,
+            action,
+            user
+        )
 
         for msg in [wait_message, sticker_message]:
             try:

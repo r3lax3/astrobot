@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict
 
@@ -159,12 +160,12 @@ def get_astro_events_from_period(
     return unique_sorted_events
 
 
-def get_astro_events_from_period_with_duplicates(
+async def get_astro_events_from_period_with_duplicates(
     start: datetime,
     finish: datetime,
     user: User
 ) -> List[AstroEvent]:
-    step = timedelta(minutes=10)
+    step = timedelta(minutes=13)
     current_time = start
     all_events = []
 
@@ -172,6 +173,7 @@ def get_astro_events_from_period_with_duplicates(
         events_at_current_time = get_astro_event_at_time(current_time, user)
         all_events.extend(events_at_current_time)
         current_time += step
+        await asyncio.sleep(0.001)
 
     unique_events_dict: Dict[(int, int, int), List[List[AstroEvent]]] = {}
     for event in all_events:
