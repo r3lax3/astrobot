@@ -201,13 +201,17 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
     first_half_moon_events = []
     second_half_moon_events = []
     for event in astro_events:
-        interpretation = interpretations_dict[
+        interpretation = interpretations_dict.get(
             (
                 PLANET_ID_TO_NAME_RU[event.natal_planet],
                 PLANET_ID_TO_NAME_RU[event.transit_planet],
                 event.aspect
-            )
-        ]
+            ),
+            None
+        )
+
+        if interpretation is None:
+            continue
 
         # Day events
         if interpretation.general:
