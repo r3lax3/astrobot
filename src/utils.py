@@ -184,6 +184,12 @@ def get_location_by_coords(longitude: float, latitude: float) -> str:
         elif primary:
             return primary
 
+        elif secondary:
+            return secondary
+
+        elif country:
+            return country
+
         else:
             return "Неизвестное местоположение"
 

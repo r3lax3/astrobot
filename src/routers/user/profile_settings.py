@@ -9,8 +9,8 @@ from src.database import crud, Session
 from src.database.models import Location
 from src.database.models import User as DBUser
 from src.enums import Gender, LocationType
-from src.keyboards import keyboards
-from src.keyboard_manager import bt, buttons_text
+from src.keyboards import keyboards, bt
+from src.keyboard_manager import buttons_text
 from src.routers.states import ProfileSettings
 from src.routers.user.main_menu import main_menu
 from src.scheduler import EveryDayPredictionScheduler
@@ -26,6 +26,8 @@ r = Router()
 
 @r.callback_query(ProfileSettings.choose_gender, F.data == bt.back)
 @r.callback_query(ProfileSettings.get_new_name, F.data == bt.back)
+@r.callback_query(ProfileSettings.get_current_location, F.data == bt.back)
+@r.callback_query(ProfileSettings.location_confirm, F.data == bt.decline)
 @r.callback_query(F.data == bt.profile_settings)
 async def profile_settings_menu_callback_handler(
     callback: CallbackQuery,
@@ -63,10 +65,9 @@ async def profile_settings_menu(
 async def change_name(
     callback: CallbackQuery,
     state: FSMContext,
-    database,
     event_from_user: User,
 ):
-    user = database.get_user(event_from_user.id)
+    user = crud.get_user(event_from_user.id)
     bot_message = await callback.message.answer(
         messages.CHANGE_NAME.format(name=user.name),
         reply_markup=keyboards.back()
@@ -108,9 +109,8 @@ async def new_name_is_too_long(message: Message, state: FSMContext):
 async def choose_gender(
     callback: CallbackQuery,
     state: FSMContext,
-    database,
 ):
-    user = database.get_user(user_id=callback.from_user.id)
+    user = crud.get_user(user_id=callback.from_user.id)
 
     if user.gender is not None:
         bot_message = await callback.message.answer(
@@ -131,26 +131,24 @@ async def choose_gender(
 async def gender_is_male(
     callback: CallbackQuery,
     state: FSMContext,
-    database,
 ):
-    database.change_user_gender(
+    crud.change_user_gender(
         gender=Gender.male.value,
         user_id=callback.from_user.id
     )
-    await choose_gender(callback, state, database)
+    await choose_gender(callback, state)
 
 
 @r.callback_query(ProfileSettings.choose_gender, F.data == bt.female)
 async def gender_is_female(
     callback: CallbackQuery,
     state: FSMContext,
-    database,
 ):
-    database.change_user_gender(
+    crud.change_user_gender(
         gender=Gender.female.value,
         user_id=callback.from_user.id
     )
-    await choose_gender(callback, state, database)
+    await choose_gender(callback, state)
 
 
 # Current Location
@@ -170,7 +168,7 @@ async def enter_current_location(message: Message, state: FSMContext):
     if not first_time:
         bot_message = await message.answer(
             messages.ENTER_NEW_CURRENT_LOCATION,
-            reply_markup=keyboards.to_main_menu()
+            reply_markup=keyboards.back()
         )
     else:
         bot_message = await message.answer(messages.ENTER_CURRENT_LOCATION)
@@ -236,7 +234,6 @@ async def get_current_location_not_confirmed(
 async def get_current_location_confirmed(
     callback: CallbackQuery,
     state: FSMContext,
-    database,
     event_from_user: User,
     bot: Bot,
     scheduler: EveryDayPredictionScheduler,
@@ -283,7 +280,9 @@ async def get_current_location_confirmed(
 
             await state.update_data(
                 prediction_access=True,
-                subscription_end_date=test_period_end.strftime(DATETIME_FORMAT),
+                subscription_end_date=test_period_end.strftime(
+                    DATETIME_FORMAT
+                ),
                 timezone_offset=get_timezone_offset(**current_location),
             )
 
@@ -303,9 +302,9 @@ async def get_current_location_confirmed(
                 event_from_user.id,
                 timezone_offset=get_timezone_offset(**current_location)
             )
-            await profile_settings_menu_callback_handler(
-                callback,
+            await scheduler.set_all_jobs(user_id=event_from_user.id)
+            await profile_settings_menu(
+                callback.message,
                 state,
                 event_from_user
             )
-            await scheduler.set_all_jobs(user_id=event_from_user.id)
