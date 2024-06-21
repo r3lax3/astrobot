@@ -7,7 +7,6 @@ from typing import List, Optional
 from datetime import datetime, timedelta, date
 
 from babel.dates import format_date
-from sqlalchemy import lambda_stmt
 
 from src import config, messages
 from src.database import crud
@@ -361,6 +360,10 @@ async def get_formatted_selected_days(
         category
     ][action]['aspects']
 
+    favorably = DAY_SELECTION_DATABASE[
+        category
+    ][action]['favorably']
+
     subscription_end = datetime.strptime(
         user.subscription_end_date,
         DATETIME_FORMAT
@@ -415,13 +418,15 @@ async def get_formatted_selected_days(
 
     return format_astro_events_for_day_selection(
         right_events,
-        user.timezone_offset
+        user.timezone_offset,
+        favorably
     )
 
 
 def format_astro_events_for_day_selection(
     events: list[AstroEvent],
-    timezone_offset: int
+    timezone_offset: int,
+    favorably: bool
 ):
     dates: list[tuple[str, Optional[str]]] = []
     for event in events:
@@ -442,11 +447,12 @@ def format_astro_events_for_day_selection(
 
         dates.append((date_str, half_day))
 
-    return format_dates_list_for_day_selection(dates)
+    return format_dates_list_for_day_selection(dates, favorably)
 
 
 def format_dates_list_for_day_selection(
-    dates: list[tuple[str, Optional[str]]]
+    dates: list[tuple[str, Optional[str]]],
+    favorably: bool
 ) -> str:
     counter = {}
     for target_date, _ in dates:
@@ -463,13 +469,23 @@ def format_dates_list_for_day_selection(
 
     # Формируем результат в зависимости от количества повторений дат
     for target_date, suffix in dates:
-        target_date_datetime = datetime.strptime(target_date, UNIVERSAL_DATE_FORMAT)
+        target_date_datetime = datetime.strptime(
+            target_date,
+            UNIVERSAL_DATE_FORMAT
+        )
 
-        date_str = format_date(target_date_datetime, format='d MMMM', locale='ru')
+        date_str = format_date(
+            target_date_datetime,
+            format='d MMMM',
+            locale='ru'
+        )
 
         if counter[target_date] >= 2:
             if target_date not in completed_dates:
-                result.append(f"🌟{date_str}")
+                if favorably:
+                    result.append(f"🌟{date_str}")
+                else:
+                    result.append(f"{date_str}")
                 completed_dates.append(target_date)
         elif counter[target_date] == 1:
             if suffix:
