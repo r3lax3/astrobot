@@ -11,10 +11,10 @@ from src.database.models import Payment, Promocode, User
 from src.enums import Gender, PaymentStatus
 from src.keyboards import keyboards, bt
 from src.routers.states import AdminStates
-from src.dicts import MONTHS_TO_RUB_PRICE
 
 
 r = Router()
+
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 
 
@@ -104,11 +104,10 @@ async def statistics(callback: CallbackQuery, state: FSMContext):
         total_revenue=total_revenue,
     )
 
-    bot_message = await callback.message.answer(
+    await callback.message.answer(
         text,
         reply_markup=keyboards.back_to_adminpanel()
     )
-    await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.action_end)
 
 

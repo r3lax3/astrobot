@@ -8,7 +8,7 @@ from aiogram.types import CallbackQuery, Message
 from src import config, messages
 from src.enums import GeneralPredictionType
 from src.database import crud
-from src.keyboard_manager import KeyboardManager, bt
+from src.keyboards import keyboards, bt
 from src.routers.states import AdminStates
 
 r = Router()
@@ -50,11 +50,10 @@ PRED_TYPE_TO_EXAMPLE = {
 async def general_predictions_add_menu(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager
 ):
     bot_message = await callback.message.answer(
         messages.CHOOSE_GENERAL_PREDICTION_TYPE,
-        reply_markup=keyboards.choose_general_prediction_type,
+        reply_markup=keyboards.choose_general_prediction_type(),
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.choose_general_prediction_type)
@@ -64,27 +63,26 @@ async def general_predictions_add_menu(
 async def get_general_prediction_date_menu(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager
 ):
     await state.update_data(
-        general_predictions_type=CALLBACK_DATA_TO_GENERAL_PREDICTION_TYPE[callback.data].value
+        general_predictions_type=CALLBACK_DATA_TO_GENERAL_PREDICTION_TYPE[
+            callback.data
+        ].value
     )
-    await enter_general_prediction_date(callback.message, state, keyboards)
+    await enter_general_prediction_date(callback.message, state)
 
 
 @r.callback_query(AdminStates.get_general_prediction_text, F.data == bt.back)
 async def enter_general_prediction_date_callback_handler(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager
 ):
-    await enter_general_prediction_date(callback.message, state, keyboards)
+    await enter_general_prediction_date(callback.message, state)
 
 
 async def enter_general_prediction_date(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager
 ):
     data = await state.get_data()
 
@@ -95,7 +93,7 @@ async def enter_general_prediction_date(
             type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[predictions_type],
             format=PRED_TYPE_TO_EXAMPLE[predictions_type]
         ),
-        reply_markup=keyboards.back,
+        reply_markup=keyboards.back(),
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.get_general_prediction_date)
@@ -105,8 +103,6 @@ async def enter_general_prediction_date(
 async def get_general_prediction_date(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
-    database
 ):
     data = await state.get_data()
 
@@ -130,7 +126,7 @@ async def get_general_prediction_date(
                 type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[prediction_type],
                 format=PRED_TYPE_TO_EXAMPLE[prediction_type],
             ),
-            reply_markup=keyboards.back,
+            reply_markup=keyboards.back(),
         )
         await state.update_data(
             del_messages=[
@@ -153,18 +149,16 @@ async def get_general_prediction_date(
             ).strftime(prediction_format)
 
         await state.update_data(general_prediction_date=formatted_date)
-        await enter_general_prediction_text(message, state, keyboards, database)
+        await enter_general_prediction_text(message, state)
 
 
 async def enter_general_prediction_text(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
-    database
 ):
     data = await state.get_data()
 
-    general_prediction = database.get_general_prediction(
+    general_prediction = crud.get_general_prediction(
         data["general_prediction_date"]
     )
 
@@ -177,7 +171,7 @@ async def enter_general_prediction_text(
                 date=data["general_prediction_date"],
                 text=general_prediction,
             ),
-            reply_markup=keyboards.back,
+            reply_markup=keyboards.back(),
         )
     else:
         bot_message = await message.answer(
@@ -185,7 +179,7 @@ async def enter_general_prediction_text(
                 type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[prediction_type],
                 date=data["general_prediction_date"],
             ),
-            reply_markup=keyboards.back,
+            reply_markup=keyboards.back(),
         )
 
     await state.update_data(del_messages=[bot_message.message_id])
@@ -196,8 +190,6 @@ async def enter_general_prediction_text(
 async def get_general_prediction_text(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
-    database
 ):
     data = await state.get_data()
 
@@ -212,12 +204,16 @@ async def get_general_prediction_text(
             type=GENERAL_PREDICTION_TYPE_TO_READABLE_TYPE[prediction_type],
             date=data["general_prediction_date"],
         ),
-        reply_markup=keyboards.back_to_adminpanel,
+        reply_markup=keyboards.back_to_adminpanel(),
         parse_mode="html",
         disable_web_page_preview=True
     )
     bot_message2 = await message.answer(text)
+
     await state.update_data(
-        del_messages=[bot_message1.message_id, bot_message2.message_id]
+        del_messages=[
+            bot_message1.message_id,
+            bot_message2.message_id
+        ]
     )
     await state.set_state(AdminStates.action_end)

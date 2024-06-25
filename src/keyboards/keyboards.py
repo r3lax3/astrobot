@@ -278,6 +278,7 @@ def adminpanel():
             [bt.add_card_of_day],
             [bt.statistics],
             [bt.broadcast],
+            [bt.main_menu]
         ],
         is_inline=True,
     )

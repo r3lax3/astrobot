@@ -3,9 +3,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, User
 
 from src import config, messages
-from src.database import Database
-from src.keyboard_manager import KeyboardManager, bt
+from src.database import crud
+from src.keyboards import keyboards, bt
 from src.routers.states import AdminStates
+
 
 r = Router()
 
@@ -17,10 +18,10 @@ ADMIN_CHAT_THREAD_CARDS_OF_DAY = config.get("admin_chat.threads.cards_of_day")
 async def add_card_of_day(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager,
 ):
     bot_message = await callback.message.answer(
-        messages.SEND_ME_CARD, reply_markup=keyboards.back_to_adminpanel
+        messages.SEND_ME_CARD,
+        reply_markup=keyboards.back_to_adminpanel()
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(AdminStates.get_card_of_day)
@@ -30,8 +31,6 @@ async def add_card_of_day(
 async def get_card_of_day(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
-    database,
     bot: Bot,
     event_from_user: User,
 ):
@@ -40,20 +39,31 @@ async def get_card_of_day(
     album = data.get("album", None)
     if album:
         for photo_message_id in album:
-            await add_card_of_day(bot, photo_message_id, event_from_user, database)
+            await add_card_of_day_processing(
+                bot,
+                photo_message_id,
+                event_from_user
+            )
 
     else:
         photo_message_id = message.message_id
-        await add_card_of_day(bot, photo_message_id, event_from_user, database)
+        await add_card_of_day_processing(
+            bot,
+            photo_message_id,
+            event_from_user
+        )
 
     bot_message = await message.answer(
-        messages.CARD_OF_DAY_SUCCESSFUL_SAVED, reply_markup=keyboards.back_to_adminpanel
+        messages.CARD_OF_DAY_SUCCESSFUL_SAVED,
+        reply_markup=keyboards.back_to_adminpanel()
     )
     await state.update_data(del_messages=[bot_message.message_id])
 
 
-async def add_card_of_day(
-    bot: Bot, photo_message_id: int, event_from_user: User, database
+async def add_card_of_day_processing(
+    bot: Bot,
+    photo_message_id: int,
+    event_from_user: User,
 ):
     image_resend_message = await bot.copy_message(
         chat_id=ADMIN_CHAT_ID,
@@ -62,4 +72,4 @@ async def add_card_of_day(
         message_id=photo_message_id,
     )
 
-    database.add_card_of_day(message_id=image_resend_message.message_id)
+    crud.add_card_of_day(message_id=image_resend_message.message_id)

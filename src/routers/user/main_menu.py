@@ -57,7 +57,7 @@ async def main_menu(
 
 @r.callback_query(F.data == bt.main_menu, UserInDatabase())
 @r.callback_query(Subscription.period, F.data == bt.back)
-async def to_main_menu_button_handler(
+async def to_main_menu_callback_handler(
     callback: CallbackQuery,
     state: FSMContext,
     bot: Bot

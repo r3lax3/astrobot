@@ -15,7 +15,7 @@ from src.exceptions import NoBroadcastDataError
 
 
 r = Router()
-datetime_format = config.get("database.datetime_format")
+DATETIME_FORMAT = config.get("database.datetime_format")
 
 
 @r.callback_query(AdminStates.choose_action, F.data == bt.broadcast)
@@ -114,7 +114,7 @@ async def sending_distribution_confirmed(
 
     now = datetime.utcnow()
     now_in_Moskow = now + timedelta(hours=3)
-    broadcast_start_date_Moskow = str(now_in_Moskow.strftime(datetime_format))
+    broadcast_start_date_Moskow = str(now_in_Moskow.strftime(DATETIME_FORMAT))
 
     count = await broadcast(
         bot,
@@ -128,7 +128,7 @@ async def sending_distribution_confirmed(
 
     now = datetime.utcnow()
     now_in_Moskow = now + timedelta(hours=3)
-    broadcast_end_date_Moskow = str(now_in_Moskow.strftime(datetime_format))
+    broadcast_end_date_Moskow = str(now_in_Moskow.strftime(DATETIME_FORMAT))
 
     await callback.message.answer(
         text=messages.BROADCAST_STATISTIC.format(
@@ -198,9 +198,9 @@ async def broadcast(
                 text
             ):
                 successes_count += 1
-            await asyncio.sleep(
-                0.1
-            )  # 10 messages per second (Limit: 30 messages per second)
+
+            # 10 messages per second (Limit: 30 messages per second)
+            await asyncio.sleep(0.1)
 
     finally:
         logging.info(f"{successes_count} messages successful sent.")

@@ -117,7 +117,7 @@ async def day_selection_get_action(
                 bot_message = await callback.message.answer(
                     messages.DAY_SELECTION_SUCCESS_FAVORABLY.format(
                         name=user.name,
-                        action=action,
+                        action=action.upper(),
                         selected_days=selected_days
                     ),
                     reply_markup=keyboards.day_selection_success()
@@ -126,7 +126,7 @@ async def day_selection_get_action(
                 bot_message = await callback.message.answer(
                     messages.DAY_SELECTION_SUCCESS_UNFAVORABLY.format(
                         name=user.name,
-                        action=action,
+                        action=action.upper(),
                         selected_days=selected_days
                     ),
                     reply_markup=keyboards.day_selection_success()
