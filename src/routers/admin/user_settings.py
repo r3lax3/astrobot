@@ -4,6 +4,7 @@ from typing import List
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from aiogram.enums import MessageOriginType
 
 from src import config, messages
 from src.database import crud, Session
@@ -42,8 +43,16 @@ async def user_settings_menu(callback: CallbackQuery, state: FSMContext):
     await state.set_state(AdminStates.get_user_message)
 
 
-@r.message(AdminStates.get_user_message, F.forward_from)
-@r.message(AdminStates.user_info_menu, F.forward_from)
+@r.message(
+    AdminStates.get_user_message,
+    F.forward_origin,
+    F.forward_origin.type == MessageOriginType.USER
+)
+@r.message(
+    AdminStates.user_info_menu,
+    F.forward_origin,
+    F.forward_origin.type == MessageOriginType.USER
+)
 async def get_user_message(message: Message, state: FSMContext):
     await state.update_data(user_id=message.forward_from.id)
     await get_user_info_menu(message, state)
@@ -54,6 +63,24 @@ async def get_user_message(message: Message, state: FSMContext):
 async def get_user_id_from_message(message: Message, state: FSMContext):
     await state.update_data(user_id=int(message.text))
     await get_user_info_menu(message, state)
+
+
+@r.message(
+    AdminStates.get_user_message,
+    F.forward_origin,
+    F.forward_origin.type == MessageOriginType.HIDDEN_USER
+)
+@r.message(
+    AdminStates.user_info_menu,
+    F.forward_origin,
+    F.forward_origin.type == MessageOriginType.HIDDEN_USER
+)
+async def get_user_id_hidden_user_error(message: Message, state: FSMContext):
+    bot_message = await message.answer(
+        messages.GET_USER_ID_HIDDEN_USER_ERROR,
+        reply_markup=keyboards.back_to_adminpanel()
+    )
+    await state.update_data(del_messages=[bot_message.message_id])
 
 
 @r.callback_query(
