@@ -1,4 +1,3 @@
-import datetime as dt
 from datetime import datetime, timedelta
 
 from aiogram import Bot, F, Router, exceptions
@@ -6,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import BufferedInputFile, CallbackQuery, Message, User
 
 from src import config, messages
+from src.database import crud
 from src.enums import FileName
 from src.filters import HaveActiveSubscription
 from src.image_processing import get_image_with_astrodata
@@ -32,13 +32,11 @@ r = Router()
 async def get_prediction_callback_redirect(
     callback: CallbackQuery,
     state: FSMContext,
-    database,
     event_from_user: User,
 ):
     await get_prediction(
         callback.message,
         state,
-        database,
         event_from_user
     )
 
@@ -48,22 +46,23 @@ async def get_prediction_callback_redirect(
 async def get_prediction(
     message: Message,
     state: FSMContext,
-    database,
     event_from_user: User,
 ):
-    user = database.get_user(user_id=event_from_user.id)
+    user = crud.get_user(user_id=event_from_user.id)
 
     bot_message = await message.answer_photo(
         photo=PREDICTION_MENU_IMAGE,
         caption=messages.PREDICTION_DESCR,
         reply_markup=keyboards.predict_choose_action()
     )
-    await state.set_state(MainMenu.prediction_choose_action)
     await state.update_data(
         prediction_access=True,
         subscription_end_date=user.subscription_end_date,
         del_messages=[bot_message.message_id],
+        timezone_offset=user.timezone_offset
     )
+
+    await state.set_state(MainMenu.prediction_choose_action)
 
 
 @r.callback_query(MainMenu.prediction_end, F.data == bt.check_another_date)
@@ -83,9 +82,12 @@ async def prediction_on_date(
     state: FSMContext
 ):
     data = await state.get_data()
-    today = dt.datetime.utcnow().date() + timedelta(hours=data["timezone_offset"])
+    now = datetime.utcnow() + timedelta(hours=data["timezone_offset"])
+    today = now.date()
+
     await state.update_data(
-        date=today.strftime(DATE_FORMAT), today=today.strftime(DATE_FORMAT)
+        date=today.strftime(DATE_FORMAT),
+        today=today.strftime(DATE_FORMAT)
     )
     await update_prediction_date(message, state)
 
