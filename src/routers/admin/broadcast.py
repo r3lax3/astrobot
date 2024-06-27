@@ -38,7 +38,7 @@ async def get_distribution_message_with_photo(
     state: FSMContext
 ):
     photo_file_id = message.photo[-1].file_id
-    text = message.caption
+    text = message.html_text
 
     del_message1 = await message.answer_photo(
         photo=photo_file_id,
@@ -66,7 +66,7 @@ async def get_distribution_message_with_text(
     message: Message,
     state: FSMContext
 ):
-    del_message1 = await message.answer(message.text)
+    del_message1 = await message.answer(message.html_text)
     del_message2 = await message.answer(
         messages.BROADCAST_MSG_CONFIRM,
         reply_markup=keyboards.confirm()
