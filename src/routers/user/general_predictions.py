@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery, Message
 from src import config, messages
 from src.enums import GeneralPredictionType
 from src.database import Database
-from src.keyboard_manager import KeyboardManager, bt
+from src.keyboards import keyboards, bt
 from src.routers.states import MainMenu
 
 
@@ -34,49 +34,37 @@ PRED_TYPE_TO_DATE_FMT = {
 @r.callback_query(F.data == bt.general_predictions)
 async def general_predictions_menu_callback_handler(
     callback: CallbackQuery,
-    state: FSMContext,
-    keyboards: KeyboardManager
+    state: FSMContext
 ):
-    await general_predictions_menu(callback.message, state, keyboards)
+    await general_predictions_menu(callback.message, state)
 
 
 @r.message(F.text, F.text == bt.general_predictions)
-async def general_predictions_menu(
-    message: Message,
-    state: FSMContext,
-    keyboards: KeyboardManager
-):
+async def general_predictions_menu(message: Message, state: FSMContext):
     bot_message = await message.answer_photo(
         photo=GENERAL_PREDICTION_IMAGE,
         caption=messages.USER_CHOOSE_GENERAL_PREDICTION_TYPE,
-        reply_markup=keyboards.user_gen_pred_type,
+        reply_markup=keyboards.user_gen_pred_type(),
     )
     await state.update_data(del_messages=[bot_message.message_id])
     await state.set_state(MainMenu.general_predictions_get_type)
 
 
 @r.callback_query(MainMenu.general_predictions_get_type)
-async def get_prediction_type(
-    callback: CallbackQuery,
-    state: FSMContext,
-    keyboards: KeyboardManager,
-    database,
-):
+async def get_prediction_type(callback: CallbackQuery, state: FSMContext):
     prediction_type = CALLBACK_DATA_TO_GENERAL_PREDICTION_TYPE[callback.data]
     format = PRED_TYPE_TO_DATE_FMT[prediction_type]
 
     date_str = datetime.now().strftime(format)
-    prediction_text = database.get_general_prediction(date_str)
+    prediction_text = crud.get_general_prediction(date_str)
 
     if prediction_text is None:
         prediction_text = messages.GENERAL_PREDICTION_NOT_ADDED
 
-    await callback.message.answer_photo(
-        photo=GENERAL_PREDICTION_IMAGE
-    )
+    await callback.message.answer_photo(photo=GENERAL_PREDICTION_IMAGE)
     bot_message = await callback.message.answer(
         text=prediction_text,
-        reply_markup=keyboards.to_main_menu,
+        reply_markup=keyboards.to_main_menu(),
         parse_mode='html',
         disable_web_page_preview=True
     )
