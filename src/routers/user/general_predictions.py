@@ -6,7 +6,7 @@ from aiogram.types import CallbackQuery, Message
 
 from src import config, messages
 from src.enums import GeneralPredictionType
-from src.database import Database
+from src.database import crud
 from src.keyboards import keyboards, bt
 from src.routers.states import MainMenu
 
