@@ -11,4 +11,4 @@ DATETIME_FORMAT = config.get("database.datetime_format")
 DATE_FORMAT = config.get("database.date_format")
 TIME_FORMAT = config.get("database.time_format")
 
-HOURS_TIMEZONE_OFFSET = 3
+HOURS_TIMEZONE_OFFSET = 6

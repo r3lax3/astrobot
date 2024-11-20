@@ -12,6 +12,9 @@ LUNAR_DAYS_DATA_FILEPATH = "tests/data/lunar_days.txt"
 def test_getting_lunar_day_transitions(user):
     start, end = current_month_period()
 
+    start = start - timedelta(days=30)
+    end = end - timedelta(days=30)
+
     with open(LUNAR_DAYS_DATA_FILEPATH, "w") as file:
         items = []
         tz_offset = timedelta(hours=HOURS_TIMEZONE_OFFSET)
@@ -25,8 +28,8 @@ def test_getting_lunar_day_transitions(user):
                 user.current_location.latitude
             )
 
-            day_start = (lunar_day.start + tz_offset).strftime('%m.%d %H:%M')
-            day_end = (lunar_day.start + tz_offset).strftime('%m.%d %H:%M')
+            day_start = (lunar_day.start + tz_offset).strftime('%d.%m %H:%M')
+            day_end = (lunar_day.end + tz_offset).strftime('%d.%m %H:%M')
 
             day_number = f"{lunar_day.number:02}"
 

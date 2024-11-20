@@ -6,8 +6,7 @@ from unittest.mock import Mock
 from src import config
 from src.astro_engine.models import User as AstroUser
 from src.astro_engine.models import Location
-
-from tests.common import MOSKOW_LOCATION
+from src.enums import Gender
 
 
 DATETIME_FORMAT = "%d.%m.%Y %H:%M"
@@ -21,17 +20,34 @@ HOURS_TIMEZONE_OFFSET = 3
 MARIA_BIRTH_LOCATION = Location(longitude=37.817485, latitude=47.986848)
 MARIA_CURRENT_LOCATION = Location(longitude=37.515761, latitude=55.799727)
 
+MARIA_BIRTH_LOCATION = Location(longitude=37.817485, latitude=47.986848)
+MARIA_CURRENT_LOCATION = Location(longitude=37.515761, latitude=55.799727)
+MARIA_BIRTH_DATE = "15.11.1979 05:15"
+
+KUSTANAI_USER_BIRTH_LOCATION = Location(longitude=73.120822, latitude=49.706675)
+KUSTANAI_USER_CURRENT_LOCATION = Location(longitude=63.621288, latitude=53.202808)
+KUSTANAI_USER_BIRTH_DATE = "24.11.1975 14:26"
+
 
 @pytest.fixture
 def user():
     user = Mock()
 
-    user.timezone_offset = HOURS_TIMEZONE_OFFSET
-    user.current_location = MARIA_CURRENT_LOCATION
-    user.current_location_id = 1
-    user.birth_location = MARIA_BIRTH_LOCATION
+    user.user_id = 824820503
+    user.name = "Мария"
+
+    user.birth_datetime = MARIA_BIRTH_DATE
+
     user.birth_location_id = 2
-    user.birth_datetime = "15.11.1979 05:15"
+    user.birth_location = MARIA_BIRTH_LOCATION
+
+    user.current_location_id = 1
+    user.current_location = MARIA_CURRENT_LOCATION
+
+    user.timezone_offset = HOURS_TIMEZONE_OFFSET
+
+    user.subscription_end_date = "31.12.2026 12:00"
+    user.gender = Gender.female.value
 
     return user
 

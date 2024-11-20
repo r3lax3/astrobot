@@ -31,8 +31,10 @@ def get_interpretations_dict():
         newline="",
         encoding="utf-8"
     ) as file:
+
         interpretations = [row for row in csv.reader(file)]
         interpretations_dict = {}
+
         for interpretation in interpretations:
             interpretation[2] = int(interpretation[2])
 
@@ -397,6 +399,22 @@ async def get_formatted_selected_days(
         user=prediction_user,
     )
 
+    right_events = remove_duplicates_from_astro_events(
+        astro_events,
+        selected_aspects
+    )
+
+    return format_astro_events_for_day_selection(
+        right_events,
+        user.timezone_offset,
+        favorably
+    )
+
+
+def remove_duplicates_from_astro_events(
+    astro_events,
+    selected_aspects
+):
     right_events = []
     for astro_event in astro_events:
         astro_event_natal_planet = SWISSEPH_PLANET_TO_UNIVERSAL_PLANET[
@@ -415,12 +433,8 @@ async def get_formatted_selected_days(
                 for degree in aspect_group["degrees"]:
                     if astro_event.aspect == degree:
                         right_events.append(astro_event)
+    return right_events
 
-    return format_astro_events_for_day_selection(
-        right_events,
-        user.timezone_offset,
-        favorably
-    )
 
 
 def format_astro_events_for_day_selection(
@@ -433,15 +447,15 @@ def format_astro_events_for_day_selection(
         local_peak_time = event.peak_at + timedelta(hours=timezone_offset)
         target_date = local_peak_time.date()
 
-        if local_peak_time.hour < 4:
-            target_date -= timedelta(days=1)
-
         half_day = None
         if event.transit_planet == SwissEphPlanet.MOON:
-            if local_peak_time.hour >= 12:
-                half_day = "(вторая половина дня)"
-            else:
+            if 4 >= local_peak_time.hour >= 12:
                 half_day = "(первая половина дня)"
+            else:
+                half_day = "(вторая половина дня)"
+
+        if local_peak_time.hour < 4:
+            target_date -= timedelta(days=1)
 
         date_str = target_date.strftime(UNIVERSAL_DATE_FORMAT)
 
