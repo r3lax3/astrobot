@@ -2,6 +2,7 @@ from sqlalchemy import Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.types import Boolean
 
+
 Base = declarative_base()
 
 
@@ -10,17 +11,25 @@ class User(Base):
 
     user_id = Column(Integer, primary_key=True)
     name = Column(String)
+
     birth_datetime = Column(String)  # "%d.%m.%Y %H:%M" as default
+
     birth_location_id = Column(Integer, ForeignKey("locations.id"))
+    birth_location = relationship("Location", foreign_keys=[birth_location_id])
+
     current_location_id = Column(Integer, ForeignKey("locations.id"))
+    current_location = relationship("Location", foreign_keys=[current_location_id])
+
     every_day_prediction_time = Column(String)  # "%H:%M" as default
+
     subscription_end_date = Column(String)
+
     gender = Column(String)
+
     timezone_offset = Column(Integer)
+
     last_card_update = Column(String)
     card_message_id = Column(Integer)
-    birth_location = relationship("Location", foreign_keys=[birth_location_id])
-    current_location = relationship("Location", foreign_keys=[current_location_id])
 
 
 class Location(Base):

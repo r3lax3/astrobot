@@ -58,10 +58,20 @@ def get_moon_phase_caption(
     """
     utcdate = datetime(utcdate.year, utcdate.month, utcdate.day)
 
-    current_lunar_day = get_main_lunar_day_at_date(utcdate, longitude, latitude)
-    next_lunar_day = get_next_lunar_day(current_lunar_day, longitude, latitude)
+    current_lunar_day = get_main_lunar_day_at_date(
+        utcdate,
+        longitude,
+        latitude
+    )
+    next_lunar_day = get_next_lunar_day(
+        current_lunar_day,
+        longitude,
+        latitude
+    )
 
-    next_lunar_day_start = next_lunar_day.start + timedelta(hours=timezone_offset)
+    next_lunar_day_start = next_lunar_day.start + timedelta(
+        hours=timezone_offset
+    )
     next_lunar_day_start_time_str = next_lunar_day_start.strftime(TIME_FORMAT)
 
     if utcdate.day != next_lunar_day_start.day:
@@ -70,7 +80,10 @@ def get_moon_phase_caption(
         next_lunar_day_start_str = next_lunar_day_start_time_str
 
     moon_phase = get_moon_phase(utcdate, longitude, latitude)
-    moon_phase_str = MOON_PHASE_RU_TRANSLATIONS.get(moon_phase, "Неизвестная фаза")
+    moon_phase_str = MOON_PHASE_RU_TRANSLATIONS.get(
+        moon_phase,
+        "Неизвестная фаза"
+    )
 
     text = messages.MOON_PHASE_CAPTION.format(
         current_lunar_day_number=current_lunar_day.number,
@@ -78,10 +91,6 @@ def get_moon_phase_caption(
         next_lunar_day_start=next_lunar_day_start_str,
         next_lunar_day_number=next_lunar_day.number,
     )
-
-    LOGGER.info('Astrodata')
-    LOGGER.info(f'{utcdate = }')
-    LOGGER.info(f'{next_lunar_day_start = }')
 
     return text
 

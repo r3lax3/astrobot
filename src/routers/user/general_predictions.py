@@ -24,6 +24,7 @@ CALLBACK_DATA_TO_GENERAL_PREDICTION_TYPE = {
     bt.prediction_on_day: GeneralPredictionType.day,
     bt.prediction_on_month: GeneralPredictionType.month
 }
+
 PRED_TYPE_TO_DATE_FMT = {
     GeneralPredictionType.day: DATE_FORMAT,
     GeneralPredictionType.month: MONTH_FORMAT,
