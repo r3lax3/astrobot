@@ -45,7 +45,8 @@ DO_BACKUP = config.get('database.do_backup')
 async def on_startup(bot: Bot, scheduler: EveryDayPredictionScheduler) -> None:
     await bot.set_webhook(
         f"{BASE_WEBHOOK_PATH}/bot",
-        allowed_updates=['message', 'callback_query']
+        allowed_updates=['message', 'callback_query'],
+        drop_pending_updates=True
     )
     scheduler.start()
     await scheduler.check_users_and_schedule()
