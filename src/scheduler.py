@@ -45,7 +45,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             trigger,
             misfire_grace_time=100000,
             max_instances=100000,
-            id=self._task_id_to_str(task_id),
+            id=task_id,
             **kwargs
         )
 
@@ -140,7 +140,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         self.add_task(
             self.send_message,
             "cron",
-            str(user_id),
+            f"prediction_{user_id}",
             hour=time.hour,
             minute=time.minute,
             args=[user_id, session],
@@ -173,7 +173,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                 self.add_task(
                     self.send_renewal_reminder,
                     "date",
-                    f"reminder_{user_id}_{hours_before_end}",
+                    f"reminder{hours_before_end}_{user_id}",
                       run_date=reminder_time,
                     args=[user.user_id],
                     timezone=timezone_str,
@@ -181,10 +181,10 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
     async def delete_reminder_jobs(self, user_id: int):
         for hours_before_end in REMINDER_TIMES:
-            self.remove_task(f"reminder_{user_id}_{hours_before_end}")
+            self.remove_task(f"reminder{hours_before_end}_{user_id}")
 
     async def delete_send_message_job(self, user_id: int):
-        self.remove_task(str(user_id))
+        self.remove_task(f"prediction_{user_id}")
 
     async def remove_task(self, task_id: str):
         try:
