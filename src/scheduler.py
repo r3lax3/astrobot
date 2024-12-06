@@ -6,7 +6,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Union
 
-from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
 
 from aiogram.types import BufferedInputFile
@@ -21,6 +20,7 @@ from src.image_processing import get_image_with_astrodata
 from src.routers.user.prediction.text_formatting import get_prediction_text
 from src.utils import get_timezone_str_from_offset, format_time_delta
 from src.keyboards import keyboards
+from src.common import bot
 
 
 LOGGER = logging.getLogger(__name__)
@@ -38,12 +38,6 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     Scheduler to manage daily prediction messages and subscription
     renewal reminders.
     """
-
-    def __init__(self, bot: Bot):
-        super().__init__()
-
-        self.bot = bot
-
     def _task_id_str(self, task_id: TaskID) -> str:
         """
         Convert a task ID into a string format suitable for the scheduler.
@@ -70,7 +64,6 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         try:
             self.remove_job(job_id=self._task_id_str(task_id))
         except JobLookupError:
-            # Если задача не найдена, не делать ничего
             pass
 
     async def set_all_jobs(self, user_id: int):
@@ -183,7 +176,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         now = datetime.now(pytz.timezone(timezone_str))
         delta = job.next_run_time - now
 
-        LOGGER.info(f'До отправки {format_time_delta(delta)}')
+        # LOGGER.info(f'До отправки {format_time_delta(delta)}')
 
     async def add_reminder_jobs(self, user: User):
         subscription_end_datetime = datetime.strptime(

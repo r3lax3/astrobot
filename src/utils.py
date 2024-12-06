@@ -214,7 +214,7 @@ def logger_settings():
         handlers=[logging.StreamHandler(sys.stdout)],
         encoding="utf-8"
     )
-    logging.getLogger('apscheduler').setLevel(logging.INFO)
+    logging.getLogger('apscheduler').setLevel(logging.WARNING)
     logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
 
 
