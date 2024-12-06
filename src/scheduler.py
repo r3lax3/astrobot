@@ -51,10 +51,10 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
     async def set_all_jobs(self, user_id: int):
         await self.delete_reminder_jobs(user_id)
-        await self.delete_send_message_job(user_id)
+        await self.delete_send_prediction_job(user_id)
 
         with Session() as session:
-            await self.add_send_message_job(user_id, session)
+            await self.add_send_prediction_job(user_id, session)
             await self.add_reminder_jobs(user_id, session)
 
     async def check_users_and_schedule(self):
@@ -128,7 +128,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             reply_markup=keyboards.main_menu()
         )
 
-    async def add_send_message_job(self, user_id: int, session: Session):
+    async def add_send_prediction_job(self, user_id: int, session: Session):
         """
         Add daily prediction and renewal reminder tasks for a user.
         """
@@ -174,17 +174,17 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                     self.send_renewal_reminder,
                     "date",
                     f"reminder{hours_before_end}_{user_id}",
-                      run_date=reminder_time,
+                    run_date=reminder_time,
                     args=[user.user_id],
                     timezone=timezone_str,
                 )
 
     async def delete_reminder_jobs(self, user_id: int):
         for hours_before_end in REMINDER_TIMES:
-            self.remove_task(f"reminder{hours_before_end}_{user_id}")
+            await self.remove_task(f"reminder{hours_before_end}_{user_id}")
 
-    async def delete_send_message_job(self, user_id: int):
-        self.remove_task(f"prediction_{user_id}")
+    async def delete_send_prediction_job(self, user_id: int):
+        await self.remove_task(f"prediction_{user_id}")
 
     async def remove_task(self, task_id: str):
         try:
