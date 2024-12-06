@@ -60,9 +60,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     async def check_users_and_schedule(self):
         with Session() as session:
             rows = session.query(User.user_id).all()
-
             user_ids = [row[0] for row in rows]
-
 
             if user_ids:
                 for user_id in tqdm(user_ids, desc="Scheduling Jobs"):
@@ -183,7 +181,14 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
     async def delete_reminder_jobs(self, user_id: int):
         for hours_before_end in REMINDER_TIMES:
-            self.remove_job(f"reminder_{user_id}_{hours_before_end}")
+            self.remove_task(f"reminder_{user_id}_{hours_before_end}")
 
     async def delete_send_message_job(self, user_id: int):
-        self.remove_job(str(user_id))
+        self.remove_task(str(user_id))
+
+    async def remove_task(self, task_id: str):
+        try:
+            self.remove_job(task_id)
+
+        except Exception:
+            pass
