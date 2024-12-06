@@ -60,7 +60,7 @@ async def on_shutdown(bot: Bot):
 
 
 def main():
-    scheduler = EveryDayPredictionScheduler(bot)
+    scheduler = EveryDayPredictionScheduler()
 
     dp = Dispatcher(
         storage=RedisStorage.from_url('redis://localhost:6379'),
