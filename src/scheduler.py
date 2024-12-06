@@ -190,5 +190,5 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         try:
             self.remove_job(task_id)
 
-        except Exception:
+        except JobLookupError:
             pass
