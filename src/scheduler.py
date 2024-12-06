@@ -1,6 +1,7 @@
 from tqdm import tqdm
 
 import logging
+import asyncio
 
 from datetime import datetime, timedelta
 
@@ -35,6 +36,10 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     Scheduler to manage daily prediction messages and subscription
     renewal reminders.
     """
+
+    def __init__(self, max_concurrent_tasks: int = 3):
+        super().__init__()
+        self.semaphore = asyncio.Semaphore(max_concurrent_tasks)
 
     def add_task(self, function, trigger, task_id: str, **kwargs):
         """
@@ -71,51 +76,56 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     async def send_message(self, user_id: int, session: Session):
         """Send the daily prediction message to a user."""
 
-        user = crud.get_user(user_id=user_id, session=session)
+        async with self.semaphore:  # Limit concurrent executions
+            try:
+                user = crud.get_user(user_id=user_id, session=session)
 
-        utc_target_date = datetime.utcnow()
-        target_datetime = utc_target_date + timedelta(
-            hours=user.timezone_offset
-        )
-        target_date = target_datetime.date()
-
-        photo_bytes = await get_image_with_astrodata(user)
-
-        photo = BufferedInputFile(
-            file=photo_bytes,
-            filename=FileName.PREDICTION.value
-        )
-
-        subscription_end_datetime = datetime.strptime(
-            user.subscription_end_date,
-            DATETIME_FORMAT
-        )
-        try:
-            await bot.send_photo(
-                chat_id=user_id,
-                photo=photo,
-                reply_markup=keyboards.main_menu()
-            )
-
-            if datetime.utcnow() < subscription_end_datetime:
-                text = await get_prediction_text(
-                    date=target_date,
-                    user_id=user_id
+                utc_target_date = datetime.utcnow()
+                target_datetime = utc_target_date + timedelta(
+                    hours=user.timezone_offset
                 )
-                await bot.send_message(
-                    chat_id=user_id,
-                    text=text,
-                    reply_markup=keyboards.main_menu()
+                target_date = target_datetime.date()
+
+                photo_bytes = await get_image_with_astrodata(user)
+
+                photo = BufferedInputFile(
+                    file=photo_bytes,
+                    filename=FileName.PREDICTION.value
                 )
 
-        except TelegramForbiddenError:
-            LOGGER.info(f'User {user.name} blocked bot')
+                subscription_end_datetime = datetime.strptime(
+                    user.subscription_end_date,
+                    DATETIME_FORMAT
+                )
+                try:
+                    await bot.send_photo(
+                        chat_id=user_id,
+                        photo=photo,
+                        reply_markup=keyboards.main_menu()
+                    )
 
-        else:
-            LOGGER.info(
-                f'User {user.name} getted every day prediction '
-                f'at {target_datetime.strftime(DATETIME_FORMAT)}'
-            )
+                    if datetime.utcnow() < subscription_end_datetime:
+                        text = await get_prediction_text(
+                            date=target_date,
+                            user_id=user_id
+                        )
+                        await bot.send_message(
+                            chat_id=user_id,
+                            text=text,
+                            reply_markup=keyboards.main_menu()
+                        )
+
+                except TelegramForbiddenError:
+                    LOGGER.info(f'User {user.name} blocked bot')
+
+                else:
+                    LOGGER.info(
+                        f'User {user.name} getted every day prediction '
+                        f'at {target_datetime.strftime(DATETIME_FORMAT)}'
+                    )
+
+            except Exception as e:
+                LOGGER.error(f"Error sending message to user {user_id}: {e}")
 
     async def send_renewal_reminder(self, user_id: int):
         """
