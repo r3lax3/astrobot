@@ -71,7 +71,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     async def send_message(self, user_id: int, session: Session):
         """Send the daily prediction message to a user."""
 
-        user = crud.get_user(user_id=user.user_id, session=session)
+        user = crud.get_user(user_id=user_id, session=session)
 
         utc_target_date = datetime.utcnow()
         target_datetime = utc_target_date + timedelta(
