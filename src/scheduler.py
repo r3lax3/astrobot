@@ -59,7 +59,10 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
     async def check_users_and_schedule(self):
         with Session() as session:
-            user_ids = session.query(User.user_id).all()
+            rows = session.query(User.user_id).all()
+
+            user_ids = [row[0] for row in rows]
+
 
             if user_ids:
                 for user_id in tqdm(user_ids, desc="Scheduling Jobs"):
