@@ -36,7 +36,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     renewal reminders.
     """
 
-    def add_task(self, function, trigger, task_id: TaskID, **kwargs):
+    def add_task(self, function, trigger, task_id: str, **kwargs):
         """
         Add a new task to the scheduler using the provided details.
         """
@@ -48,14 +48,6 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             id=self._task_id_to_str(task_id),
             **kwargs
         )
-
-    def remove_task(self, task_id: TaskID):
-        """Remove an existing task using its ID."""
-        try:
-            self.remove_job(job_id=self._task_id_to_str(task_id))
-
-        except JobLookupError:
-            pass
 
     async def set_all_jobs(self, user_id: int):
         await self.delete_reminder_jobs(user_id)
@@ -188,7 +180,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
     async def delete_reminder_jobs(self, user_id: int):
         for hours_before_end in REMINDER_TIMES:
-            self.remove_task(f"reminder_{user_id}_{hours_before_end}")
+            self.remove_job(f"reminder_{user_id}_{hours_before_end}")
 
     async def delete_send_message_job(self, user_id: int):
-        self.remove_task(str(user_id))
+        self.remove_job(str(user_id))
