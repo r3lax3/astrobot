@@ -132,7 +132,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
         Send a reminder to the user that their subscription is
         about to end.
         """
-        await self.bot.send_message(
+        await bot.send_message(
             chat_id=user_id,
             text=messages.RENEW_SUBSCRIPTION_REMIND,
             reply_markup=keyboards.main_menu()
