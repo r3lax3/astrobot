@@ -25,7 +25,11 @@ DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
 
 # Initialize the engine
-engine = create_engine("sqlite:///database.db", pool_size=10, max_overflow=20)
+engine = create_engine(
+    "sqlite:///database.db",
+    pool_size=100,
+    max_overflow=200
+)
 
 # Create tables in the database
 Base.metadata.create_all(engine)
@@ -76,10 +80,12 @@ class Database:
                 # Сохранить изменения
                 session.commit()
                 return True
+
             except IntegrityError:
                 logging.error("Ошибка целостности данных при обновлении пользователя.")
                 session.rollback()
                 return False
+
             except Exception as e:
                 logging.error(f"Ошибка при обновлении пользователя: {e}")
                 session.rollback()
@@ -118,7 +124,8 @@ class Database:
                 logging.info(f"User with ID {user_id} not found.")
 
     def update_user_card_of_day(
-        self, user_id: int, card_message_id: int, card_update_time: str
+        self,
+        user_id: int, card_message_id: int, card_update_time: str
     ):
         with Session() as session:
             user = session.query(User).filter_by(user_id=user_id).first()
