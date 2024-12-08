@@ -11,8 +11,13 @@ from aiogram.types import BufferedInputFile
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from sqlalchemy.orm import scoped_session
+
 from src import config, messages
-from src.database import Session, crud
+from src.database import (
+    Session as MainSession,
+    crud
+)
 from src.database.models import User
 from src.enums import FileName
 from src.image_processing import get_image_with_astrodata
@@ -29,6 +34,8 @@ DATE_FORMAT: str = config.get("database.date_format")
 TIME_FORMAT: str = config.get("database.time_format")
 
 REMINDER_TIMES = [36, 12]
+
+Session = scoped_session(MainSession)
 
 
 class EveryDayPredictionScheduler(AsyncIOScheduler):

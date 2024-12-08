@@ -27,8 +27,8 @@ DATE_FORMAT: str = config.get("database.date_format")
 # Initialize the engine
 engine = create_engine(
     "sqlite:///database.db",
-    pool_size=100,
-    max_overflow=200
+    pool_size=200,
+    max_overflow=100
 )
 
 # Create tables in the database
