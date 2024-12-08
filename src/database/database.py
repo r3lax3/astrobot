@@ -25,11 +25,7 @@ DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
 
 # Initialize the engine
-engine = create_engine(
-    "sqlite:///database.db",
-    pool_size=200,
-    max_overflow=100
-)
+engine = create_engine("sqlite:///database.db")
 
 # Create tables in the database
 Base.metadata.create_all(engine)
