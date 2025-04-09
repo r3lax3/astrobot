@@ -3,11 +3,16 @@ from tqdm import tqdm
 import logging
 import asyncio
 
+from typing import Optional, Union
 from datetime import datetime, timedelta
 
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import (
+    TelegramForbiddenError,
+    TelegramRetryAfter,
+    TelegramAPIError
+)
+from aiogram.types import BufferedInputFile, ReplyKeyboardMarkup, InlineKeyboardMarkup
 
-from aiogram.types import BufferedInputFile
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -22,7 +27,7 @@ from src.database.models import User
 from src.enums import FileName
 from src.image_processing import get_image_with_astrodata
 from src.routers.user.prediction.text_formatting import get_prediction_text
-from src.utils import get_timezone_str_from_offset, format_time_delta
+from src.utils import get_timezone_str_from_offset
 from src.keyboards import keyboards
 from src.common import bot
 
@@ -37,6 +42,41 @@ REMINDER_TIMES = [36, 12]
 
 Session = scoped_session(MainSession)
 
+def retry(retries=3, delay=1):
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            for attempt in range(retries + 1):
+                try:
+                    return await func(*args, **kwargs)
+                except Exception as e:
+                    if attempt < retries:
+                        await asyncio.sleep(delay)
+                    else:
+                        raise e
+        return wrapper
+    return decorator
+
+
+@retry(retries=3, delay=1)
+async def send_message_with_retry(
+    chat_id: int,
+    text: str,
+    reply_markup: Optional[Union[InlineKeyboardMarkup, ReplyKeyboardMarkup]] = None
+):
+    try:
+        await bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_markup=reply_markup
+        )
+
+    except TelegramRetryAfter as e:
+        await asyncio.sleep(e.retry_after)
+        raise
+
+    except TelegramAPIError:
+        raise
+
 
 class EveryDayPredictionScheduler(AsyncIOScheduler):
     """
@@ -44,7 +84,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
     renewal reminders.
     """
 
-    def __init__(self, max_concurrent_tasks: int = 3):
+    def __init__(self, max_concurrent_tasks: int = 5):
         super().__init__()
         self.semaphore = asyncio.Semaphore(max_concurrent_tasks)
 
@@ -104,6 +144,7 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                     user.subscription_end_date,
                     DATETIME_FORMAT
                 )
+
                 try:
                     await bot.send_photo(
                         chat_id=user_id,
@@ -116,22 +157,29 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
                             date=target_date,
                             user_id=user_id
                         )
-                        await bot.send_message(
+                        await send_message_with_retry(
                             chat_id=user_id,
                             text=text,
                             reply_markup=keyboards.main_menu()
                         )
 
                 except TelegramForbiddenError:
-                    LOGGER.info(f'User {user.name} blocked bot')
+                    LOGGER.info(f'User {user_id} blocked bot')
+                    return
 
                 else:
                     LOGGER.info(
-                        f'User {user.name} getted every day prediction '
+                        f'User {user_id} getted every day prediction '
                         f'at {target_datetime.strftime(DATETIME_FORMAT)}'
                     )
 
             except Exception as e:
+                if user_id == 912355990:
+                    with open("log.txt", "a"):
+
+                        print(f"{text = }")
+                        print(f"{len(text) = }")
+                        print(f"{target_datetime = }")
                 LOGGER.error(f"Error sending message to user {user_id}: {e}")
 
     async def send_renewal_reminder(self, user_id: int):

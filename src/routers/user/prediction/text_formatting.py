@@ -173,18 +173,16 @@ def format_date_russian(date: datetime) -> str:
 
 
 def filtered_and_formatted_prediction(user, date: date) -> str:
-    birth_location = crud.get_location(user.birth_location_id)
-    current_location = crud.get_location(user.current_location_id)
 
     prediction_user = PredictionUser(
         birth_datetime=datetime.strptime(user.birth_datetime, DATETIME_FORMAT),
         birth_location=PredictionLocation(
-            longitude=birth_location.longitude,
-            latitude=birth_location.latitude
+            longitude=user.birth_location.longitude,
+            latitude=user.birth_location.latitude
         ),
         current_location=PredictionLocation(
-            longitude=current_location.longitude,
-            latitude=current_location.latitude
+            longitude=user.current_location.longitude,
+            latitude=user.current_location.latitude
         ),
     )
     date = datetime(date.year, date.month, date.day)
