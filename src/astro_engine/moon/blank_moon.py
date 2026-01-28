@@ -1,6 +1,6 @@
 import logging
-from datetime import datetime, timedelta
 
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 from src import config
@@ -9,6 +9,7 @@ from src.enums import SwissEphPlanet
 from .sign import get_moon_sign_period
 from ..models import User, TimePeriod, MonoAstroEvent
 from ..utils import get_juliday, get_planet_data
+
 
 # Константы
 LOGGER = logging.getLogger(__name__)
@@ -24,12 +25,12 @@ def get_blank_moon_period(
 ) -> TimePeriod:
     moon_sign_period = get_moon_sign_period(date, user)
 
-    # LOGGER.info(
-    #     '\nMoon sign period:\n\nstart: {start}\nend: {end}'.format(
-    #         start=moon_sign_period.start.strftime(DATETIME_FORMAT),
-    #         end=moon_sign_period.end.strftime(DATETIME_FORMAT)
-    #     )
-    # )
+    LOGGER.info(
+        '\nMoon sign period:\n\nstart: {start}\nend: {end}'.format(
+            start=moon_sign_period.start.strftime(DATETIME_FORMAT),
+            end=moon_sign_period.end.strftime(DATETIME_FORMAT)
+        )
+    )
 
     latest_event_peak = _get_latest_event_peak(moon_sign_period, user)
 
@@ -47,29 +48,24 @@ def get_blank_moon_period(
 
 def _get_latest_event_peak(
     moon_sign_period: TimePeriod,
-    user
+    user: User
 ) -> datetime | None:
-    astro_events = get_astro_events_from_period(
+    """
+    Находит время последнего точного аспекта луны в периоде знака.
+    """
+    events = get_astro_events_from_period(
         moon_sign_period.start,
         moon_sign_period.end,
         user
     )
 
-    astro_events_with_peaks = (
-        event for event in astro_events
-        if event.peak is not None
-    )
+    events_with_peak = [e for e in events if e.peak is not None]
 
-    filtered_and_sorted_events = sorted(
-        astro_events_with_peaks,
-        key=lambda x: x.peak
-    )
-
-    if not filtered_and_sorted_events:
+    if not events_with_peak:
         return None
 
-    latest_event_peak = filtered_and_sorted_events[-1].peak
-    return latest_event_peak
+    latest_event = max(events_with_peak, key=lambda e: e.peak)  # type: ignore
+    return latest_event.peak
 
 
 def calculate_aspect(
@@ -123,34 +119,22 @@ def get_astro_events_from_period(
     finish: datetime,
     user: User
 ) -> List[MonoAstroEvent]:
-    """
-    Получает уникальные и отсортированные астрологические события в указанный период времени.
-
-    Аргументы:
-    - start: datetime — начальное время периода.
-    - finish: datetime — конечное время периода.
-    - user: User — объект пользователя, для которого ищутся события.
-
-    Возвращает список уникальных и отсортированных событий (List[MonoAstroEvent]).
-    """
-
     step = timedelta(minutes=10)
     current_time = start
 
-    all_events = []
+    raw_events_list = []
 
     while current_time <= finish:
         events_at_current_time = get_mono_astro_event_at_time(
             current_time,
             user
         )
-        all_events.extend(events_at_current_time)
+        raw_events_list.extend(events_at_current_time)
         current_time += step
 
-    unique_events = remove_duplicates(all_events)
-    unique_sorted_events = sort_mono_astro_events(unique_events)
+    events = parse_events(raw_events_list)
 
-    return unique_sorted_events
+    return events
     # return all_events
 
 
@@ -165,124 +149,127 @@ def sort_mono_astro_events(events: List[MonoAstroEvent]):
     а затем события с указанным временем пика, отсортированные по времени пика.
     """
 
-    events_with_peak = remove_duplicates(
+    events_with_peak = parse_events(
         [event for event in events if event.peak is not None]
     )
-    events_without_peak = remove_duplicates(
+    events_without_peak = parse_events(
         [event for event in events if event.peak is None]
     )
 
-    sorted_events_with_peak = sorted(
-        events_with_peak,
-        key=lambda x: x.peak
-    )
+    events_with_peak.sort(key=lambda x: x.peak)  # type: ignore
 
-    return events_without_peak + sorted_events_with_peak
+    return events_without_peak + events_with_peak
 
 
-def remove_duplicates(events: List[MonoAstroEvent]) -> List[MonoAstroEvent]:
+def parse_events(events: List[MonoAstroEvent]) -> List[MonoAstroEvent]:
     """
-    Удаляет дубликаты астрологических событий из списка, сначала сортируя их.
+    Убирает дубликаты астрологических событий.
 
-    Аргументы:
-    - events: List[MonoAstroEvent] — список событий для удаления дубликатов.
+    События без пика (peak=None) — просто факт наличия аспекта в периоде.
+    Оставляем по одному на каждую комбинацию планет+аспект.
 
-    Возвращает список уникальных астрологических событий.
+    События с пиком — конкретные моменты. Если несколько пиков одного
+    аспекта идут подряд с разницей меньше часа, склеиваем их в один,
+    беря середину интервала как новый пик.
     """
+    if not events:
+        return []
 
-    events_sorted = sorted(
-        events,
-        key=lambda x: (x.first_planet, x.second_planet, x.aspect, x.peak)
-    )
-    unique_events = calculate_average_peak(events_sorted)
+    events_without_peak = [e for e in events if e.peak is None]
+    events_with_peak = [e for e in events if e.peak is not None]
 
-    return unique_events
+    unique_events_without_peak = deduplicate_by_aspect(events_without_peak)
+    merged_events_with_peak = merge_close_peaks(events_with_peak)
+
+    return unique_events_without_peak + merged_events_with_peak
 
 
-def calculate_average_peak(
-    events: List[MonoAstroEvent]
+def get_aspect_signature(event: MonoAstroEvent) -> tuple:
+    """Уникальный идентификатор аспекта (без учёта времени)."""
+    return (event.first_planet, event.second_planet, event.aspect)
+
+
+def deduplicate_by_aspect(events: List[MonoAstroEvent]) -> List[MonoAstroEvent]:
+    """Оставляет по одному событию на каждую комбинацию планет+аспект."""
+    seen = {}
+    for event in events:
+        signature = get_aspect_signature(event)
+        if signature not in seen:
+            seen[signature] = event
+    return list(seen.values())
+
+
+def merge_close_peaks(
+    events: List[MonoAstroEvent],
+    max_gap_between_peaks = timedelta(hours=1)
 ) -> List[MonoAstroEvent]:
     """
-    Рассчитывает среднее время пика для группы событий, которые происходят в течение 15 минут.
-
-    Аргументы:
-    - events: List[MonoAstroEvent] — отсортированный список событий для расчёта.
-
-    Возвращает список событий с усреднённым временем пика для близко происходящих событий.
-
-    п. А.
-
-    Не трогай
-
-    Работает при помощи магии и заговора тибетского шамана Абуарубубдрара
+    Склеивает события одного аспекта, если их пики ближе часа друг к другу.
+    Результат сортируется по времени пика.
     """
-    temp_group_for_same_events = [events[0]] if events else []
-    return_events_list = []
+    if not events:
+        return []
 
-    for current_event in events[1:]:
-        current_event_key = (
-            current_event.first_planet,
-            current_event.second_planet,
-            current_event.aspect
+
+    # группируем по аспекту, внутри группы сортируем по времени
+    events_sorted = sorted(events, key=lambda e: (get_aspect_signature(e), e.peak))
+
+    result = []
+
+    current_signature = None
+    cluster_start = None
+    cluster_end = None
+
+    for event in events_sorted:
+        signature = get_aspect_signature(event)
+
+        is_same_aspect = (signature == current_signature)
+        is_close_in_time = (
+            cluster_end is not None
+            and (event.peak - cluster_end) <= max_gap_between_peaks
         )
 
-        last_event = temp_group_for_same_events[-1]
-        last_event_key = (
-            last_event.first_planet,
-            last_event.second_planet,
-            last_event.aspect
-        )
-
-        current_and_last_event_same = current_event_key == last_event_key
-
-        peak_diff = current_event.peak - last_event.peak
-        peak_diff_lower_15_min = peak_diff <= timedelta(minutes=15)
-
-        if current_and_last_event_same and peak_diff_lower_15_min:
-            temp_group_for_same_events.append(current_event)
-
+        if is_same_aspect and is_close_in_time:
+            # расширяем текущий кластер
+            cluster_end = event.peak
         else:
-            if temp_group_for_same_events:
-                avg_peak_datetime = calculate_average_peak_for_temp_group(
-                    temp_group_for_same_events
+            # сохраняем предыдущий кластер (если был)
+            if current_signature is not None:
+                merged_event = create_event_with_middle_peak(
+                    current_signature,
+                    cluster_start,
+                    cluster_end
                 )
-                return_events_list.append(
-                    MonoAstroEvent(
-                        temp_group_for_same_events[0].first_planet,
-                        temp_group_for_same_events[0].second_planet,
-                        temp_group_for_same_events[0].aspect,
-                        avg_peak_datetime
-                    )
-                )
-                temp_group_for_same_events = [current_event]
+                result.append(merged_event)
 
-    if temp_group_for_same_events:
-        avg_peak_datetime = calculate_average_peak_for_temp_group(
-            temp_group_for_same_events
+            # начинаем новый кластер
+            current_signature = signature
+            cluster_start = event.peak
+            cluster_end = event.peak
+
+    # не забываем последний кластер
+    if current_signature is not None:
+        merged_event = create_event_with_middle_peak(
+            current_signature,
+            cluster_start,
+            cluster_end
         )
-        return_events_list.append(
-            MonoAstroEvent(
-                temp_group_for_same_events[0].first_planet,
-                temp_group_for_same_events[0].second_planet,
-                temp_group_for_same_events[0].aspect,
-                avg_peak_datetime
-            )
-        )
-    return return_events_list
+        result.append(merged_event)
+
+    return sorted(result, key=lambda e: e.peak)
 
 
-def calculate_average_peak_for_temp_group(
-    temp_group: List[MonoAstroEvent]
-) -> datetime:
-    """
-    Вычисляет среднее время пика для временной группы событий.
+def create_event_with_middle_peak(
+    signature: tuple,
+    start: datetime,
+    end: datetime
+) -> MonoAstroEvent:
+    """Создаёт событие с пиком посередине между start и end."""
+    middle = start + (end - start) / 2
+    first_planet, second_planet, aspect = signature
 
-    Аргументы:
-    - temp_group: List[MonoAstroEvent] — группа событий для расчёта среднего времени пика.
+    event = MonoAstroEvent(first_planet, second_planet, aspect, middle)
+    print(f"event {event.first_planet} - {event.second_planet}, {event.aspect}")
+    print(f"{start.strftime("%d/%m/%Y, %H:%M:%S")} -> {end.strftime("%d/%m/%Y, %H:%M:%S")}\n")
+    return event
 
-    Возвращает datetime с усреднённым временем пика для группы событий.
-    """
-    timestamp_list = (event.peak.timestamp() for event in temp_group)
-    avg_peak_timestamp = sum(timestamp_list) / len(temp_group)
-
-    return datetime.fromtimestamp(avg_peak_timestamp)
