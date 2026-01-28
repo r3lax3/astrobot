@@ -24,9 +24,6 @@ MARIA_BIRTH_LOCATION = Location(longitude=37.817485, latitude=47.986848)
 MARIA_CURRENT_LOCATION = Location(longitude=37.515761, latitude=55.799727)
 MARIA_BIRTH_DATE = "15.11.1979 05:15"
 
-KUSTANAI_USER_BIRTH_LOCATION = Location(longitude=73.120822, latitude=49.706675)
-KUSTANAI_USER_CURRENT_LOCATION = Location(longitude=63.621288, latitude=53.202808)
-KUSTANAI_USER_BIRTH_DATE = "24.11.1975 14:26"
 
 
 @pytest.fixture
@@ -42,7 +39,7 @@ def user():
     user.birth_location = MARIA_BIRTH_LOCATION
 
     user.current_location_id = 1
-    user.current_location = MARIA_CURRENT_LOCATION
+    user.current_location = Location(longitude=135.103494, latitude=48.442037)  # напрямую заменил
 
     user.timezone_offset = HOURS_TIMEZONE_OFFSET
 
@@ -57,5 +54,5 @@ def astro_user(user):
     return AstroUser(
         birth_datetime=datetime.strptime(user.birth_datetime, DATETIME_FORMAT),
         birth_location=user.birth_location,
-        current_location=user.current_location
+        current_location=user.current_location  # а тут как зависимость
     )
