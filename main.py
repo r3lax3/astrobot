@@ -26,6 +26,7 @@ from src.routers import admin_router, user_router
 from src.scheduler import EveryDayPredictionScheduler
 from src.utils import logger_settings
 from src.payments import ProdamusPaymentService
+from src.payments.gatebot_sync import handle_gatebot_subscription_sync
 
 
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
@@ -38,6 +39,7 @@ BASE_WEBHOOK_PATH = f"{BASE_WEBHOOK_DOMAIN}/astrobot"
 BOT_WEBHOOK_PATH = "/astrobot/bot"
 
 PAYMENT_WEBHOOK_PATH = '/astrobot/payments'
+GATEBOT_SYNC_WEBHOOK_PATH = '/astrobot/gatebot/sync'
 
 DO_BACKUP = config.get('database.do_backup')
 
@@ -92,6 +94,10 @@ def main():
             web.post(
                 PAYMENT_WEBHOOK_PATH,
                 ProdamusPaymentService.handle_payment_update
+            ),
+            web.post(
+                GATEBOT_SYNC_WEBHOOK_PATH,
+                handle_gatebot_subscription_sync
             )
         ]
     )
