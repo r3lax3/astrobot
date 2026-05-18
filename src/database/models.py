@@ -92,3 +92,10 @@ class Promocode(Base):
     activated_by = Column(Integer, ForeignKey("users.user_id"))
     is_activated = Column(Boolean)
     period = Column(Integer)
+
+
+class PendingSubscription(Base):
+    __tablename__ = "pending_subscriptions"
+
+    user_id = Column(Integer, primary_key=True)
+    subscription_end_date_utc = Column(String)  # ISO "%Y-%m-%dT%H:%M:%S" UTC
