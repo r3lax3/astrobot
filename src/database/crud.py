@@ -17,6 +17,7 @@ from .models import (
     Interpretation,
     Location,
     Payment,
+    PendingSubscription,
     Promocode,
     User,
     ViewedPrediction
@@ -26,6 +27,8 @@ from .models import (
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
 ADMIN_LIST: list[int] = config.get("admins.ids")
+
+GATEBOT_SYNC_ISO_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 global_session = Session()
 
@@ -573,3 +576,117 @@ def get_clients(session: Session) -> int:
     return session.query(User).filter(
         User.user_id.in_(users_with_payments_select)
     ).count()
+
+
+# Gatebot subscription sync
+
+def _parse_iso_utc(value: Optional[str]) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, GATEBOT_SYNC_ISO_FORMAT)
+    except ValueError:
+        return None
+
+
+def merge_subscription_for_existing_user(
+    session: Session, user_id: int, incoming_utc: datetime
+) -> bool:
+    """
+    Apply gatebot sync to an existing astrobot user.
+
+    Never shortens the subscription: if the user's current local end date
+    is already past `incoming_utc + user_offset`, do nothing.
+    Returns True if the subscription was updated.
+    """
+    user = session.query(User).filter_by(user_id=user_id).first()
+    if user is None:
+        return False
+    current_location = (
+        session.query(Location)
+        .filter_by(id=user.current_location_id)
+        .first()
+    )
+    if current_location is None:
+        logging.warning(
+            "Gatebot sync: user %s has no current_location; "
+            "cannot translate UTC -> local time, skipping merge",
+            user_id,
+        )
+        return False
+    time_offset = get_timezone_offset(
+        current_location.latitude, current_location.longitude
+    )
+    incoming_local = incoming_utc + timedelta(hours=time_offset)
+    current_local: Optional[datetime] = None
+    if user.subscription_end_date:
+        try:
+            current_local = datetime.strptime(
+                user.subscription_end_date, DATETIME_FORMAT
+            )
+        except ValueError:
+            current_local = None
+    if current_local is not None and current_local >= incoming_local:
+        return False
+    user.subscription_end_date = incoming_local.strftime(DATETIME_FORMAT)
+    session.commit()
+    logging.info(
+        "Gatebot sync: extended subscription for user %s until %s (local)",
+        user_id, user.subscription_end_date,
+    )
+    return True
+
+
+def upsert_pending_subscription(
+    session: Session, user_id: int, incoming_utc: datetime
+) -> None:
+    """Store the latest gatebot subscription end (UTC) for an unknown user."""
+    incoming_str = incoming_utc.strftime(GATEBOT_SYNC_ISO_FORMAT)
+    existing = (
+        session.query(PendingSubscription)
+        .filter_by(user_id=user_id)
+        .first()
+    )
+    if existing is None:
+        session.add(
+            PendingSubscription(
+                user_id=user_id,
+                subscription_end_date_utc=incoming_str,
+            )
+        )
+        session.commit()
+        logging.info(
+            "Gatebot sync: pending subscription stored for unknown user %s",
+            user_id,
+        )
+        return
+
+    existing_dt = _parse_iso_utc(existing.subscription_end_date_utc)
+    if existing_dt is None or incoming_utc > existing_dt:
+        existing.subscription_end_date_utc = incoming_str
+        session.commit()
+
+
+def apply_pending_subscription_to_user(session: Session, user_id: int) -> bool:
+    """
+    Called right after a new user is created in astrobot. If gatebot sent a
+    subscription end date before the user finished onboarding, apply it now
+    (using the same "never shorten" rule).
+    Returns True if pending was applied.
+    """
+    pending = (
+        session.query(PendingSubscription)
+        .filter_by(user_id=user_id)
+        .first()
+    )
+    if pending is None:
+        return False
+    incoming_utc = _parse_iso_utc(pending.subscription_end_date_utc)
+    if incoming_utc is None:
+        session.delete(pending)
+        session.commit()
+        return False
+    merge_subscription_for_existing_user(session, user_id, incoming_utc)
+    session.delete(pending)
+    session.commit()
+    return True

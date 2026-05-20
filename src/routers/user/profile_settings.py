@@ -276,6 +276,10 @@ async def get_current_location_confirmed(
                 )
             )
 
+            crud.apply_pending_subscription_to_user(
+                session, event_from_user.id
+            )
+
             await scheduler.set_all_jobs(user_id=event_from_user.id)
 
             await state.update_data(
