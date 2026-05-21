@@ -6,6 +6,7 @@ import swisseph as swe
 
 from src.astro_engine.models import AstroEvent, User
 from src.enums import SwissEphPlanet
+from src.utils import get_timezone_offset
 from .utils import get_juliday, sort_astro_events
 
 
@@ -73,7 +74,11 @@ def calculate_aspect(
             return aspect
 
 
-def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
+def get_astro_event_at_time(
+    time: datetime,
+    user: User,
+    birth_datetime_utc: Optional[datetime] = None
+) -> List[AstroEvent]:
     """
     Получить все астрологические события для заданного времени.
     """
@@ -88,11 +93,13 @@ def get_astro_event_at_time(time: datetime, user: User) -> List[AstroEvent]:
     )
 
     # Преобразование времени рождения пользователя в юлианскую дату
+    # birth_datetime_utc уже конвертировано из локального в UTC вызывающей функцией
+    birth_dt = birth_datetime_utc if birth_datetime_utc is not None else user.birth_datetime
     julian_day_birth = swe.julday(
-        user.birth_datetime.year,
-        user.birth_datetime.month,
-        user.birth_datetime.day,
-        user.birth_datetime.hour + user.birth_datetime.minute / 60,
+        birth_dt.year,
+        birth_dt.month,
+        birth_dt.day,
+        birth_dt.hour + birth_dt.minute / 60,
     )
 
     # Вычисление натальных позиций для всех планет на основе даты рождения пользователя
@@ -134,12 +141,19 @@ def get_astro_events_from_period(
     finish: datetime,
     user: User
 ) -> List[AstroEvent]:
+    # Конвертируем время рождения из локального в UTC один раз для всего скана
+    birth_tz_offset = get_timezone_offset(
+        user.birth_location.latitude,
+        user.birth_location.longitude
+    )
+    birth_datetime_utc = user.birth_datetime - timedelta(hours=birth_tz_offset)
+
     step = timedelta(minutes=10)
     current_time = start
 
     all_events = []
     while current_time <= finish:
-        events_at_current_time = get_astro_event_at_time(current_time, user)
+        events_at_current_time = get_astro_event_at_time(current_time, user, birth_datetime_utc)
         all_events.extend(events_at_current_time)
         current_time += step
 
@@ -165,12 +179,19 @@ async def get_astro_events_from_period_with_duplicates(
     finish: datetime,
     user: User
 ) -> List[AstroEvent]:
+    # Конвертируем время рождения из локального в UTC один раз для всего скана
+    birth_tz_offset = get_timezone_offset(
+        user.birth_location.latitude,
+        user.birth_location.longitude
+    )
+    birth_datetime_utc = user.birth_datetime - timedelta(hours=birth_tz_offset)
+
     step = timedelta(minutes=13)
     current_time = start
     all_events = []
 
     while current_time <= finish:
-        events_at_current_time = get_astro_event_at_time(current_time, user)
+        events_at_current_time = get_astro_event_at_time(current_time, user, birth_datetime_utc)
         all_events.extend(events_at_current_time)
         current_time += step
         await asyncio.sleep(0.001)
