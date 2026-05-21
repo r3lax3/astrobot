@@ -34,19 +34,18 @@ WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 WEB_SERVER_HOST = config.get('webhook.web_server_host')
 WEB_SERVER_PORT = config.get('webhook.web_server_port')
 
-BASE_WEBHOOK_DOMAIN = config.get('webhook.base_webhook_url')
-BASE_WEBHOOK_PATH = f"{BASE_WEBHOOK_DOMAIN}/astrobot"
-BOT_WEBHOOK_PATH = "/astrobot/bot"
+BASE_WEBHOOK_PATH = config.get('webhook.base_webhook_url')
 
-PAYMENT_WEBHOOK_PATH = '/astrobot/payments'
-GATEBOT_SYNC_WEBHOOK_PATH = '/astrobot/gatebot/sync'
+BOT_WEBHOOK_PATH = "/bot"
+PAYMENT_WEBHOOK_PATH = '/payments'
+GATEBOT_SYNC_WEBHOOK_PATH = '/gatebot/sync'
 
 DO_BACKUP = config.get('database.do_backup')
 
 
 async def on_startup(bot: Bot, scheduler: EveryDayPredictionScheduler) -> None:
     await bot.set_webhook(
-        f"{BASE_WEBHOOK_PATH}/bot",
+        f"{BASE_WEBHOOK_PATH}{BOT_WEBHOOK_PATH}",
         allowed_updates=['message', 'callback_query'],
         drop_pending_updates=True
     )
