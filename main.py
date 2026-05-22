@@ -51,7 +51,7 @@ async def on_startup(bot: Bot, scheduler: EveryDayPredictionScheduler) -> None:
         drop_pending_updates=True
     )
     scheduler.start()
-    await scheduler.check_users_and_schedule()
+    asyncio.create_task(scheduler.check_users_and_schedule())
 
     if DO_BACKUP:
         asyncio.create_task(schedule_backup(bot))
@@ -119,7 +119,17 @@ def main():
     setup_application(app, dp, bot=bot)
 
     # And finally start webserver
-    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+    try:
+        web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+    except OSError as e:
+        if e.errno == 98:
+            import logging
+            logging.getLogger(__name__).critical(
+                f"Port {WEB_SERVER_PORT} is already in use. "
+                f"Kill the existing process with: "
+                f"lsof -ti :{WEB_SERVER_PORT} | xargs kill"
+            )
+        raise
 
 
 if __name__ == '__main__':
