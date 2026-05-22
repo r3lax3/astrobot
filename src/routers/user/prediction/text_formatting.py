@@ -115,8 +115,18 @@ def formatted_general_events(events: List[AstroEvent]) -> str:
                 )
             )
             continue
-        interpretations.append(f"💫{interpretation.general}")
+        aspect_line = f"🔹 {transit_planet} {event.aspect} {natal_planet}"
+        interpretations.append(f"{aspect_line}\n\n💫{interpretation.general}")
     return "\n\n".join(interpretations)
+
+
+def format_moon_aspects_list(events: List[AstroEvent]) -> str:
+    lines = ["Аспекты Луны:"]
+    for event in events:
+        transit_planet = PLANET_ID_TO_NAME_RU[event.transit_planet]
+        natal_planet = PLANET_ID_TO_NAME_RU[event.natal_planet]
+        lines.append(f"🔹 {transit_planet} {event.aspect} {natal_planet}")
+    return "\n".join(lines)
 
 
 def formatted_moon_events(events: List[AstroEvent]):
@@ -282,6 +292,8 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
                 + "\n\n"
                 + messages.USE_OTHER_FUNCTION_FOR_CORRECT_PLANNING
             )
+            all_moon_events = first_half_moon_events + second_half_moon_events
+            moon_aspects = format_moon_aspects_list(all_moon_events)
             moon_events = messages.PREDICTION_TEXT_MOON_EVENTS.format(
                 first_half_moon_events=first_half_moon_events_formatted
                 or default_moon_sign_text,
@@ -292,6 +304,7 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
             texts = [
                 formatted_date_str,
                 recommendations_heading,
+                moon_aspects,
                 moon_events
             ]
     else:
@@ -313,6 +326,8 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
             formatted_date_str = messages.PREDICTION_TEXT_FORMATTED_DATE.format(
                 formatted_date=formatted_date
             )
+            all_moon_events = first_half_moon_events + second_half_moon_events
+            moon_aspects = format_moon_aspects_list(all_moon_events)
             moon_events = messages.PREDICTION_TEXT_MOON_EVENTS.format(
                 first_half_moon_events=first_half_moon_events_formatted
                 or messages.NEUTRAL_BACKGROUND,
@@ -324,6 +339,7 @@ def filtered_and_formatted_prediction(user, date: date) -> str:
                 formatted_date_str,
                 recommendations_heading,
                 day_events_formatted,
+                moon_aspects,
                 moon_events
             ]
 
