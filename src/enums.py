@@ -33,7 +33,7 @@ class ImageWideElementsPositions(Enum):
 
 
 class ImageHighElementsPositions(Enum):  # TODO
-    BACKGROUND_IMAGE_PATH = 'images/backgrounds/high_purple.jpg'
+    BACKGROUND_IMAGE_PATH = 'images/backgrounds/high_blue.jpg'
 
     DATE_TEXT = (600, 533)
     NAME_TEXT = (315, 205)
