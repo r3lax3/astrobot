@@ -56,8 +56,16 @@ async def on_startup(bot: Bot, scheduler: EveryDayPredictionScheduler) -> None:
         asyncio.create_task(schedule_backup(bot))
 
 
-async def on_shutdown(bot: Bot):
+async def on_shutdown(bot: Bot, scheduler: EveryDayPredictionScheduler):
     await bot.delete_webhook()
+
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
+
+    # aiogram's setup_application only emits the dispatcher shutdown; it does
+    # not close the bot's aiohttp session. Close it explicitly to avoid the
+    # "Unclosed client session"/"Unclosed connector" warnings on exit.
+    await bot.session.close()
 
 
 def main():
