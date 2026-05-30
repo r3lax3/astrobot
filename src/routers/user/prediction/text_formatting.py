@@ -115,7 +115,7 @@ def formatted_general_events(events: List[AstroEvent]) -> str:
                 )
             )
             continue
-        aspect_line = f"🔹 {transit_planet} {event.aspect} {natal_planet}"
+        aspect_line = f"🔹 <b>{transit_planet} {event.aspect} {natal_planet}</b>"
         interpretations.append(f"{aspect_line}\n\n💫{interpretation.general}")
     return "\n\n".join(interpretations)
 
@@ -125,7 +125,7 @@ def format_moon_aspects_list(events: List[AstroEvent]) -> str:
     for event in events:
         transit_planet = PLANET_ID_TO_NAME_RU[event.transit_planet]
         natal_planet = PLANET_ID_TO_NAME_RU[event.natal_planet]
-        lines.append(f"🔹 {transit_planet} {event.aspect} {natal_planet}")
+        lines.append(f"🔹 <b>{transit_planet} {event.aspect} {natal_planet}</b>")
     return "\n".join(lines)
 
 
