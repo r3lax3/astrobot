@@ -34,10 +34,10 @@ def get_planet_data(
     planet: SwissEphPlanet,
     location: Optional[Location] = None
 ):
-    if location:
-        swe.set_topo(location.longitude, location.latitude, 0)
-
-    flag = swe.FLG_SWIEPH + swe.FLG_SPEED + swe.FLG_TOPOCTR
+    # Геоцентрические координаты (как в проф. астропрограммах).
+    # Топоцентрика давала параллакс Луны до ~1° и съезжала смену знака
+    # и холостую луну на 1-2 часа.
+    flag = swe.FLG_SWIEPH + swe.FLG_SPEED
     return swe.calc(juliday, planet, flag)
 
 
