@@ -1,0 +1,46 @@
+[bot]
+token = "<YOUR_BOT_TOKEN>"
+username = "<your_bot_username>"
+
+[webhook]
+web_server_host = "0.0.0.0"
+web_server_port = 8080
+base_webhook_url = "https://your-domain.example"
+
+[admins]
+ids = [111111111, 22222222]
+
+[payments]
+yookassa_token = "<YOUR_YOOKASSA_TOKEN>"
+yookassa_shop_id = 000000
+offer_url = "https://your-domain.example/offer"
+prodamus_secret_key = "<YOUR_PRODAMUS_SECRET>"
+prodamus_payment_link = "https://your-shop.payform.ru"
+
+[subscription]
+test_period_in_days = 5
+
+[gatebot]
+sync_enabled = false
+sync_secret = ""
+
+[database]
+datetime_format = "%d.%m.%Y %H:%M"
+date_format = "%d.%m.%Y"
+week_format = "%W"
+month_format = "%m"
+time_format = "%H:%M"
+do_backup = true
+
+[files]
+# telegram file_id'шники — подставь свои после загрузки медиа боту
+wait_sticker = "<FILE_ID>"
+start_video = "<FILE_ID>"
+
+[admin_chat]
+id = -1000000000000
+
+[admin_chat.threads]
+backup = 0
+general_predictions = 0
+cards_of_day = 0
