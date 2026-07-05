@@ -4,7 +4,7 @@ from aiogram.types import Message, User
 
 from src import messages
 from src.database.database import User as DBUser
-from src.keyboard_manager import KeyboardManager, bt
+from src.keyboards import keyboards, bt
 
 r = Router()
 
@@ -13,7 +13,6 @@ r = Router()
 async def compability_menu(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
     database,
     event_from_user: User,
 ):
@@ -22,11 +21,11 @@ async def compability_menu(
         # TODO
         bot_message = await message.answer(
             messages.COMPATIBILITY,
-            reply_markup=keyboards.to_main_menu,
+            reply_markup=keyboards.to_main_menu(),
         )
     else:
         bot_message = await message.answer(
             messages.GENDER_NOT_CHOOSEN,
-            reply_markup=keyboards.gender_not_choosen
+            reply_markup=keyboards.gender_not_choosen()
         )
     await state.update_data(del_messages=[bot_message.message_id])

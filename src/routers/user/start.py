@@ -6,7 +6,6 @@ from aiogram.types import Message, User
 
 from src import config, messages
 from src.filters import AdminFilter, UserFilter, UserInDatabase
-from src.keyboard_manager import KeyboardManager
 from src.routers.states import MainMenu
 
 from .main_menu import main_menu
@@ -34,7 +33,6 @@ async def admin_command_start_handler(
     bot: Bot,
     database,
     event_from_user: User,
-    keyboards: KeyboardManager,
 ):
     user = database.get_user(user_id=event_from_user.id)
 

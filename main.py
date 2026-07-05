@@ -13,7 +13,6 @@ from aiogram.webhook.aiohttp_server import (
 from src import config
 from src.common import bot
 from src.database import Database, schedule_backup
-from src.keyboard_manager import KeyboardManager
 from src.middlewares import (
     AddDataInRedis,
     ClearKeyboardFromMessageMiddleware,
@@ -79,7 +78,6 @@ def main():
     dp = Dispatcher(
         storage=RedisStorage.from_url(REDIS_URL),
         database=Database,
-        keyboards=KeyboardManager(Database),
         scheduler=scheduler
     )
 

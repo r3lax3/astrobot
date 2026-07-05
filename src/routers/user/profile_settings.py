@@ -10,7 +10,6 @@ from src.database.models import Location
 from src.database.models import User as DBUser
 from src.enums import Gender, LocationType
 from src.keyboards import keyboards, bt
-from src.keyboard_manager import buttons_text
 from src.routers.states import ProfileSettings
 from src.routers.user.main_menu import main_menu
 from src.scheduler import EveryDayPredictionScheduler
@@ -114,7 +113,7 @@ async def choose_gender(
 
     if user.gender is not None:
         bot_message = await callback.message.answer(
-            messages.CHOOSE_GENDER.format(gender=buttons_text[user.gender]),
+            messages.CHOOSE_GENDER.format(gender=getattr(bt, user.gender)),
             reply_markup=keyboards.choose_gender(),
         )
     else:
