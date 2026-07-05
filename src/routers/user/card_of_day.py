@@ -7,7 +7,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, User
 
 from src import config, messages
-from src.database import Database
 from src.keyboard_manager import KeyboardManager, bt
 from src.routers.states import MainMenu
 

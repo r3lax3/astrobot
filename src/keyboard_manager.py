@@ -9,7 +9,6 @@ from aiogram.types import (
     ReplyKeyboardMarkup
 )
 
-from src.database import Database
 from src.exceptions import InvalidButtonTypeException, TypeMismatchException
 from src.models import DateModifier, SubscriptionPeriod
 

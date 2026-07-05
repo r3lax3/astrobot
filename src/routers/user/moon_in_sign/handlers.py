@@ -7,7 +7,6 @@ from aiogram.types import BufferedInputFile, CallbackQuery, Message, User
 
 from src import messages
 from src.astro_engine.moon import get_moon_signs_at_date
-from src.database import Database
 from src.enums import FileName, MoonSignInterpretationType
 from src.image_processing import get_image_with_astrodata
 from src.keyboard_manager import KeyboardManager, bt

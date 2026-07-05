@@ -4,27 +4,39 @@ from typing import Any
 import tomli_w
 
 
-def get(key: str) -> Any:
+_MISSING = object()
+
+
+def get(key: str, default: Any = _MISSING) -> Any:
     """
     Retrieve a value from TOML config based on the provided key.
 
     Args:
         key (str): The key to retrieve, as a dot-separated path. E.g.,
                    "bot.token" would get "token" inside the "bot" section.
+        default: Value to return if the key is missing. If not provided,
+                 a missing key raises KeyError.
 
     Returns:
         int | str | Dict[str, Any] | List[int | str | float]:
             The value for the provided key. Can be an integer, string,
-dictionary, or a list of integers, strings, and floats.
+            dictionary, or a list of integers, strings, and floats.
 
     Raises:
-        KeyError: If the key is not found in the configuration.
+        KeyError: If the key is not found and no default is provided.
     """
     with open("config.toml", "rb") as f:
         target = tomllib.load(f)
+
+    try:
         for part in key.split("."):
             target = target[part]
-        return target
+    except KeyError:
+        if default is _MISSING:
+            raise
+        return default
+
+    return target
 
 
 def set(key: str, value: Any) -> None:

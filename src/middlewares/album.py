@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from typing import Any, Awaitable, Callable, Dict, List, Union
 
 from aiogram import BaseMiddleware

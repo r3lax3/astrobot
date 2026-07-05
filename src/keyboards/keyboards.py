@@ -1,10 +1,9 @@
-from typing import Optional
 
 from src import config
 from src.utils import split_list
 from src.models import DateModifier
 
-from .callback_data import SubscriptionPeriod, Payment, Promocode
+from .callback_data import SubscriptionPeriod, Promocode
 from .builder import KeyboardBuilder
 from .buttons import bt
 
