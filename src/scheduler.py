@@ -169,18 +169,12 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
 
                 else:
                     LOGGER.info(
-                        f'User {user_id} getted every day prediction '
+                        f'User {user_id} got every day prediction '
                         f'at {target_datetime.strftime(DATETIME_FORMAT)}'
                     )
 
-            except Exception as e:
-                if user_id == 912355990:
-                    with open("log.txt", "a"):
-
-                        print(f"{text = }")
-                        print(f"{len(text) = }")
-                        print(f"{target_datetime = }")
-                LOGGER.error(f"Error sending message to user {user_id}: {e}")
+            except Exception:
+                LOGGER.exception(f"Error sending message to user {user_id}")
 
     async def send_renewal_reminder(self, user_id: int):
         """
@@ -211,12 +205,6 @@ class EveryDayPredictionScheduler(AsyncIOScheduler):
             args=[user_id, session],
             timezone=timezone_str,
         )
-
-        # job = self.get_job(str(user.user_id))
-        # now = datetime.now(pytz.timezone(timezone_str))
-        # delta = job.next_run_time - now
-        #
-        # LOGGER.info(f'До отправки {format_time_delta(delta)}')
 
     async def add_reminder_jobs(self, user_id: int, session: Session):
         user = crud.get_user(user_id, session)

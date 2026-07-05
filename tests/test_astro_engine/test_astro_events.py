@@ -3,30 +3,20 @@ from datetime import datetime, timedelta
 from src.astro_engine.predictions import (
     get_astro_events_from_period_with_duplicates
 )
-from src.utils import print_items_dict_as_table
-from src.dicts import PLANET_ID_TO_NAME_RU
 
 
-def test_astro_events(astro_user):
+async def test_astro_events(astro_user):
     utcnow = datetime.utcnow()
 
-    events = get_astro_events_from_period_with_duplicates(
+    events = await get_astro_events_from_period_with_duplicates(
         utcnow - timedelta(days=15),
         utcnow + timedelta(days=15),
         astro_user
     )
 
-    items = [
-        {
-            "Транз": PLANET_ID_TO_NAME_RU[event.transit_planet],
-            "Асп.": event.aspect,
-            "Нат": PLANET_ID_TO_NAME_RU[event.natal_planet],
-            "Время": (event.peak_at + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M")
-        }
-        for event in events
-    ]
-    sorted_items = sorted(items, key=lambda x: x["Время"])
-    print_items_dict_as_table(
-        sorted_items,
-        open("tests/data/astrodata.txt", "w")
-    )
+    assert events, "За месяц должен найтись хотя бы один астрособытийный аспект"
+
+    for event in events:
+        assert event.transit_planet is not None
+        assert event.natal_planet is not None
+        assert event.peak_at is not None

@@ -23,7 +23,7 @@ class DatetimeStringValidator(Filter):
 
         try:
             datetime.strptime(parse_string, self._format)
-        except:
+        except (TypeError, ValueError):
             return False
         else:
             return True
