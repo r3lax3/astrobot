@@ -1,6 +1,3 @@
-class PathDoesNotExistError(Exception):
-    """Исключение, возникающее, когда путь не существует."""
-
 class InvalidButtonTypeException(Exception):
     """Exception raised for errors in the input button type."""
 

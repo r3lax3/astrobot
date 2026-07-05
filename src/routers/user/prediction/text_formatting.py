@@ -1,14 +1,13 @@
 import asyncio
 import csv
 import logging
-import datetime
 
 from typing import List, Optional
 from datetime import datetime, timedelta, date
 
 from babel.dates import format_date
 
-from src import config, messages
+from src import config, messages, paths
 from src.database import crud
 from src.database.models import User as DBUser
 from src.dicts import PLANET_ID_TO_NAME_RU, SWISSEPH_PLANET_TO_UNIVERSAL_PLANET
@@ -26,7 +25,7 @@ from src.enums import SwissEphPlanet
 
 def get_interpretations_dict():
     with open(
-        "interpretations.csv",
+        paths.INTERPRETATIONS_FILE,
         "r",
         newline="",
         encoding="utf-8"
