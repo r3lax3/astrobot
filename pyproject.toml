@@ -1,0 +1,23 @@
+[project]
+name = "astrobot"
+version = "1.0.0"
+description = "Telegram-бот с персональными астрологическими прогнозами"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = [
+    "E501",  # длина строк: в текстах сообщений бота встречаются длинные строки
+]
+
+[tool.ruff.lint.per-file-ignores]
+# __init__.py реэкспортирует публичный API пакетов
+"__init__.py" = ["F401"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

@@ -1,21 +1,29 @@
+# Скопируй в config.toml и заполни своими значениями.
+# Токен бота и секрет вебхука задаются в .env (см. .env.example).
+
 [bot]
-token = "<YOUR_BOT_TOKEN>"
-username = "<your_bot_username>"
+username = "your_bot_username"
 
 [webhook]
 web_server_host = "0.0.0.0"
 web_server_port = 8080
 base_webhook_url = "https://your-domain.example"
 
+[redis]
+url = "redis://localhost:6379"
+
 [admins]
-ids = [111111111, 22222222]
+ids = [111111111, 222222222]
 
 [payments]
-yookassa_token = "<YOUR_YOOKASSA_TOKEN>"
-yookassa_shop_id = 000000
-offer_url = "https://your-domain.example/offer"
 prodamus_secret_key = "<YOUR_PRODAMUS_SECRET>"
 prodamus_payment_link = "https://your-shop.payform.ru"
+offer_url = "https://your-domain.example/offer"
+# Проверять HMAC-подпись входящих вебхуков Prodamus (заголовок Sign)
+verify_webhook_signature = true
+# Куда Prodamus отправляет пользователя после оплаты;
+# по умолчанию — https://t.me/<bot.username>
+# paid_content_url = "https://t.me/your_bot_username"
 
 [subscription]
 test_period_in_days = 5
@@ -32,13 +40,22 @@ month_format = "%m"
 time_format = "%H:%M"
 do_backup = true
 
+# Telegram file_id медиафайлов — подставь свои после загрузки медиа боту
 [files]
-# telegram file_id'шники — подставь свои после загрузки медиа боту
 wait_sticker = "<FILE_ID>"
 start_video = "<FILE_ID>"
+hello_image = "<FILE_ID>"
+main_menu = "<FILE_ID>"
+prediction_menu = "<FILE_ID>"
+profile = "<FILE_ID>"
+promocode = "<FILE_ID>"
+dreams = "<FILE_ID>"
+general_prediction = "<FILE_ID>"
+birth_data_confirmed = "<FILE_ID>"
+how_to_send_geopos_screenshots = ["<FILE_ID>", "<FILE_ID>"]
 
 [admin_chat]
-id = -1000000000000
+id = -100123456789
 
 [admin_chat.threads]
 backup = 0
