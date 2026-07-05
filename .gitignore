@@ -3,5 +3,3 @@ venv/
 .idea/
 database.db
 config.toml
-config.toml
-database.db
