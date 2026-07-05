@@ -4,7 +4,6 @@ import aiohttp
 from datetime import datetime, timedelta
 from typing import Protocol
 
-from php import Php
 from aiohttp import web
 
 from src import config, messages
@@ -14,24 +13,29 @@ from src.database import crud
 from src.database.models import Promocode
 from src.enums import PaymentStatus
 from src.dicts import MONTHS_TO_RUB_PRICE, MONTHS_TO_STR_MONTHS
-from src.utils import Hmac
 from src.models import Payment, SubscriptionItem
+from src.payments.utils import Hmac, http_build_query, parse_php_query
 
 
 LOGGER = logging.getLogger(__name__)
 
 
 DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M"
-RETURN_URL = "https://t.me/AstroPulse_bot"
-
-# YOOKASSA_TOKEN = config.get("payments.yookassa_token")
-# YOOKASSA_SHOP_ID = config.get("payments.yookassa_shop_id")
+PAYMENT_LINK_TTL_HOURS = 48
 
 PRODAMUS_PAYMENT_LINK = config.get("payments.prodamus_payment_link")
 PRODAMUS_SECRET_KEY = config.get("payments.prodamus_secret_key")
+# Флаг на случай, если Prodamus изменит формат подписи: позволяет
+# отключить проверку, не выкатывая новый код.
+VERIFY_WEBHOOK_SIGNATURE = config.get(
+    "payments.verify_webhook_signature", default=True
+)
 
-# Configuration.account_id = YOOKASSA_SHOP_ID
-# Configuration.secret_key = YOOKASSA_TOKEN
+# Куда Prodamus отправляет пользователя после успешной оплаты
+PAID_CONTENT_URL = config.get(
+    "payments.paid_content_url",
+    default=f"https://t.me/{config.get('bot.username')}"
+)
 
 
 class PaymentService(Protocol):
@@ -46,8 +50,9 @@ class PaymentService(Protocol):
 class ProdamusPaymentService(PaymentService):
     @staticmethod
     async def create_payment(months: int, user_id: int) -> Payment:
-        now_utc = datetime.utcnow()
-        six_hours_later_utc = now_utc + timedelta(hours=48)
+        link_expiry_utc = datetime.utcnow() + timedelta(
+            hours=PAYMENT_LINK_TTL_HOURS
+        )
         payment_id = crud.get_not_occupied_payment_id()
 
         price = MONTHS_TO_RUB_PRICE[months]
@@ -63,18 +68,16 @@ class ProdamusPaymentService(PaymentService):
                     'paymentObject': 4,
                 }
             ],
-            'link_expired': six_hours_later_utc.strftime(DEFAULT_DATETIME_FORMAT),
+            'link_expired': link_expiry_utc.strftime(DEFAULT_DATETIME_FORMAT),
             'order_id': payment_id,
             'sys': '',
-            'paid_content': 'https://t.me/AstroPulse_bot',
+            'paid_content': PAID_CONTENT_URL,
             'acquiring': "sbrf"
         }
 
-        signature = Hmac.create(params, PRODAMUS_SECRET_KEY)
-        params['signature'] = signature
+        params['signature'] = Hmac.create(params, PRODAMUS_SECRET_KEY)
 
-        query = Php.http_build_query(params)
-        url = PRODAMUS_PAYMENT_LINK + f"?{query}"
+        url = f"{PRODAMUS_PAYMENT_LINK}?{http_build_query(params)}"
 
         LOGGER.info(f'Payment url is generated: {url}')
 
@@ -86,13 +89,22 @@ class ProdamusPaymentService(PaymentService):
             )
 
     @staticmethod
-    async def handle_payment_update(request):
+    async def handle_payment_update(request: web.Request) -> web.Response:
         data = await request.post()
+
+        if VERIFY_WEBHOOK_SIGNATURE:
+            signature = request.headers.get('Sign', '')
+            payload = parse_php_query(data.items())
+            payload.pop('signature', None)
+
+            if not Hmac.verify(payload, PRODAMUS_SECRET_KEY, signature):
+                LOGGER.warning('Payment webhook: invalid signature, rejected')
+                return web.Response(status=401)
 
         payment_id = data.get("order_num")
         payment_status = data.get("payment_status")
 
-        if not payment_status == 'success':
+        if payment_status != 'success':
             return web.Response(status=400)
 
         crud.update_payment(
@@ -124,56 +136,3 @@ class ProdamusPaymentService(PaymentService):
         )
 
         return web.Response(status=200)
-
-
-# class YookassaPaymentService(PaymentService):
-#     @staticmethod
-#     async def create_payment(months: int, user_id: int) -> Payment:
-#         price = MONTHS_TO_RUB_PRICE[months]
-#         months_str = MONTHS_TO_STR_MONTHS[months]
-#
-#         idempotence_key = str(uuid.uuid4())
-#
-#         utcnow = datetime.utcnow()
-#         delta_6_hours_after_utcnow = utcnow + timedelta(hours=6)
-#
-#         payment_auto_cancel = delta_6_hours_after_utcnow.replace(microsecond=0)
-#         payment_auto_cancel_str = payment_auto_cancel.isoformat() + "Z"
-#
-#         yokassa_payment = YookassaPayment.create(
-#             {
-#                 "amount": {
-#                     "value": f"{price}",
-#                     "currency": "RUB"
-#                 },
-#                 "confirmation": {
-#                     "type": "redirect",
-#                     "return_url": RETURN_URL
-#                 },
-#                 "capture": False,
-#                 "expires_at": payment_auto_cancel_str,
-#                 "description": f"Подписка на АстроПульс, {months_str}",
-#             },
-#             idempotence_key
-#         )
-#
-#         return Payment(
-#             id=yokassa_payment.id,
-#             redirect_link=yokassa_payment.confirmation.confirmation_url
-#         )
-#
-#     @abstractmethod
-#     async def get_payment_status(payment_id: str) -> PaymentStatus:
-#         pass
-#
-#     @abstractmethod
-#     async def success():
-#         pass
-#
-#     @abstractmethod
-#     async def fail():
-#         pass
-#
-#     @abstractmethod
-#     async def pending():
-#         pass
