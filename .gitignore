@@ -1,5 +1,26 @@
+# Python
 **/__pycache__/
+*.py[cod]
 venv/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# IDE
 .idea/
-database.db
+.vscode/
+
+# Секреты и локальная конфигурация
+.env
 config.toml
+
+# Данные и артефакты рантайма
+database.db
+temp_database_backup.db
+cache/
+*.log
+log.txt
+
+# Windows/WSL мусор
+*Zone.Identifier

@@ -5,7 +5,9 @@ import swisseph as swe
 
 from typing import Optional, List
 from datetime import datetime, timedelta
+from pathlib import Path
 
+from src import paths
 from src.enums import SwissEphPlanet
 
 from .models import Location, AstroEvent, MonoAstroEvent
@@ -123,7 +125,7 @@ def remove_duplicates(
 
 
 def get_moon_in_signs_interpretations(
-    file_path: str = "./moon_signs_interpretations.csv",
+    file_path: str | Path = paths.MOON_SIGNS_INTERPRETATIONS_FILE,
 ) -> dict[str, dict[str, str]]:
     moon_in_signs_interpretations = {}
 

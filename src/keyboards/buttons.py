@@ -52,6 +52,7 @@ class Buttons:
     moon_in_sign = "🌗 Луна в знаке"
     favorable = "🟢 Благоприятно"
     unfavorable = "🔴 Неблагоприятно"
+    blank_moon = "🌒 Холостая луна"
     general = "Общий"
     # General predictions
     general_predictions = "🌒 Общие прогнозы"

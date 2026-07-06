@@ -7,8 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, User
 
 from src import config, messages
-from src.database import Database
-from src.keyboard_manager import KeyboardManager, bt
+from src.keyboards import keyboards, bt
 from src.routers.states import MainMenu
 
 r = Router()
@@ -21,7 +20,6 @@ ADMIN_CHAT_ID: int = config.get("admin_chat.id")
 async def card_of_day_menu(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
     database,
     event_from_user: User,
     bot: Bot,
@@ -43,7 +41,7 @@ async def card_of_day_menu(
         if len(cards) == 0:
             bot_message = await message.answer(
                 messages.NO_CARDS_OF_DAY,
-                reply_markup=keyboards.to_main_menu
+                reply_markup=keyboards.to_main_menu()
             )
             await state.update_data(del_messages=[bot_message.message_id])
             return
@@ -57,7 +55,7 @@ async def card_of_day_menu(
                 from_chat_id=ADMIN_CHAT_ID,           # Откуда
                 message_id=card_message_id,           # Что
                 caption=messages.CARD_OF_DAY,         # Текст к изображению
-                reply_markup=keyboards.to_main_menu,  # Клавиатура
+                reply_markup=keyboards.to_main_menu(),  # Клавиатура
             )
 
         except TelegramBadRequest:
@@ -66,7 +64,7 @@ async def card_of_day_menu(
             if len(cards) == 0:
                 bot_message = await message.answer(
                     messages.NO_CARDS_OF_DAY,
-                    reply_markup=keyboards.to_main_menu
+                    reply_markup=keyboards.to_main_menu()
                 )
                 await state.update_data(del_messages=[bot_message.message_id])
                 return

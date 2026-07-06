@@ -110,11 +110,8 @@ async def get_general_prediction_date(
     prediction_format = PRED_TYPE_TO_DATE_FMT[prediction_type]
 
     try:
-        # Need for iso format
         if prediction_type == GeneralPredictionType.week:
-            text = message.text + "-1"
-            format = FROM_WEEK_STR_FORMAT
-            # print(f'{text = }, {format = }')
+            # "-1" — день недели, без него неделя не парсится в дату
             datetime.strptime(message.text + "-1", FROM_WEEK_STR_FORMAT)
         else:
             datetime.strptime(message.text, prediction_format)

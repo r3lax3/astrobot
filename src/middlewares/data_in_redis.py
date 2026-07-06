@@ -3,7 +3,6 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
-from src.database import Database
 
 
 class AddDataInRedis(BaseMiddleware):

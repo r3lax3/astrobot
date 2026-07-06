@@ -18,7 +18,6 @@ from src.utils import get_timezone_offset
 
 DATETIME_FORMAT: str = config.get("database.datetime_format")
 DATE_FORMAT: str = config.get("database.date_format")
-DREAMS_INTERPRETATIONS_FILEPATH = "./dreams.csv"
 PREDICTION_MENU_IMAGE = config.get("files.prediction_menu")
 WAIT_STICKER = config.get("files.wait_sticker")
 

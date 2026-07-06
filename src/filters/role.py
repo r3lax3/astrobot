@@ -13,4 +13,4 @@ class AdminFilter(BaseFilter):
 
 class UserFilter(BaseFilter):
     async def __call__(self, obj: Message | CallbackQuery, event_from_user: User):
-        return not (event_from_user.id in admins_ids_list)
+        return event_from_user.id not in admins_ids_list

@@ -1,7 +1,6 @@
 from aiogram import Bot, types
 from aiogram.filters import BaseFilter
 
-from src.database import Database
 
 
 class IsNotSub(BaseFilter):

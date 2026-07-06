@@ -7,10 +7,9 @@ from aiogram.types import BufferedInputFile, CallbackQuery, Message, User
 
 from src import messages
 from src.astro_engine.moon import get_moon_signs_at_date
-from src.database import Database
 from src.enums import FileName, MoonSignInterpretationType
 from src.image_processing import get_image_with_astrodata
-from src.keyboard_manager import KeyboardManager, bt
+from src.keyboards import keyboards, bt
 from src.routers.states import MainMenu
 from src.routers.user.moon_in_sign.text_formatting import (
     get_formatted_moon_sign_text
@@ -29,7 +28,6 @@ r = Router()
 async def moon_sign_menu_button_handler(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
     database,
     event_from_user: User,
 ):
@@ -37,7 +35,6 @@ async def moon_sign_menu_button_handler(
     await moon_in_sign_menu(
         message,
         state,
-        keyboards,
         database,
         event_from_user
     )
@@ -47,14 +44,12 @@ async def moon_sign_menu_button_handler(
 async def moon_in_sign_menu_callback_handler(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager,
     database,
     event_from_user: User,
 ):
     await moon_in_sign_menu(
         callback.message,
         state,
-        keyboards,
         database,
         event_from_user
     )
@@ -67,7 +62,6 @@ async def moon_in_sign_menu_callback_handler(
 async def moon_in_sign_submenu_handler(
     callback: CallbackQuery,
     state: FSMContext,
-    keyboards: KeyboardManager,
     database,
     event_from_user: User,
 ):
@@ -75,7 +69,6 @@ async def moon_in_sign_submenu_handler(
     await moon_in_sign_menu(
         callback.message,
         state,
-        keyboards,
         database,
         event_from_user
     )
@@ -84,7 +77,6 @@ async def moon_in_sign_submenu_handler(
 async def moon_in_sign_menu(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
     database,
     event_from_user: User,
 ):
@@ -121,7 +113,7 @@ async def moon_in_sign_menu(
     await message.answer_photo(photo=photo)
     bot_message = await message.answer(
         text,
-        reply_markup=keyboards.moon_in_sign_menu
+        reply_markup=keyboards.moon_in_sign_menu()
     )
 
     await state.update_data(delete_keyboard_message_id=bot_message.message_id)

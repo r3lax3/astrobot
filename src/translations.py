@@ -29,11 +29,9 @@ MOON_PHASE_RU_TRANSLATIONS = {
 }
 
 FROM_BT_TO_PAYMENT_METHOD = {
-    # bt.yookassa: PaymentMethod.YOOKASSA,
     bt.prodamus: PaymentMethod.PRODAMUS
 }
 
 FROM_PAYMENT_METHOD_TO_PAYMENT_SERVICE = {
-    # PaymentMethod.YOOKASSA: YookassaPaymentService,
     PaymentMethod.PRODAMUS: ProdamusPaymentService
 }

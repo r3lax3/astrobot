@@ -24,7 +24,7 @@ from src.enums import SwissEphPlanet
 #     print()
 #
 #     # Проверим в твоё время
-#     my_time = datetime(2026, 1, 2, 15, 47, 48)  # UTC  
+#     my_time = datetime(2026, 1, 2, 15, 47, 48)  # UTC
 #     jd2 = get_juliday(my_time)
 #
 #     moon_data2 = get_planet_data(jd2, SwissEphPlanet.MOON, test_location)
@@ -46,30 +46,30 @@ from src.enums import SwissEphPlanet
 
 def test_find_exact_sign_entry():
     test_location = Location(longitude=135.103494, latitude=48.442037)
-    
+
     # Бинарный поиск момента когда луна = 90.0° (вход в Рак)
     left = datetime(2026, 1, 2, 12, 0, 0)
     right = datetime(2026, 1, 2, 17, 0, 0)
     target = 90.0
-    
+
     while (right - left).total_seconds() > 1:
         mid = left + (right - left) / 2
         jd = get_juliday(mid)
         moon_pos = get_planet_data(jd, SwissEphPlanet.MOON, test_location)[0][0]
-        
+
         if moon_pos < target:
             left = mid
         else:
             right = mid
-    
+
     exact_time_utc = left + (right - left) / 2
     jd = get_juliday(exact_time_utc)
     moon_pos = get_planet_data(jd, SwissEphPlanet.MOON, test_location)[0][0]
-    
-    print(f"Точный вход в Рак (90°):")
+
+    print("Точный вход в Рак (90°):")
     print(f"  UTC:    {exact_time_utc.strftime('%d.%m.%Y %H:%M:%S')}")
     print(f"  UTC+3:  {(exact_time_utc + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M:%S')}")
     print(f"  Позиция: {moon_pos:.6f}°")
     print()
-    print(f"Референс (MSK): 02.01.2026 16:08:48")
+    print("Референс (MSK): 02.01.2026 16:08:48")
     print(f"Твой (MSK):     02.01.2026 {(datetime(2026,1,2,15,47,48) + timedelta(hours=3)).strftime('%H:%M:%S')}")

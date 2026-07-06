@@ -9,6 +9,8 @@ from aiogram.types import (
 )
 from aiogram.filters.callback_data import CallbackData
 
+from src.exceptions import TypeMismatchException
+
 
 def validate_link(link: str) -> bool:
     return validators.url(link) or validators.domain(link)
@@ -50,9 +52,9 @@ class KeyboardBuilder:
             if isinstance(item, str):
                 return KeyboardButton(text=item)
             else:
-                Exception(
-                    'Чет несоответствие типов какое-то. Ты написал что тип реплай,'
-                    f'а пихаешь туда не str, а {type(item)}'
+                raise TypeMismatchException(
+                    'Кнопка реплай-клавиатуры должна быть str, '
+                    f'получен {type(item)}'
                 )
 
     @staticmethod

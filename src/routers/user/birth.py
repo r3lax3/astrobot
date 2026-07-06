@@ -6,7 +6,7 @@ from aiogram.types import CallbackQuery, InputMediaPhoto, Message
 
 from src import config, messages
 from src.filters import IsDate, IsTime
-from src.keyboard_manager import KeyboardManager, bt
+from src.keyboards import keyboards, bt
 from src.routers.states import GetBirthData, MainMenu, ProfileSettings
 from src.utils import get_location_by_coords
 
@@ -24,14 +24,14 @@ BIRTH_DATA_CONFIRMED_IMAGE = config.get("files.birth_data_confirmed")
 
 @r.message(MainMenu.get_name, F.text, F.text.len() <= 20)
 async def get_name_success(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     name = message.text
 
     bot_message = await message.answer_photo(
         photo=HELLO_IMAGE,
         caption=messages.HELLO.format(name=name),
-        reply_markup=keyboards.enter_birth_data,
+        reply_markup=keyboards.enter_birth_data(),
     )
     await state.update_data(del_messages=[bot_message.message_id], name=name)
     await state.set_state(MainMenu.enter_birth_date)
@@ -67,14 +67,14 @@ async def enter_birth_date(
 
 @r.message(GetBirthData.date, IsDate())
 async def get_birth_date_handler(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     await state.update_data(date=message.text)
-    await get_birth_date(message, state, keyboards)
+    await get_birth_date(message, state)
 
 
 async def get_birth_date(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     data = await state.get_data()
     date_str = data["date"]
@@ -86,7 +86,7 @@ async def get_birth_date(
     delta_years = round(delta.days / 365)  # need in validation
 
     if 0 < delta_years < 100:
-        await enter_birth_time(message, state, keyboards)
+        await enter_birth_time(message, state)
     else:
         await get_birth_date_error(message, state)
 
@@ -105,36 +105,35 @@ async def get_birth_time_back(callback: CallbackQuery, state: FSMContext):
 
 @r.message(GetBirthData.time, F.text, IsTime())
 async def get_birth_time(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     # из "09:23" в (9, 23), а дальше просто распаковка
     time = datetime.strptime(message.text, TIME_FORMAT)
     await state.update_data(hour=time.hour, minute=time.minute, time=message.text)
-    await enter_birth_geopos(message, state, keyboards)
+    await enter_birth_geopos(message, state)
 
 
 @r.callback_query(GetBirthData.time, IsTime())
 async def get_birth_time_from_button(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery, state: FSMContext
 ):
     time = datetime.strptime(callback.data, TIME_FORMAT)
 
     await state.update_data(hour=time.hour, minute=time.minute, time=callback.data)
-    await enter_birth_geopos(callback.message, state, keyboards)
+    await enter_birth_geopos(callback.message, state)
 
 
 @r.message(GetBirthData.time)
 async def get_birth_time_error(
     message: Message,
     state: FSMContext,
-    keyboards: KeyboardManager,
 ):
     bot_message = await message.answer(messages.NOT_BIRTH_TIME)
-    await enter_birth_time(bot_message, state, keyboards)
+    await enter_birth_time(bot_message, state)
 
 
 async def enter_birth_time(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     data = await state.get_data()
     date_str = data["date"]
@@ -145,7 +144,7 @@ async def enter_birth_time(
         )
     )
     enter_time_message = await message.answer(
-        messages.ENTER_BIRTH_TIME, reply_markup=keyboards.choose_time
+        messages.ENTER_BIRTH_TIME, reply_markup=keyboards.choose_time()
     )
 
     await state.update_data(
@@ -162,7 +161,7 @@ async def enter_birth_time(
 
 
 async def enter_birth_geopos(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     data = await state.get_data()
     date_str = data["date"]
@@ -177,7 +176,7 @@ async def enter_birth_geopos(
         [InputMediaPhoto(media=file_id) for file_id in GUIDE_SEND_GEOPOS_IMAGES]
     )
     bot_message = await message.answer(
-        messages.ENTER_BIRTH_GEOPOS, reply_markup=keyboards.back
+        messages.ENTER_BIRTH_GEOPOS, reply_markup=keyboards.back()
     )
 
     await state.update_data(
@@ -193,29 +192,29 @@ async def enter_birth_geopos(
 
 @r.callback_query(GetBirthData.location, F.data == bt.back)
 async def get_birth_geopos_back(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery, state: FSMContext
 ):
-    await enter_birth_time(callback.message, state, keyboards)
+    await enter_birth_time(callback.message, state)
 
 
 @r.message(GetBirthData.location, F.location)
 async def get_birth_geopos(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     longitude = message.location.longitude
     latitude = message.location.latitude
 
     await state.update_data(longitude=longitude, latitude=latitude)
 
-    await enter_birth_data_confirm(message, state, keyboards)
+    await enter_birth_data_confirm(message, state)
 
 
 @r.message(GetBirthData.location)
 async def get_birth_geopos_error(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     bot_message = await message.answer(messages.NOT_LOCATION)
-    await enter_birth_geopos(bot_message, state, keyboards)
+    await enter_birth_geopos(bot_message, state)
 
 
 # Confirm
@@ -223,13 +222,13 @@ async def get_birth_geopos_error(
 
 @r.callback_query(GetBirthData.confirm, F.data == bt.decline)
 async def birth_data_not_confirmed(
-    callback: CallbackQuery, state: FSMContext, keyboards: KeyboardManager
+    callback: CallbackQuery, state: FSMContext
 ):
-    await enter_birth_geopos(callback.message, state, keyboards)
+    await enter_birth_geopos(callback.message, state)
 
 
 async def enter_birth_data_confirm(
-    message: Message, state: FSMContext, keyboards: KeyboardManager
+    message: Message, state: FSMContext
 ):
     data = await state.get_data()
     date_str = data["date"]
@@ -247,7 +246,7 @@ async def enter_birth_data_confirm(
             birth_datetime=f"{date_str} {time_str}",
             birth_location_title=birth_location_title,
         ),
-        reply_markup=keyboards.confirm,
+        reply_markup=keyboards.confirm(),
     )
 
     await state.update_data(

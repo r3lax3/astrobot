@@ -13,7 +13,6 @@ from aiogram.webhook.aiohttp_server import (
 from src import config
 from src.common import bot
 from src.database import Database, schedule_backup
-from src.keyboard_manager import KeyboardManager
 from src.middlewares import (
     AddDataInRedis,
     ClearKeyboardFromMessageMiddleware,
@@ -29,12 +28,16 @@ from src.payments import ProdamusPaymentService
 from src.payments.gatebot_sync import handle_gatebot_subscription_sync
 
 
+# Секрет, которым Telegram подписывает апдейты (заголовок
+# X-Telegram-Bot-Api-Secret-Token); если не задан — проверка выключена
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 
 WEB_SERVER_HOST = config.get('webhook.web_server_host')
 WEB_SERVER_PORT = config.get('webhook.web_server_port')
 
 BASE_WEBHOOK_PATH = config.get('webhook.base_webhook_url')
+
+REDIS_URL = config.get('redis.url', default='redis://localhost:6379')
 
 BOT_WEBHOOK_PATH = "/bot"
 PAYMENT_WEBHOOK_PATH = '/payments'
@@ -47,7 +50,8 @@ async def on_startup(bot: Bot, scheduler: EveryDayPredictionScheduler) -> None:
     await bot.set_webhook(
         f"{BASE_WEBHOOK_PATH}{BOT_WEBHOOK_PATH}",
         allowed_updates=['message', 'callback_query'],
-        drop_pending_updates=True
+        drop_pending_updates=True,
+        secret_token=WEBHOOK_SECRET
     )
     scheduler.start()
     asyncio.create_task(scheduler.check_users_and_schedule())
@@ -72,9 +76,8 @@ def main():
     scheduler = EveryDayPredictionScheduler()
 
     dp = Dispatcher(
-        storage=RedisStorage.from_url('redis://localhost:6379'),
+        storage=RedisStorage.from_url(REDIS_URL),
         database=Database,
-        keyboards=KeyboardManager(Database),
         scheduler=scheduler
     )
 
@@ -116,7 +119,8 @@ def main():
     # Create an instance of request handler,
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dp,
-        bot=bot
+        bot=bot,
+        secret_token=WEBHOOK_SECRET
     )
 
     # Register webhook handler on application
@@ -126,17 +130,7 @@ def main():
     setup_application(app, dp, bot=bot)
 
     # And finally start webserver
-    try:
-        web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
-    except OSError as e:
-        if e.errno == 98:
-            import logging
-            logging.getLogger(__name__).critical(
-                f"Port {WEB_SERVER_PORT} is already in use. "
-                f"Kill the existing process with: "
-                f"lsof -ti :{WEB_SERVER_PORT} | xargs kill"
-            )
-        raise
+    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
 
 
 if __name__ == '__main__':
