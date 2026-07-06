@@ -1,46 +1,41 @@
 from datetime import timedelta
 
 from src.astro_engine.moon.lunar_day import get_lunar_day
-from src.utils import print_items_dict_as_table
 
 from tests.utils import current_month_period
-from tests.common import HOURS_TIMEZONE_OFFSET
-
-LUNAR_DAYS_DATA_FILEPATH = "tests/data/lunar_days.txt"
 
 
-def test_getting_lunar_day_transitions(user):
+def test_lunar_days_are_valid_and_contiguous(user):
+    """Лунные дни за месяц: номера корректны, периоды идут встык
+    и нумерация растёт на 1 (со сбросом на новолунии)."""
     start, end = current_month_period()
 
-    start = start - timedelta(days=30)
-    end = end - timedelta(days=30)
+    previous = None
+    count = 0
+    current_date = start
 
-    with open(LUNAR_DAYS_DATA_FILEPATH, "w") as file:
-        items = []
-        tz_offset = timedelta(hours=HOURS_TIMEZONE_OFFSET)
+    while current_date <= end:
+        lunar_day = get_lunar_day(
+            current_date,
+            user.current_location.longitude,
+            user.current_location.latitude
+        )
 
-        current_date = start
-        while current_date <= end:
+        assert 1 <= lunar_day.number <= 30
+        assert lunar_day.start < lunar_day.end
 
-            lunar_day = get_lunar_day(
-                current_date,
-                user.current_location.longitude,
-                user.current_location.latitude
+        if previous is not None:
+            assert lunar_day.number in (previous.number + 1, 1), (
+                f"После {previous.number}-го дня идёт {lunar_day.number}-й"
+            )
+            gap = abs((lunar_day.start - previous.end).total_seconds())
+            assert gap <= 120, (
+                f"Разрыв {gap:.0f} с между днями "
+                f"{previous.number} и {lunar_day.number}"
             )
 
-            day_start = (lunar_day.start + tz_offset).strftime('%d.%m %H:%M')
-            day_end = (lunar_day.end + tz_offset).strftime('%d.%m %H:%M')
+        previous = lunar_day
+        count += 1
+        current_date = lunar_day.end + timedelta(minutes=1)
 
-            day_number = f"{lunar_day.number:02}"
-
-            items.append(
-                {
-                    "Номер": day_number,
-                    "Начало": day_start,
-                    "Конец": day_end
-                }
-            )
-
-            current_date = lunar_day.end + timedelta(minutes=1)
-
-        print_items_dict_as_table(items, file)
+    assert count >= 28, f"За месяц найдено только {count} лунных дней"

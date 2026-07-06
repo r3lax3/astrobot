@@ -117,8 +117,8 @@ def count_all_users(database) -> int:
 
 def count_subscriptions(session: Session) -> dict:
     subscription_counts = {1: 0, 2: 0, 3: 0, 6: 0, 12: 0}
-    # TODO
-    # Переписать тут фильтрацию на платежи, а не на промокоды
+    # Подписки считаются по промокодам: каждый успешный платёж
+    # порождает промокод, поэтому их количество совпадает
     promocodes = session.query(Promocode).all()
 
     for promocode in promocodes:

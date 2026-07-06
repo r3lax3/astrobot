@@ -18,7 +18,6 @@ async def compability_menu(
 ):
     user: DBUser = database.get_user(user_id=event_from_user.id)
     if user.gender is not None:
-        # TODO
         bot_message = await message.answer(
             messages.COMPATIBILITY,
             reply_markup=keyboards.to_main_menu(),

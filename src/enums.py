@@ -32,7 +32,7 @@ class ImageWideElementsPositions(Enum):
     MOON_PHASE_CAPTION = (990, 320)
 
 
-class ImageHighElementsPositions(Enum):  # TODO
+class ImageHighElementsPositions(Enum):
     BACKGROUND_IMAGE_PATH = 'images/backgrounds/high_purple.jpg'
 
     DATE_TEXT = (600, 533)

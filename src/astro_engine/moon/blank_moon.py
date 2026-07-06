@@ -268,8 +268,5 @@ def create_event_with_middle_peak(
     middle = start + (end - start) / 2
     first_planet, second_planet, aspect = signature
 
-    event = MonoAstroEvent(first_planet, second_planet, aspect, middle)
-    print(f"event {event.first_planet} - {event.second_planet}, {event.aspect}")
-    print(f"{start.strftime('%d/%m/%Y, %H:%M:%S')} -> {end.strftime('%d/%m/%Y, %H:%M:%S')}\n")
-    return event
+    return MonoAstroEvent(first_planet, second_planet, aspect, middle)
 

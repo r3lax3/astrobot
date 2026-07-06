@@ -5,11 +5,9 @@ import hashlib
 import json
 import pytz
 import yaml
-import pandas as pd
 
 from datetime import datetime, timedelta
 from typing import Any, List
-from dataclasses import is_dataclass, asdict
 
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
@@ -215,24 +213,6 @@ def format_time_delta(delta_time: timedelta) -> str:
 
     # Возвращаем сформированную строку или "Меньше минуты" при отсутствии значительного оставшегося времени
     return ' '.join(time_parts) if time_parts else "Меньше минуты"
-
-
-def print_items_dict_as_table(items: list[Any], file=None) -> None:
-    if len(items) == 0:
-        print('No data to print!')
-
-    if is_dataclass(items[0]):
-        items = [asdict(item) for item in items]
-
-    if not isinstance(items[0], dict):
-        print("Can't print not dict-like objects")
-        return
-
-    # Создание DataFrame из списка словарей
-    df = pd.DataFrame(items)
-
-    # Вывод DataFrame в формате Markdown с помощью fancy_grid
-    print(df.to_markdown(index=False), file=file)
 
 
 def get_average_datetime(datetimes: List[datetime]) -> datetime:
