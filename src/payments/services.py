@@ -93,9 +93,10 @@ class ProdamusPaymentService(PaymentService):
         data = await request.post()
 
         if VERIFY_WEBHOOK_SIGNATURE:
+            # Как в эталонном PHP-приёмнике Prodamus: подпись берётся из
+            # заголовка Sign, проверяется всё тело запроса целиком
             signature = request.headers.get('Sign', '')
             payload = parse_php_query(data.items())
-            payload.pop('signature', None)
 
             if not Hmac.verify(payload, PRODAMUS_SECRET_KEY, signature):
                 LOGGER.warning('Payment webhook: invalid signature, rejected')
